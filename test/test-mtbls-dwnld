@@ -1,0 +1,9 @@
+#!/bin/bash
+
+# Small studies:
+# MTBLS278
+# MTBLS161
+# MTBLS174
+# MTBLS30
+
+../mtbls-dwnld -g MTBLS30

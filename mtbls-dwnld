@@ -1,0 +1,132 @@
+#!/bin/bash
+# vi: fdm=marker
+
+# Constants {{{1
+# ==============
+
+PROG_NAME=$(basename $0)
+YES=yes
+
+# Global variables {{{1
+# =====================
+
+DEBUG=0
+ASPERA=
+PRIVATE=
+TOKEN=
+
+# Print help {{{1
+# ===============
+
+function print_help {
+	echo "Usage: $PROG_NAME [options] study"
+	echo
+	echo "Retrieves a study from Metabolights database."
+	echo "By default it uses the ftp server, but with -a option you can ask for using aspera server (you will need the aspera client ascp to be installed)."
+	echo
+	echo "Options:"
+	echo "   -a, --aspera           Use aspera server for downloading. You need the ascp client to be installed, it is freely available for linux 64. See http://downloads.asperasoft.com."
+	echo "   -g, --debug            Debug mode."
+	echo "   -h, --help             Print this help message."
+	echo "   -p, --private          The study to be retrieved is private."
+	echo "   -t, --token value      Set the token or password to use."
+}
+
+# Error {{{1
+# ==========
+
+function error {
+
+	local msg=$1
+
+	echo "ERROR: $msg" >&2
+
+	exit 1
+}
+
+# Print debug msg {{{1
+# ====================
+
+function print_debug_msg {
+
+	local dbglvl=$1
+	local dbgmsg=$2
+
+	[ $DEBUG -ge $dbglvl ] && echo "[DEBUG] $dbgmsg" >&2
+}
+
+# Get opt val {{{1
+# ================
+
+function get_opt_val {
+	[ -n "$2" ] || error "\"$1\" requires a non-empty option argument."
+	echo $2
+}
+
+# Read args {{{1
+# ==============
+
+function read_args {
+
+	local args="$*" # save arguments for debugging purpose
+	
+	# Read options
+	while true ; do
+		shift_count=1
+		case $1 in
+			-a|--aspera)        ASPERA=$YES ;;
+			-g|--debug)         DEBUG=$((DEBUG + 1)) ;;
+			-h|--help)          print_help ; exit 0 ;;
+			-p|--private)       PRIVATE=$YES ;;
+			-t|--token)         TOKEN=$(get_opt_val $1 $2) ; shift_count=2 ;;
+			-) error "Illegal option $1." ;;
+			--) error "Illegal option $1." ;;
+			--*) error "Illegal option $1." ;;
+			-?) error "Unknown option $1." ;;
+			-[^-]*) split_opt=$(echo $1 | sed 's/^-//' | sed 's/\([a-zA-Z]\)/ -\1/g') ; set -- $1$split_opt "${@:2}" ;;
+			*) break
+		esac
+		shift $shift_count
+	done
+	shift $((OPTIND - 1))
+
+	# Read remaining arguments
+	[ $# -eq 1 ] || error "You must specify one, and only one, study to retrieve."
+	STUDY="$1"
+
+	# Debug
+	print_debug_msg 1 "Arguments are : $args"
+	print_debug_msg 1 "Study to retrieve is : $STUDY"
+	[ -n "$ASPERA" ] && print_debug_msg 1 "Aspera will be used."
+	[ -n "$PRIVATE" ] && print_debug_msg 1 "Private study enabled."
+	[ -n "$TOKEN" ] && print_debug_msg 1 "Token/Password is \"$TOKEN\"."
+}
+
+# MAIN {{{1
+# =========
+
+read_args "$@"
+
+# Set download command
+if [ -n "$ASPERA" ] ; then
+
+    export ASPERA_SCP_PASS="$TOKEN"
+
+	# Set study path
+	if [ -z "$PRIVATE" ] ; then
+		study_path=/studies/public/$STUDY
+	else
+    	study_path=$STUDY
+	fi
+
+   	dwnld_cmd="ascp -QT -l 1g fasp-ml@fasp.ebi.ac.uk:$study_path ."
+else
+	dwnld_cmd="wget -O $STUDY.zip http://www.ebi.ac.uk/metabolights/$STUDY/files/$STUDY"
+	if [ -n "$TOKEN" ] ; then
+		dwnld_cmd+="?token=$TOKEN"
+	fi
+fi
+
+# Run download command
+print_debug_msg 1 "Download command: $dwnld_cmd"
+$dwnld_cmd
