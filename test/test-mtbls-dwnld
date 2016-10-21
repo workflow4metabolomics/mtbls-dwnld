@@ -16,19 +16,31 @@ function error {
 # MAIN {{{1
 # =========
 
-# Loop on small public studies
-for study in MTBLS30 MTBLS278 MTBLS161 MTBLS174 ; do
+# List methods
+methods=default
+if [ -n "$(which ascp)" ] ; then
+	methods+=" ascp"
+else
+	echo "ascp not installed => no tests with Aspera download server." >&2
+fi
 
-	# Remove previously downloaded files
-	rm -rf $study $study.zip
+# Loop on methods
+for method in $methods ; do
 
-	# Download
-	../mtbls-dwnld -g $study
-	[ -f $study.zip -a -s $study.zip ] || error "Download of study $study with wget failed !"
-	if [ -n "$(which ascp)" ] ; then
-		../mtbls-dwnld -ag -t Xz68YfDe $study
+	# Loop on small public studies
+	for study in MTBLS30 MTBLS278 MTBLS161 MTBLS174 ; do
+
+		# Remove previously downloaded directory
+		rm -rf $study
+
+		# Download
+		options=-g
+		if [ $method = ascp ] ; then
+			options+=" -a -t Xz68YfDe"
+		fi
+		../mtbls-dwnld $options $study || error "Download failed !"
+
+		# Test downloaded directory
 		[ -d $study ] || error "Download of study $study with ascp failed !"
-	else
-		echo "ascp not installed => no tests with Aspera download server." >&2
-	fi
+	done
 done

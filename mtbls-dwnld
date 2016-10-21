@@ -14,6 +14,7 @@ DEBUG=0
 ASPERA=
 PRIVATE=
 TOKEN=
+OUTPUT=
 
 # Print help {{{1
 # ===============
@@ -28,6 +29,7 @@ function print_help {
 	echo "   -a, --aspera           Use aspera server for downloading. You need the ascp client to be installed, it is freely available for linux 64. See http://downloads.asperasoft.com."
 	echo "   -g, --debug            Debug mode."
 	echo "   -h, --help             Print this help message."
+	echo "   -o, --output value     Set the output directory to use."
 	echo "   -p, --private          The study to be retrieved is private."
 	echo "   -t, --token value      Set the token or password to use."
 }
@@ -77,6 +79,7 @@ function read_args {
 			-a|--aspera)        ASPERA=$YES ;;
 			-g|--debug)         DEBUG=$((DEBUG + 1)) ;;
 			-h|--help)          print_help ; exit 0 ;;
+			-o|--output)        OUTPUT=$(get_opt_val $1 $2) ; shift_count=2 ;;
 			-p|--private)       PRIVATE=$YES ;;
 			-t|--token)         TOKEN=$(get_opt_val $1 $2) ; shift_count=2 ;;
 			-) error "Illegal option $1." ;;
@@ -107,21 +110,24 @@ function read_args {
 
 read_args "$@"
 
+tmp_output=$STUDY
+
 # Set download command
 if [ -n "$ASPERA" ] ; then
 
-    export ASPERA_SCP_PASS="$TOKEN"
+	export ASPERA_SCP_PASS="$TOKEN"
 
 	# Set study path
 	if [ -z "$PRIVATE" ] ; then
 		study_path=/studies/public/$STUDY
 	else
-    	study_path=$STUDY
+		study_path=$STUDY
 	fi
 
-   	dwnld_cmd="ascp -QT -l 1g fasp-ml@fasp.ebi.ac.uk:$study_path ."
+	dwnld_cmd="ascp -QT -l 1g fasp-ml@fasp.ebi.ac.uk:$study_path ."
 else
-	dwnld_cmd="wget -O $STUDY.zip http://www.ebi.ac.uk/metabolights/$STUDY/files/$STUDY"
+	tmp_output+=.zip
+	dwnld_cmd="wget -O $tmp_output http://www.ebi.ac.uk/metabolights/$STUDY/files/$STUDY"
 	if [ -n "$TOKEN" ] ; then
 		dwnld_cmd+="?token=$TOKEN"
 	fi
@@ -130,3 +136,21 @@ fi
 # Run download command
 print_debug_msg 1 "Download command: $dwnld_cmd"
 $dwnld_cmd
+
+# Zip file?
+if [ ${tmp_output##*.} = 'zip' ] ; then
+	[ -n "$(which unzip)" ] || error "unzip command not found. Please install zip package."
+
+	zip=$tmp_output
+	tmp_output=${zip%.*}
+	curdir=$(pwd)
+	mkdir $tmp_output
+	cd $tmp_output
+	unzip "$curdir/$zip"
+	cd -
+fi
+
+# Move output directory
+if [ -n "$OUTPUT" ] ; then
+	mv $tmp_output $OUTPUT
+fi
