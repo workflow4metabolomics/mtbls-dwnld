@@ -1,9 +1,34 @@
 #!/bin/bash
+# vi: fdm=marker
 
-# Small studies:
-# MTBLS278
-# MTBLS161
-# MTBLS174
-# MTBLS30
+# Error {{{1
+# ==========
 
-../mtbls-dwnld -g MTBLS30
+function error {
+
+	local msg=$1
+
+	echo "ERROR: $msg" >&2
+
+	exit 1
+}
+
+# MAIN {{{1
+# =========
+
+# Loop on small public studies
+for study in MTBLS30 MTBLS278 MTBLS161 MTBLS174 ; do
+
+	# Remove previously downloaded files
+	rm -rf $study $study.zip
+
+	# Download
+	../mtbls-dwnld -g $study
+	[ -f $study.zip -a -s $study.zip ] || error "Download of study $study with wget failed !"
+	if [ -n "$(which ascp)" ] ; then
+		../mtbls-dwnld -ag -t Xz68YfDe $study
+		[ -d $study ] || error "Download of study $study with ascp failed !"
+	else
+		echo "ascp not installed => no tests with Aspera download server." >&2
+	fi
+done
