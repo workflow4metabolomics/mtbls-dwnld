@@ -28,7 +28,7 @@ fi
 for method in $methods ; do
 
 	# Loop on small public studies
-	for study in MTBLS30 MTBLS278 MTBLS161 MTBLS174 ; do
+	for study in MTBLS30 ; do # other small public studies MTBLS278 MTBLS161 MTBLS174
 
 		# Remove previously downloaded directory
 		rm -rf $study
@@ -38,9 +38,9 @@ for method in $methods ; do
 		if [ $method = ascp ] ; then
 			options+=" -a -t Xz68YfDe"
 		fi
-		../mtbls-dwnld $options $study || error "Download failed !"
+		../mtbls-dwnld $options /studies/public/$study || error "Download failed !"
 
 		# Test downloaded directory
-		[ -d $study ] || error "Download of study $study with ascp failed !"
+		[ -d $study ] || error "Download of study $study with $method method failed !"
 	done
 done
