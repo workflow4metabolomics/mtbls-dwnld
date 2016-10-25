@@ -14,6 +14,7 @@ DEBUG=0
 ASPERA=
 TOKEN=
 OUTPUT=
+HTML=
 
 # Print help {{{1
 # ===============
@@ -28,6 +29,7 @@ function print_help {
 	echo "   -a, --aspera           Use aspera server for downloading. You need the ascp client to be installed, it is freely available for linux 64. See http://downloads.asperasoft.com."
 	echo "   -g, --debug            Debug mode."
 	echo "   -h, --help             Print this help message."
+	echo "	 -H, --html		Write HTML file that list files contained in output directory."
 	echo "   -o, --output value     Set the output directory to use."
 	echo "   -t, --token value      Set the token or password to use."
 }
@@ -77,6 +79,7 @@ function read_args {
 			-a|--aspera)        ASPERA=$YES ;;
 			-g|--debug)         DEBUG=$((DEBUG + 1)) ;;
 			-h|--help)          print_help ; exit 0 ;;
+			-H|--html)          HTML=$(get_opt_val $1 $2) ; shift_count=2 ;;
 			-o|--output)        OUTPUT=$(get_opt_val $1 $2) ; shift_count=2 ;;
 			-t|--token)         TOKEN=$(get_opt_val $1 $2) ; shift_count=2 ;;
 			-) error "Illegal option $1." ;;
@@ -137,6 +140,35 @@ if [ ${tmp_output##*.} = 'zip' ] ; then
 	cd $tmp_output
 	unzip "$curdir/$zip"
 	cd -
+fi
+
+# Write HTML
+if [ -n "$HTML" ] ; then
+	cat >$HTML <<EOF
+<html>
+	<header>
+		<title>Metabolights study</title>
+	</header>
+	<body>
+		<a href="i_Investigation.txt">Investigation file</a><br/>
+EOF
+
+	echo "		Study files:<br/>" >>$HTML
+	for f in $tmp_output/s_*.txt ; do
+		filename=$(basename "$f")
+		echo "		<a href=\"$filename\">$f</a><br/>" >>$HTML
+	done
+
+	echo "		Assay files:<br/>" >>$HTML
+	for f in $tmp_output/a_*.txt ; do
+		filename=$(basename "$f")
+		echo "		<a href=\"$filename\">$f</a><br/>" >>$HTML
+	done
+
+	cat >>$HTML <<EOF
+	</body>
+</html>
+EOF
 fi
 
 # Move output directory
