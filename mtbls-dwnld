@@ -127,7 +127,11 @@ fi
 
 # Run download command
 print_debug_msg 1 "Download command: $dwnld_cmd"
-$dwnld_cmd
+$dwnld_cmd 2>&1
+if [ -f $tmp_output -a ! -s $tmp_output ] ; then
+	echo "Cannot download $tmp_output file. Command \"$dwnld_cmd\" has failed." >&2
+	exit 1
+fi
 
 # Zip file?
 if [ ${tmp_output##*.} = 'zip' ] ; then
