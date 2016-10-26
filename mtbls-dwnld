@@ -148,6 +148,7 @@ fi
 
 # Write HTML
 if [ -n "$HTML" ] ; then
+	echo "Write HTML output to \"$HTML\"."
 	cat >$HTML <<EOF
 <html>
 	<header>
@@ -160,13 +161,13 @@ EOF
 	echo "		Study files:<br/>" >>$HTML
 	for f in $tmp_output/s_*.txt ; do
 		filename=$(basename "$f")
-		echo "		<a href=\"$filename\">$f</a><br/>" >>$HTML
+		echo "		<a href=\"$filename\">$filename</a><br/>" >>$HTML
 	done
 
 	echo "		Assay files:<br/>" >>$HTML
 	for f in $tmp_output/a_*.txt ; do
 		filename=$(basename "$f")
-		echo "		<a href=\"$filename\">$f</a><br/>" >>$HTML
+		echo "		<a href=\"$filename\">$filename</a><br/>" >>$HTML
 	done
 
 	cat >>$HTML <<EOF

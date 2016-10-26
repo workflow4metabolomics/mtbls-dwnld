@@ -13,6 +13,7 @@ class ISATab(Text):
 	"""ISA-Tab composite dataset class for Galaxy"""
 
 	composite_type = 'auto_primary_file'
+#	composite_type = 'basic'
 
 	# Constructor {{{2
 	# ----------------

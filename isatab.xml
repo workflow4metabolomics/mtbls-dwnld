@@ -14,7 +14,7 @@
 			-t "$token"
 		#end if
 
-		-H $isatab_output
+##		-H "$isatab_output"
 		-o "$isatab_output.files_path"
 		"$study"
 		## @@@END_CHEETAH@@@
@@ -30,8 +30,10 @@
 	</inputs>
 
     <outputs>
-<!--        <data name="isatab_output" label="ISA-Tab of $study" format="isatab"/>-->
-        <data name="isatab_output" label="ISA-Tab of ${study}.html" format="html"/>
+<!-- DEBUG galaxy.datatypes.registry WARNING 2016-10-26 07:19:30,511 unknown mimetype in data factory isatab
+ -->
+        <data name="isatab_output" label="ISA-Tab of $study" format="isatab"/>
+<!--        <data name="isatab_output" label="ISA-Tab of ${study}.html" format="html"/> -->
     </outputs>
 
 <!--    <tests>
