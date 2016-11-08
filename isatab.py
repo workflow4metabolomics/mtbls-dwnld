@@ -13,7 +13,7 @@ class ISATab(Text):
 	"""ISA-Tab composite dataset class for Galaxy"""
 
 	composite_type = 'auto_primary_file'
-#	composite_type = 'basic'
+	file_ext = "isatab"
 
 	# Constructor {{{2
 	# ----------------
@@ -24,7 +24,7 @@ class ISATab(Text):
 		# Add investigation file
 		self.add_composite_file('i_Investigation.txt', description = 'ISA-Tab investigation file.', optional = 'False', is_binary = False)
 
-		# Read investigation file and search study files and assay files ?
+		# TODO Read investigation file and search study files and assay files ?
 
 		# Add study files
 		self.add_composite_file('s_*.txt', description = 'ISA-Tab study files.', optional = 'False', is_binary = False)

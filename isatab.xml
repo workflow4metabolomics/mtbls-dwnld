@@ -9,14 +9,28 @@
 	<command><![CDATA[
 		## @@@BEGIN_CHEETAH@@@
 		$__tool_directory__/mtbls-dwnld
-
 		#if $token:
 			-t "$token"
 		#end if
-
-##		-H "$isatab_output"
-		-o "$isatab_output.files_path"
+		-H "$isatab_output_html"
+		-o "$isatab_output_html.files_path"
 		"$study"
+		;
+		$__tool_directory__/mtbls-dwnld
+		#if $token:
+			-t "$token"
+		#end if
+		-H "$isatab_output_inherit_html"
+		-o "$isatab_output_inherit_html.files_path"
+		"$study"
+		;
+		$__tool_directory__/mtbls-dwnld
+		#if $token:
+			-t "$token"
+		#end if
+		-o "$isatab_output_composite.files_path"
+		"$study"
+##	; cp $isatab_output_composite.files_path/i_Investigation.txt $isatab_output_composite
 		## @@@END_CHEETAH@@@
 	]]></command>
 
@@ -32,8 +46,20 @@
     <outputs>
 <!-- DEBUG galaxy.datatypes.registry WARNING 2016-10-26 07:19:30,511 unknown mimetype in data factory isatab
  -->
-        <data name="isatab_output" label="ISA-Tab of $study" format="isatab"/>
-<!--        <data name="isatab_output" label="ISA-Tab of ${study}.html" format="html"/> -->
+        <data name="isatab_output_html" label="ISA-Tab of ${study}.html" format="html"/>
+
+        <data name="isatab_output_inherit_html" label="ISA-Tab of $study - inherit HTML.isatabhtml" format="isatabhtml"/>
+        <!-- Put the following line inside "config/datatypes_conf.xml":
+	  <datatype extension="isatabhtml" type="galaxy.datatypes.text:Html" subclass="True"/>
+-->
+
+        <data name="isatab_output_composite" label="ISA-Tab of $study - composite.isatab" format="isatab"/>
+        <!-- Put the following line inside "config/datatypes_conf.xml":
+	  <datatype extension="isatab" type="galaxy.datatypes.isatab:ISATab"/>
+
+Make a symbolic link to "isatab.py" inside "lib/galaxy/datatypes".
+/>
+-->
     </outputs>
 
 <!--    <tests>
