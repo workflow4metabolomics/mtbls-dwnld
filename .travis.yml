@@ -1,0 +1,15 @@
+notifications:
+ email:
+  recipients:
+   - pierrick.roger@gmail.com
+                           
+before_install:
+ - sudo apt-get install -y make
+ - virtualenv planemo-venv
+ - . planemo-venv/bin/activate
+ - pip install --upgrade pip setuptools
+ - pip install planemo
+ - planemo --version
+
+script:
+ - make test
