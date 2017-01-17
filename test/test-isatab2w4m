@@ -1,0 +1,25 @@
+#!/bin/bash
+# vi: fdm=marker
+
+# Constants {{{1
+################################################################
+
+PROG_PATH=$(dirname $0)
+RES_PATH=$PROG_PATH/res
+
+# Error {{{1
+################################################################
+
+function error {
+
+	local msg=$1
+
+	echo "ERROR: $msg" >&2
+
+	exit 1
+}
+
+# MAIN {{{1
+################################################################
+
+$PROG_PATH/../isatab2w4m -i $RES_PATH/study1

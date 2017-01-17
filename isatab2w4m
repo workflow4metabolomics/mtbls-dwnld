@@ -1,0 +1,70 @@
+#!/usr/bin/env Rscript
+# vi: ft=R fdm=marker
+
+library(getopt)
+library(Risa)
+
+# Constants {{{1
+################################################################
+
+ARGS <- commandArgs(trailingOnly = F)
+SCRIPT.PATH <- sub("--file=", "", ARGS[grep("--file=", ARGS)])
+PROG.NAME <- sub('^.*/([^/]+)$', '\\1', commandArgs()[4], perl = TRUE)
+
+# Print help {{{1
+################################################################
+
+print.help <- function(spec) {
+	cat(getopt(spec, usage = TRUE, command = PROG.NAME))
+	q(status = 0)
+}
+
+# Arg error {{{1
+################################################################
+
+arg.error <- function(msg) {
+	stop(paste(msg, "Use -h option to get help."))
+}
+
+# Read args {{{1
+################################################################
+
+read.args <- function() {
+
+	# options
+	spec <- c(
+		'help',             'h',            0,  'logical',      'Print this help.',
+		'input',            'i',            1,  'character',    'Input directory containing the ISA-Tab files.'
+		)
+	opt <- getopt(matrix(spec, byrow = TRUE, ncol = 5))
+
+	# Help
+	is.null(opt$help) || print.help(spec)
+
+	# Check values
+	! is.null(opt$input) || arg.error('You must set an input directory through -i option.')
+	file.exists(opt$input) || arg.error(paste("Directory \"", opt$input, "\" doesn't exist.", sep = ''))
+
+	return(opt)
+}
+
+# MAIN {{{1
+################################################################
+
+options(error = function() { traceback(2) ; quit(status = 1) }, warn = 2 )
+
+# Read command line arguments
+opt <- read.args()
+
+# Read ISA-Tab files
+isa <- readISAtab(opt$input)
+print(cbind(measurement=isa@assay.measurement.types,
+                  technology=isa@assay.technology.types,
+                        names=isa@assay.filenames))
+
+print(getMSAssayFilenames(isa))
+
+for (file in getMSAssayFilenames(isa)) {
+	print(file)
+	print(colnames(isa@assay.files[[file]]))
+}
