@@ -12,8 +12,8 @@
 		#if $token:
 			-t "$token"
 		#end if
-		-H "$isatab_output_html"
-		-o "$isatab_output_html.files_path"
+		-H "$html_output"
+		-o "$html_output.files_path"
 		"$study"
 		## @@@END_CHEETAH@@@
 	]]></command>
@@ -30,7 +30,7 @@
     <outputs>
 <!-- DEBUG galaxy.datatypes.registry WARNING 2016-10-26 07:19:30,511 unknown mimetype in data factory isatab
  -->
-        <data name="isatab_output_html" label="ISA-Tab of ${study}.html" format="html"/>
+        <data name="html_output" label="ISA-Tab of ${study}.html" format="html"/>
 
         <!-- Using new type by inheriting only from HTML, no class definition -->
    		<!--     <data name="isatab_output_inherit_html" label="ISA-Tab of $study - inherit HTML.isatabhtml" format="isatabhtml"/> -->
@@ -54,14 +54,23 @@
         </test>
     </tests>-->
 
+	<!-- TESTS {{{1 -->
+	<tests>
+		<test>
+			<param name="study" value="MTBLS30"/>
+			<output name="html_output" file="mtbls30.html"/>
+		</test>
+	</tests>
+
     <help><![CDATA[
 **Overview**
 A tool to transfer MetaboLights studies. 
     ]]></help>
 
-    <!--<citations>
+	<!-- CITATIONS {{{1 -->
+    <citations>
         <citation type="doi">10.1002/0471250953.bi1413s53</citation>
         <citation type="doi">10.1007/s11306-015-0879-3</citation>
         <citation type="doi">10.1038/ng.1054</citation>
-    </citations>-->
+    </citations>
 </tool>

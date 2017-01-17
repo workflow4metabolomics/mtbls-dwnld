@@ -9,7 +9,6 @@ before_install:
  - . planemo-venv/bin/activate
  - pip install --upgrade pip setuptools
  - pip install planemo
- - planemo --version
 
 script:
  - make test
