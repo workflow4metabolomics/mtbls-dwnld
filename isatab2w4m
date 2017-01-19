@@ -34,7 +34,10 @@ read.args <- function() {
 	# options
 	spec <- c(
 		'help',             'h',            0,  'logical',      'Print this help.',
-		'input',            'i',            1,  'character',    'Input directory containing the ISA-Tab files.'
+		'input',            'i',            1,  'character',    'Input directory containing the ISA-Tab files.',
+		'sample-output',    's',            1,  'character',    'Output file for sample metadata.',
+		'variable-output',  'v',            1,  'character',    'Output file for variable metadata.',
+		'matrix-output',    'm',            1,  'character',    'Output file for sample x variable matrix.'
 		)
 	opt <- getopt(matrix(spec, byrow = TRUE, ncol = 5))
 
@@ -44,6 +47,11 @@ read.args <- function() {
 	# Check values
 	! is.null(opt$input) || arg.error('You must set an input directory through -i option.')
 	file.exists(opt$input) || arg.error(paste("Directory \"", opt$input, "\" doesn't exist.", sep = ''))
+
+	# Set default path for unset outputs
+	if (is.null(opt[['sample-output']])) opt[['sample-output']] <- paste(opt$input, 'sample-metadata.tsv', sep = '-')
+	if (is.null(opt[['variable-output']])) opt[['variable-output']] <- paste(opt$input, 'variable-metadata.tsv', sep = '-')
+	if (is.null(opt[['matrix-output']])) opt[['matrix-output']] <- paste(opt$input, 'sample-variable-matrix.tsv', sep = '-')
 
 	return(opt)
 }
@@ -58,13 +66,26 @@ opt <- read.args()
 
 # Read ISA-Tab files
 isa <- readISAtab(opt$input)
-print(cbind(measurement=isa@assay.measurement.types,
-                  technology=isa@assay.technology.types,
-                        names=isa@assay.filenames))
+#print(cbind(measurement = isa@assay.measurement.types, technology = isa@assay.technology.types, names = isa@assay.filenames))
+#print(getMSAssayFilenames(isa))
+#print(Risa:::isatab.syntax)
 
-print(getMSAssayFilenames(isa))
+# Get w4m format
+sample.metadata <- NULL
+variable.metadata <- NULL
+sample.variable.matrix <- NULL
 
 for (file in getMSAssayFilenames(isa)) {
 	print(file)
-	print(colnames(isa@assay.files[[file]]))
+#	print(colnames(isa@assay.files[[file]]))
 }
+
+# Make fake data
+sample.metadata <- data.frame( samplename = c('A', 'B', 'C'), someinfo = c(1, 2, 3))
+variable.metadata <- data.frame( variablename = c('x', 'y'), varinfo = c(45,12))
+sample.variable.matrix <- data.frame( x = c(4.3, 2.1, 5.6), y = c(-0.1, -5, 4))
+
+# Write output
+write.table(sample.metadata, file = opt[['sample-output']], sep = "\t")
+write.table(variable.metadata, file = opt[['variable-output']], sep = "\t")
+write.table(sample.variable.matrix, file = opt[['matrix-output']], sep = "\t")
