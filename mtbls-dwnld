@@ -5,6 +5,7 @@
 ################################################################
 
 PROG_NAME=$(basename $0)
+PROG_PATH=$(dirname $0)
 YES=yes
 
 # Global variables {{{1
@@ -16,6 +17,10 @@ TOKEN=
 OUTPUT=
 HTML=
 METADATA_ONLY=
+MATRIX_OUTPUT=
+SAMPLE_OUTPUT=
+VARIABLE_OUTPUT=
+W4M_OUTPUT=
 
 # Print help {{{1
 ################################################################
@@ -31,9 +36,13 @@ function print_help {
 	echo "   -g, --debug                Debug mode."
 	echo "   -h, --help                 Print this help message."
 	echo "	 -H, --html		            Write HTML file that list files contained in output directory."
+	echo "   -m, --matrix-output        Set path for the W4M sample x variable matrix output file. Only used if -w option is set."
 	echo "   -M, --metadata-only        Download only the metadata (ISA-Tab files i_*, m_*, s_* and a_*) files. This option has no effet is aspera is selecte (option -a)."
 	echo "   -o, --output value         Set the output directory to use."
+	echo "   -s, --sample-output        Set path for the W4M sample metadata output file. Only used if -w option is set."
 	echo "   -t, --token value          Set the token or password to use."
+	echo "   -v, --variable-output      Set path for the W4M variable metadata output file. Only used if -w option is set."
+	echo "   -w, --w4m-output           Enable W4M format output.  This output consists in 3 tsv files: one for sample metadata, one for variable metadata, and one for sample x variable matrix. Use the options -s, -v and -m to set the paths for those 3 files."
 }
 
 # Error {{{1
@@ -78,13 +87,17 @@ function read_args {
 	while true ; do
 		shift_count=1
 		case $1 in
-			-a|--aspera)        ASPERA=$YES ;;
-			-g|--debug)         DEBUG=$((DEBUG + 1)) ;;
-			-h|--help)          print_help ; exit 0 ;;
-			-H|--html)          HTML=$(get_opt_val $1 $2) ; shift_count=2 ;;
-			-M|--metadata-only) METADATA_ONLY=$YES ;;
-			-o|--output)        OUTPUT=$(get_opt_val $1 $2) ; shift_count=2 ;;
-			-t|--token)         TOKEN=$(get_opt_val $1 $2) ; shift_count=2 ;;
+			-a|--aspera)            ASPERA=$YES ;;
+			-g|--debug)             DEBUG=$((DEBUG + 1)) ;;
+			-h|--help)              print_help ; exit 0 ;;
+			-H|--html)              HTML=$(get_opt_val $1 $2) ; shift_count=2 ;;
+			-m|--matrix-output)     MATRIX_OUTPUT=$(get_opt_val $1 $2) ; shift_count=2 ;;
+			-M|--metadata-only)     METADATA_ONLY=$YES ;;
+			-o|--output)            OUTPUT=$(get_opt_val $1 $2) ; shift_count=2 ;;
+			-s|--sample-output)     SAMPLE_OUTPUT=$(get_opt_val $1 $2) ; shift_count=2 ;;
+			-t|--token)             TOKEN=$(get_opt_val $1 $2) ; shift_count=2 ;;
+			-v|--variable-output)   VARIABLE_OUTPUT=$(get_opt_val $1 $2) ; shift_count=2 ;;
+			-w|--w4m-output)        W4M_OUTPUT=$YES ;;
 			-) error "Illegal option $1." ;;
 			--) error "Illegal option $1." ;;
 			--*) error "Illegal option $1." ;;
@@ -105,6 +118,24 @@ function read_args {
 	print_debug_msg 1 "Study to retrieve is : $STUDY"
 	[ -n "$ASPERA" ] && print_debug_msg 1 "Aspera will be used."
 	[ -n "$TOKEN" ] && print_debug_msg 1 "Token/Password is \"$TOKEN\"."
+}
+
+# Convert to W4M output {{{1
+################################################################
+
+function convert_to_w4m_output {
+
+	local folder="$1"
+	local sample_output="$2"
+	local variable_output="$3"
+	local matrix_output="$4"
+
+	local outputs=""
+	[ -z "$sample_output" ] || outputs+=" -s $sample_output"
+	[ -z "$variable_output" ] || outputs+=" -v $variable_output"
+	[ -z "$matrix_output" ] || outputs+=" -m $matrix_output"
+
+	$PROG_PATH/isatab2w4m $outputs -i "$folder"
 }
 
 # MAIN {{{1
@@ -151,6 +182,11 @@ if [ ${tmp_output##*.} = 'zip' ] ; then
 	cd $tmp_output
 	unzip "$curdir/$zip"
 	cd -
+fi
+
+# Convert to W4M format
+if [ -n "$W4M_OUTPUT" ] ; then
+	convert_to_w4m_output "$tmp_output" "$SAMPLE_OUTPUT" "$VARIABLE_OUTPUT" "$MATRIX_OUTPUT"
 fi
 
 # Write HTML
