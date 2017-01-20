@@ -75,13 +75,26 @@ sample.metadata <- NULL
 variable.metadata <- NULL
 sample.variable.matrix <- NULL
 
-for (file in getMSAssayFilenames(isa)) {
-	print(file)
-#	print(colnames(isa@assay.files[[file]]))
-}
+# Get first study
+study.name <- isa@study.identifiers[[1]]
+length(study.name) == 1 || stop("No study found.")
+
+# Get study data frame
+study.df <- isa@study.files[[study.name]]
+
+# Get first assay of study
+study.assays <- isa@assay.files.per.study[[study.name]]
+length(study.assays) > 0 || stop(paste("No assay in study ", study.name, ".", sep = ''))
+study.assay.df <- study.assays[[1]]
+
+# Create sample metadata by merging assay and study metadata
+sample.metadata <- merge(study.assay.df, study.assay.df, by = "Sample Name", sort = FALSE)
+
+# Get sample names
+sample.names <- study.assay.df[['Sample Name']]
 
 # Make fake data
-sample.metadata <- data.frame( samplename = c('A', 'B', 'C'), someinfo = c(1, 2, 3))
+#sample.metadata <- data.frame( samplename = c('A', 'B', 'C'), someinfo = c(1, 2, 3))
 variable.metadata <- data.frame( variablename = c('x', 'y'), varinfo = c(45,12))
 sample.variable.matrix <- data.frame( x = c(4.3, 2.1, 5.6), y = c(-0.1, -5, 4))
 
