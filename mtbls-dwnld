@@ -15,6 +15,7 @@ ASPERA=
 TOKEN=
 OUTPUT=
 HTML=
+METADATA_ONLY=
 
 # Print help {{{1
 ################################################################
@@ -26,12 +27,13 @@ function print_help {
 	echo "By default it uses the ftp server, but with -a option you can ask for using aspera server (you will need the aspera client ascp to be installed)."
 	echo
 	echo "Options:"
-	echo "   -a, --aspera           Use aspera server for downloading. You need the ascp client to be installed, it is freely available for linux 64. See http://downloads.asperasoft.com."
-	echo "   -g, --debug            Debug mode."
-	echo "   -h, --help             Print this help message."
-	echo "	 -H, --html		Write HTML file that list files contained in output directory."
-	echo "   -o, --output value     Set the output directory to use."
-	echo "   -t, --token value      Set the token or password to use."
+	echo "   -a, --aspera               Use aspera server for downloading. You need the ascp client to be installed, it is freely available for linux 64. See http://downloads.asperasoft.com."
+	echo "   -g, --debug                Debug mode."
+	echo "   -h, --help                 Print this help message."
+	echo "	 -H, --html		            Write HTML file that list files contained in output directory."
+	echo "   -M, --metadata-only        Download only the metadata (ISA-Tab files i_*, m_*, s_* and a_*) files. This option has no effet is aspera is selecte (option -a)."
+	echo "   -o, --output value         Set the output directory to use."
+	echo "   -t, --token value          Set the token or password to use."
 }
 
 # Error {{{1
@@ -80,6 +82,7 @@ function read_args {
 			-g|--debug)         DEBUG=$((DEBUG + 1)) ;;
 			-h|--help)          print_help ; exit 0 ;;
 			-H|--html)          HTML=$(get_opt_val $1 $2) ; shift_count=2 ;;
+			-M|--metadata-only) METADATA_ONLY=$YES ;;
 			-o|--output)        OUTPUT=$(get_opt_val $1 $2) ; shift_count=2 ;;
 			-t|--token)         TOKEN=$(get_opt_val $1 $2) ; shift_count=2 ;;
 			-) error "Illegal option $1." ;;
@@ -119,7 +122,11 @@ if [ -n "$ASPERA" ] ; then
 	dwnld_cmd="ascp -QT -l 1g fasp-ml@fasp.ebi.ac.uk:$STUDY ."
 else
 	tmp_output+=.zip
-	dwnld_cmd="wget -O $tmp_output http://www.ebi.ac.uk/metabolights/$(basename $STUDY)/files/$(basename $STUDY)"
+	file=$(basename $STUDY)
+	if [ -n "$METADATA_ONLY" ]; then
+		file=metadata
+	fi
+	dwnld_cmd="wget -O $tmp_output http://www.ebi.ac.uk/metabolights/$(basename $STUDY)/files/$file"
 	if [ -n "$TOKEN" ] ; then
 		dwnld_cmd+="?token=$TOKEN"
 	fi
