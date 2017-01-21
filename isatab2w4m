@@ -118,7 +118,24 @@ variable.metadata <- m.df[ ! colnames(m.df) %in% sample.names]
 # Extract matrix
 sample.variable.matrix <- m.df[sample.names]
 
+# Create variable names
+var.names <- character(nrow(m.df))
+for (f in c('mass_to_charge', 'retention_time'))
+	if (f %in% colnames(m.df)) {
+		col.vals <- as.character(m.df[[f]])
+		col.vals <- ifelse(is.na(col.vals), '', col.vals)
+		var.names <- paste(var.names, ifelse(nchar(var.names) > 0 & nchar(col.vals) > 0, '_', ''), col.vals, sep = '')
+	}
+
+# Number missing variable names
+numbered.vars <- paste('var', seq(var.names), sep ='')
+var.names <- ifelse(nchar(var.names) == 0, numbered.vars, var.names)
+
+# Add variable names as columns
+variable.metadata <- cbind(data.frame(variable.name = var.names), variable.metadata)
+sample.variable.matrix <- cbind(data.frame(variable.name = var.names), sample.variable.matrix)
+
 # Write output
-write.table(sample.metadata, file = opt[['sample-output']], sep = "\t")
-write.table(variable.metadata, file = opt[['variable-output']], sep = "\t")
-write.table(sample.variable.matrix, file = opt[['matrix-output']], sep = "\t")
+write.table(sample.metadata, file = opt[['sample-output']], sep = "\t", row.names = FALSE)
+write.table(variable.metadata, file = opt[['variable-output']], sep = "\t", row.names = FALSE)
+write.table(sample.variable.matrix, file = opt[['matrix-output']], sep = "\t", row.names = FALSE)
