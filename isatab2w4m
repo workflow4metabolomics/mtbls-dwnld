@@ -85,6 +85,7 @@ study.df <- isa@study.files[[study.name]]
 # Get first assay of study
 study.assays <- isa@assay.files.per.study[[study.name]]
 length(study.assays) > 0 || stop(paste("No assay in study ", study.name, ".", sep = ''))
+study.assay.filename <- isa@assay.filenames[[1]]
 study.assay.df <- study.assays[[1]]
 
 # Create sample metadata by merging assay and study metadata
@@ -94,13 +95,28 @@ study.assay.df <- study.assays[[1]]
 #sample.metadata <- merge(study.assay.df, study.df[c("Sample Name", study.uniq.cols)], by = "Sample Name", sort = FALSE)
 sample.metadata <- study.assay.df
 
-# Get sample names
-sample.names <- study.assay.df[['Sample Name']]
+# Get `m_` file
+m_file <- study.assay.df[["Metabolite Assignment File"]]
+m_file <- m_file[ ! duplicated(m_file)]
+length(m_file) == 1 || stop(paste("More than one metabolite assignement file found in assay \"", study.assay.filename, "\": ", paste(m_file, collapse = ", "), ".", sep = ''))
+m.df <- read.table(file = file.path(opt$input, m_file), sep = "\t", header = TRUE, check.names = FALSE)
 
-# Make fake data
-#sample.metadata <- data.frame( samplename = c('A', 'B', 'C'), someinfo = c(1, 2, 3))
-variable.metadata <- data.frame( variablename = c('x', 'y'), varinfo = c(45,12))
-sample.variable.matrix <- data.frame( x = c(4.3, 2.1, 5.6), y = c(-0.1, -5, 4))
+# Get sample names
+sample.field.names <- c('Sample Name', 'Extract Name')
+sample.names <- NULL
+for (sample.field in sample.field.names) {
+	if (sample.field %in% colnames(study.assay.df) && all(! duplicated(study.assay.df[[sample.field]]))) {
+		sample.names <- study.assay.df[[sample.field]]
+		break
+	}
+}
+! is.null(sample.names) || stop(paste("Impossible to find a column for sample names among ", paste(sample.field.names, collapse = ", "), ". Either those columns do not exist, or contain duplicates.", sep = ''))
+
+# Extract variable metadata
+variable.metadata <- m.df[ ! colnames(m.df) %in% sample.names]
+
+# Extract matrix
+sample.variable.matrix <- m.df[sample.names]
 
 # Write output
 write.table(sample.metadata, file = opt[['sample-output']], sep = "\t")

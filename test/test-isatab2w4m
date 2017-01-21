@@ -23,7 +23,7 @@ function error {
 ################################################################
 
 # Loop on all studies
-for study in MTBLS30 ; do
+for study in MTBLS30 MTBLS404 ; do
 
 	study_path="$RES_PATH/$study"
 
