@@ -28,13 +28,13 @@ fi
 for method in $methods ; do
 
 	# Loop on small public studies
-	for study in MTBLS30 ; do # other small public studies MTBLS278 MTBLS161 MTBLS174
+	for study in MTBLS1 MTBLS2 MTBLS30 ; do
 
 		# Remove previously downloaded directory
 		rm -rf $study
 
 		# Download
-		options=-g
+		options=-gM
 		if [ $method = ascp ] ; then
 			options+=" -a -t Xz68YfDe"
 		fi
