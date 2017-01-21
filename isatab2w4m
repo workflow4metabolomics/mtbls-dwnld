@@ -88,7 +88,11 @@ length(study.assays) > 0 || stop(paste("No assay in study ", study.name, ".", se
 study.assay.df <- study.assays[[1]]
 
 # Create sample metadata by merging assay and study metadata
-sample.metadata <- merge(study.assay.df, study.assay.df, by = "Sample Name", sort = FALSE)
+# TODO append additional columns found in `study.df`. Attention in study.assay.df and study.df several columns have the same name: Term Source REF, Protocol REF, Term Accession Number, ...
+#study.colnames <- colnames(study.df)
+#study.uniq.cols <- study.colnames[ ! study.colnames %in% colnames(study.assay.df)]
+#sample.metadata <- merge(study.assay.df, study.df[c("Sample Name", study.uniq.cols)], by = "Sample Name", sort = FALSE)
+sample.metadata <- study.assay.df
 
 # Get sample names
 sample.names <- study.assay.df[['Sample Name']]
