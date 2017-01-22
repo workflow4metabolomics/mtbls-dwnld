@@ -2,7 +2,7 @@
 # vi: ft=R fdm=marker
 
 library(getopt)
-library(Risa)
+suppressPackageStartupMessages(library(Risa))
 
 # Constants {{{1
 ################################################################
@@ -66,9 +66,6 @@ opt <- read.args()
 
 # Read ISA-Tab files
 isa <- readISAtab(opt$input)
-#print(cbind(measurement = isa@assay.measurement.types, technology = isa@assay.technology.types, names = isa@assay.filenames))
-#print(getMSAssayFilenames(isa))
-#print(Risa:::isatab.syntax)
 
 # Get w4m format
 sample.metadata <- NULL
@@ -77,14 +74,16 @@ sample.variable.matrix <- NULL
 
 # Get first study
 study.name <- isa@study.identifiers[[1]]
-length(study.name) == 1 || stop("No study found.")
+if (length(study.name) != 1)
+	stop("No study found.")
 
 # Get study data frame
 study.df <- isa@study.files[[study.name]]
 
 # Get first assay of study
 study.assays <- isa@assay.files.per.study[[study.name]]
-length(study.assays) > 0 || stop(paste("No assay in study ", study.name, ".", sep = ''))
+if (length(study.assays) == 0)
+	stop(paste("No assay in study ", study.name, ".", sep = ''))
 study.assay.filename <- isa@assay.filenames[[1]]
 study.assay.df <- study.assays[[1]]
 
@@ -98,7 +97,8 @@ sample.metadata <- study.assay.df
 # Get `m_` file
 m_file <- study.assay.df[["Metabolite Assignment File"]]
 m_file <- m_file[ ! duplicated(m_file)]
-length(m_file) == 1 || stop(paste("More than one metabolite assignement file found in assay \"", study.assay.filename, "\": ", paste(m_file, collapse = ", "), ".", sep = ''))
+if (length(m_file) != 1)
+	stop(paste("More than one metabolite assignement file found in assay \"", study.assay.filename, "\": ", paste(m_file, collapse = ", "), ".", sep = ''))
 m.df <- read.table(file = file.path(opt$input, m_file), sep = "\t", header = TRUE, check.names = FALSE)
 
 # Get sample names
@@ -110,7 +110,8 @@ for (sample.field in sample.field.names) {
 		break
 	}
 }
-! is.null(sample.names) || stop(paste("Impossible to find a column for sample names among ", paste(sample.field.names, collapse = ", "), ". Either those columns do not exist, or contain duplicates.", sep = ''))
+if (is.null(sample.names))
+	stop(paste("Impossible to find a column for sample names among ", paste(sample.field.names, collapse = ", "), ". Either those columns do not exist, or contain duplicates.", sep = ''))
 
 # Extract variable metadata
 variable.metadata <- m.df[ ! colnames(m.df) %in% sample.names]
