@@ -1,4 +1,4 @@
-<tool id="mtbls-dwnld" name="Metabolights downloader" version="1.1.0">
+<tool id="mtbls-dwnld" name="Metabolights downloader" version="1.1.1">
 
 	<description>Import ISA TAB data format from public and private MetaboLights studies</description>
 
