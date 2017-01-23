@@ -2,17 +2,20 @@ notifications:
  email:
   recipients:
    - pierrick.roger@gmail.com
-     
+
 language: r
+
 r:
     - 3.3.2
-    - getopt
-    - bioc-release
 
-addons:
-    apt:
-        packages:
-            - python-virtualenv
+apt_packages: 
+    - python-virtualenv
+
+r_packages:    
+    - getopt
+
+bioc_packages:
+    - Risa
         
 before_install:
     # - sudo apt-get install -y make
