@@ -8,8 +8,10 @@ language: r
 r:
     - 3.3.2
 
-apt_packages: 
-    - python-virtualenv
+addons:
+    apt:
+        packages:
+            - python-virtualenv
 
 r_packages:    
     - getopt
