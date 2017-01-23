@@ -22,4 +22,18 @@ function error {
 # MAIN {{{1
 ################################################################
 
-$PROG_PATH/../isatab2w4m -i $RES_PATH/study1
+# Loop on all studies
+for study in MTBLS30 MTBLS404 ; do
+
+	study_path="$RES_PATH/$study"
+
+	# Run program
+	$PROG_PATH/../isatab2w4m -i $study_path || error "Program terminated abnormaly while processing study $study."
+
+	# Check output files
+	for f in sample-metadata variable-metadata sample-variable-matrix ; do
+		ref_file="$study_path/w4m-$f.tsv"
+		file="$RES_PATH/$study-$f.tsv"
+		diff -q $ref_file $file || error "Output file \"$file\" differs from reference file \"$ref_file\"."
+	done
+done

@@ -1,4 +1,5 @@
 all:
+	./test-isatab2w4m
 	./test-mtbls-dwnld
 
 clean:

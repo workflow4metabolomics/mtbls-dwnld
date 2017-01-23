@@ -2,7 +2,7 @@
 # vi: ft=R fdm=marker
 
 library(getopt)
-library(Risa)
+suppressPackageStartupMessages(library(Risa))
 
 # Constants {{{1
 ################################################################
@@ -34,7 +34,10 @@ read.args <- function() {
 	# options
 	spec <- c(
 		'help',             'h',            0,  'logical',      'Print this help.',
-		'input',            'i',            1,  'character',    'Input directory containing the ISA-Tab files.'
+		'input',            'i',            1,  'character',    'Input directory containing the ISA-Tab files.',
+		'sample-output',    's',            1,  'character',    'Output file for sample metadata.',
+		'variable-output',  'v',            1,  'character',    'Output file for variable metadata.',
+		'matrix-output',    'm',            1,  'character',    'Output file for sample x variable matrix.'
 		)
 	opt <- getopt(matrix(spec, byrow = TRUE, ncol = 5))
 
@@ -44,6 +47,11 @@ read.args <- function() {
 	# Check values
 	! is.null(opt$input) || arg.error('You must set an input directory through -i option.')
 	file.exists(opt$input) || arg.error(paste("Directory \"", opt$input, "\" doesn't exist.", sep = ''))
+
+	# Set default path for unset outputs
+	if (is.null(opt[['sample-output']])) opt[['sample-output']] <- paste(opt$input, 'sample-metadata.tsv', sep = '-')
+	if (is.null(opt[['variable-output']])) opt[['variable-output']] <- paste(opt$input, 'variable-metadata.tsv', sep = '-')
+	if (is.null(opt[['matrix-output']])) opt[['matrix-output']] <- paste(opt$input, 'sample-variable-matrix.tsv', sep = '-')
 
 	return(opt)
 }
@@ -58,13 +66,77 @@ opt <- read.args()
 
 # Read ISA-Tab files
 isa <- readISAtab(opt$input)
-print(cbind(measurement=isa@assay.measurement.types,
-                  technology=isa@assay.technology.types,
-                        names=isa@assay.filenames))
 
-print(getMSAssayFilenames(isa))
+# Get w4m format
+sample.metadata <- NULL
+variable.metadata <- NULL
+sample.variable.matrix <- NULL
 
-for (file in getMSAssayFilenames(isa)) {
-	print(file)
-	print(colnames(isa@assay.files[[file]]))
+# Get first study
+study.name <- isa@study.identifiers[[1]]
+if (length(study.name) != 1)
+	stop("No study found.")
+
+# Get study data frame
+study.df <- isa@study.files[[study.name]]
+
+# Get first assay of study
+study.assays <- isa@assay.files.per.study[[study.name]]
+if (length(study.assays) == 0)
+	stop(paste("No assay in study ", study.name, ".", sep = ''))
+study.assay.filename <- isa@assay.filenames[[1]]
+study.assay.df <- study.assays[[1]]
+
+# Create sample metadata by merging assay and study metadata
+# TODO append additional columns found in `study.df`. Attention in study.assay.df and study.df several columns have the same name: Term Source REF, Protocol REF, Term Accession Number, ...
+#study.colnames <- colnames(study.df)
+#study.uniq.cols <- study.colnames[ ! study.colnames %in% colnames(study.assay.df)]
+#sample.metadata <- merge(study.assay.df, study.df[c("Sample Name", study.uniq.cols)], by = "Sample Name", sort = FALSE)
+sample.metadata <- study.assay.df
+
+# Get `m_` file
+m_file <- study.assay.df[["Metabolite Assignment File"]]
+m_file <- m_file[ ! duplicated(m_file)]
+if (length(m_file) != 1)
+	stop(paste("More than one metabolite assignement file found in assay \"", study.assay.filename, "\": ", paste(m_file, collapse = ", "), ".", sep = ''))
+m.df <- read.table(file = file.path(opt$input, m_file), sep = "\t", header = TRUE, check.names = FALSE)
+
+# Get sample names
+sample.field.names <- c('Sample Name', 'Extract Name')
+sample.names <- NULL
+for (sample.field in sample.field.names) {
+	if (sample.field %in% colnames(study.assay.df) && all(! duplicated(study.assay.df[[sample.field]]))) {
+		sample.names <- study.assay.df[[sample.field]]
+		break
+	}
 }
+if (is.null(sample.names))
+	stop(paste("Impossible to find a column for sample names among ", paste(sample.field.names, collapse = ", "), ". Either those columns do not exist, or contain duplicates.", sep = ''))
+
+# Extract variable metadata
+variable.metadata <- m.df[ ! colnames(m.df) %in% sample.names]
+
+# Extract matrix
+sample.variable.matrix <- m.df[sample.names]
+
+# Create variable names
+var.names <- character(nrow(m.df))
+for (f in c('mass_to_charge', 'retention_time'))
+	if (f %in% colnames(m.df)) {
+		col.vals <- as.character(m.df[[f]])
+		col.vals <- ifelse(is.na(col.vals), '', col.vals)
+		var.names <- paste(var.names, ifelse(nchar(var.names) > 0 & nchar(col.vals) > 0, '_', ''), col.vals, sep = '')
+	}
+
+# Number missing variable names
+numbered.vars <- paste('var', seq(var.names), sep ='')
+var.names <- ifelse(nchar(var.names) == 0, numbered.vars, var.names)
+
+# Add variable names as columns
+variable.metadata <- cbind(data.frame(variable.name = var.names), variable.metadata)
+sample.variable.matrix <- cbind(data.frame(variable.name = var.names), sample.variable.matrix)
+
+# Write output
+write.table(sample.metadata, file = opt[['sample-output']], sep = "\t", row.names = FALSE)
+write.table(variable.metadata, file = opt[['variable-output']], sep = "\t", row.names = FALSE)
+write.table(sample.variable.matrix, file = opt[['matrix-output']], sep = "\t", row.names = FALSE)

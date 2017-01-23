@@ -1,4 +1,4 @@
-<tool id="mtbls-dwnld" name="Metabolights downloader" version="0.2.0">
+<tool id="mtbls-dwnld" name="Metabolights downloader" version="0.9.0">
 
 	<description>Import ISA TAB data format from public and private MetaboLights studies</description>
 
@@ -12,8 +12,13 @@
 		#if $token:
 			-t "$token"
 		#end if
+		-M
 		-H "$html_output"
 		-o "$html_output.files_path"
+		-w
+		-s "$w4m_sample_metadata"
+		-v "$w4m_variable_metadata"
+		-m "$w4m_matrix_metadata"
 		"$study"
 		## @@@END_CHEETAH@@@
 	]]></command>
@@ -31,6 +36,9 @@
 <!-- DEBUG galaxy.datatypes.registry WARNING 2016-10-26 07:19:30,511 unknown mimetype in data factory isatab
  -->
         <data name="html_output" label="ISA-Tab of ${study}.html" format="html"/>
+        <data name="w4m_sample_metadata" label="W4M sample metadata.tsv" format="tabular"/>
+        <data name="w4m_variable_metadata" label="W4M variable metadata.tsv" format="tabular"/>
+        <data name="w4m_matrix_metadata" label="W4M matrix metadata.tsv" format="tabular"/>
 
         <!-- Using new type by inheriting only from HTML, no class definition -->
    		<!--     <data name="isatab_output_inherit_html" label="ISA-Tab of $study - inherit HTML.isatabhtml" format="isatabhtml"/> -->
@@ -46,19 +54,15 @@
 		-->
     </outputs>
 
-<!--    <tests>
-        <test>
-            <param name="name_of_study" value="test" />
-            <param name="inputzip" value="metabolomics_study.zip" />
-            <output name="output" value="metabolomics_study/test/index.html" />
-        </test>
-    </tests>-->
-
 	<!-- TESTS {{{1 -->
 	<tests>
 		<test>
 			<param name="study" value="MTBLS30"/>
 			<output name="html_output" file="mtbls30.html"/>
+			<!--			<output name="w4m_sample_metadata" file="mtbls30-w4m-sample-metadata.tsv"/>
+			<output name="w4m_variable_metadata" file="mtbls30-w4m-variable-metadata.tsv"/>
+			<output name="w4m_matrix_metadata" file="mtbls30-w4m-sample-variable-matrix.tsv"/>
+-->
 		</test>
 	</tests>
 
