@@ -5,6 +5,17 @@ notifications:
                            
 before_install:
  - sudo apt-get install -y make
+ - sudo apt-get install -y g++
+ - sudo apt-get install -y libxml2-dev
+ - sudo apt-get install -y libcurl4-openssl-dev
+ - sudo apt-get install -y libnetcdf-dev
+ - sudo apt-get install -y gfortran
+ - sudo apt-get install -y liblapack-dev
+ - sudo apt-get install -y libblas-dev
+ - sudo apt-get install -y r-base
+ - sudo R -e "install.packages(c('getopt'), dependencies = TRUE, repos='http://lib.ugent.be/CRAN/')"
+ - sudo R -e "source('http://bioconductor.org/biocLite.R') ; biocLite('Risa')"
+ - sudo apt-get install -y python-virtualenv
  - virtualenv planemo-venv
  - . planemo-venv/bin/activate
  - pip install --upgrade pip setuptools
