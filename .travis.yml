@@ -12,6 +12,8 @@ before_install:
  - sudo apt-get install -y gfortran
  - sudo apt-get install -y liblapack-dev
  - sudo apt-get install -y libblas-dev
+ - sudo apt-get install -y libblas-dev
+ - sudo apt-get install -y zlib1g-dev
  - wget https://cran.univ-paris1.fr/src/base/R-3/R-3.3.2.tar.gz
  - tar -xzf R-3.3.2.tar.gz
  - cd R-3.3.2 && tools/rsync-recommended && ./configure && make && make check && sudo make install && cd ..
