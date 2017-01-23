@@ -4,7 +4,7 @@ notifications:
    - pierrick.roger@gmail.com
                            
 before_install:
- - sudo add-apt-repository http://cran.univ-paris1.fr/bin/linux/ubuntu 
+ - sudo add-apt-repository "deb http://cran.univ-paris1.fr/bin/linux/ubuntu precise/"
  - sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E084DAB9
  - sudo apt-get install -y make
  - sudo apt-get install -y g++
