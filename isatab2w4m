@@ -105,8 +105,8 @@ m.df <- read.table(file = file.path(opt$input, m_file), sep = "\t", header = TRU
 sample.field.names <- c('Sample Name', 'Extract Name')
 sample.names <- NULL
 for (sample.field in sample.field.names) {
-	if (sample.field %in% colnames(study.assay.df) && all(! duplicated(study.assay.df[[sample.field]]))) {
-		sample.names <- study.assay.df[[sample.field]]
+	if (sample.field %in% colnames(sample.metadata) && all(! duplicated(sample.metadata[[sample.field]]))) {
+		sample.names <- sample.metadata[[sample.field]]
 		break
 	}
 }
@@ -120,21 +120,27 @@ variable.metadata <- m.df[ ! colnames(m.df) %in% sample.names]
 sample.variable.matrix <- m.df[sample.names]
 
 # Create variable names
-var.names <- character(nrow(m.df))
+variable.names <- character(nrow(m.df))
 for (f in c('mass_to_charge', 'retention_time'))
 	if (f %in% colnames(m.df)) {
 		col.vals <- as.character(m.df[[f]])
 		col.vals <- ifelse(is.na(col.vals), '', col.vals)
-		var.names <- paste(var.names, ifelse(nchar(var.names) > 0 & nchar(col.vals) > 0, '_', ''), col.vals, sep = '')
+		variable.names <- paste(variable.names, ifelse(nchar(variable.names) > 0 & nchar(col.vals) > 0, '_', ''), col.vals, sep = '')
 	}
-
-# Number missing variable names
-numbered.vars <- paste('var', seq(var.names), sep ='')
-var.names <- ifelse(nchar(var.names) == 0, numbered.vars, var.names)
+variable.names <- make.names(variable.names, uniq = TRUE)
 
 # Add variable names as columns
-variable.metadata <- cbind(data.frame(variable.name = var.names), variable.metadata)
-sample.variable.matrix <- cbind(data.frame(variable.name = var.names), sample.variable.matrix)
+variable.metadata <- cbind(data.frame(variable.name = variable.names), variable.metadata)
+sample.variable.matrix <- cbind(data.frame(variable.name = variable.names), sample.variable.matrix)
+
+# Rename samples
+sample.names <- make.names(sample.names, uniq = TRUE)
+colnames(sample.variable.matrix) <- c('variable.name', sample.names)
+sample.metadata <- cbind(data.frame(sample.name = sample.names), sample.metadata)
+
+# Make sure metadata columns have unique names
+colnames(sample.metadata) <- make.names(colnames(sample.metadata), uniq = TRUE)
+colnames(variable.metadata) <- make.names(colnames(variable.metadata), uniq = TRUE)
 
 # Write output
 write.table(sample.metadata, file = opt[['sample-output']], sep = "\t", row.names = FALSE)
