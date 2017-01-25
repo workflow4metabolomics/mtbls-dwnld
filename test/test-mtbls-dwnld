@@ -59,7 +59,7 @@ for study in MTBLS404 ; do
 	rm -rf $study
 
 	# Download
-	$PROG_PATH/../mtbls-dwnld -gMw /studies/public/MTBLS404 || error "Download failed !"
+	$PROG_PATH/../mtbls-dwnld -gMw -s $PROG_PATH/$study-sample-metadata.tsv -v $PROG_PATH/$study-variable-metadata.tsv -m $PROG_PATH/$study-sample-variable-matrix.tsv /studies/public/MTBLS404 || error "Download failed !"
 
 	# Compare
 	for f in sample-metadata variable-metadata sample-variable-matrix ; do
