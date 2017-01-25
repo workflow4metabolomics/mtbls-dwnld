@@ -6,6 +6,7 @@
 
 PROG_NAME=$(basename $0)
 PROG_PATH=$(dirname $0)
+RES_PATH=$PROG_PATH/res
 
 # Error {{{1
 ################################################################
@@ -44,9 +45,26 @@ for method in $methods ; do
 		if [ $method = ascp ] ; then
 			options+=" -a -t Xz68YfDe"
 		fi
-		$PROG_PATH/../mtbls-dwnld $options /studies/public/$study || error "Download failed !"
+		$PROG_PATH/../mtbls-dwnld $options /studies/public/$study || error "Download of $study failed !"
 
 		# Test downloaded directory
 		[ -d $study ] || error "Download of study $study with $method method failed !"
+	done
+done
+
+# Test W4M conversion
+for study in MTBLS404 ; do
+
+	# Remove previously downloaded directory
+	rm -rf $study
+
+	# Download
+	$PROG_PATH/../mtbls-dwnld -gMw /studies/public/MTBLS404 || error "Download failed !"
+
+	# Compare
+	for f in sample-metadata variable-metadata sample-variable-matrix ; do
+		ref_file="$RES_PATH/$study/w4m-$f.tsv"
+		file="$PROG_PATH/$study-$f.tsv"
+		diff -q $ref_file $file || error "Output file \"$file\" differs from reference file \"$ref_file\"."
 	done
 done
