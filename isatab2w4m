@@ -88,21 +88,19 @@ study.assay.filename <- isa@assay.filenames[[1]]
 study.assay.df <- study.assays[[1]]
 
 # Create sample metadata by merging assay and study metadata
-# TODO append additional columns found in `study.df`. Attention in study.assay.df and study.df several columns have the same name: Term Source REF, Protocol REF, Term Accession Number, ...
-#study.colnames <- colnames(study.df)
-#study.uniq.cols <- study.colnames[ ! study.colnames %in% colnames(study.assay.df)]
-#sample.metadata <- merge(study.assay.df, study.df[c("Sample Name", study.uniq.cols)], by = "Sample Name", sort = FALSE)
-sample.metadata <- study.assay.df
+colnames(study.df) <- make.names(colnames(study.df), uniq = TRUE)
+colnames(study.assay.df) <- make.names(colnames(study.assay.df), uniq = TRUE)
+sample.metadata <- merge(study.assay.df, study.df, by = "Sample.Name", sort = FALSE)
 
 # Get `m_` file
-m_file <- study.assay.df[["Metabolite Assignment File"]]
+m_file <- study.assay.df[["Metabolite.Assignment.File"]]
 m_file <- m_file[ ! duplicated(m_file)]
 if (length(m_file) != 1)
-	stop(paste("More than one metabolite assignement file found in assay \"", study.assay.filename, "\": ", paste(m_file, collapse = ", "), ".", sep = ''))
+	stop(paste("Zero, or More than one metabolite assignement file found in assay \"", study.assay.filename, "\": ", paste(m_file, collapse = ", "), ".", sep = ''))
 m.df <- read.table(file = file.path(opt$input, m_file), sep = "\t", header = TRUE, check.names = FALSE)
 
-# Get sample names
-sample.field.names <- c('Sample Name', 'Extract Name')
+# Get sample names for matching with m.df columns
+sample.field.names <- c('Sample.Name', 'Extract.Name')
 sample.names <- NULL
 for (sample.field in sample.field.names) {
 	if (sample.field %in% colnames(sample.metadata) && all(! duplicated(sample.metadata[[sample.field]]))) {
