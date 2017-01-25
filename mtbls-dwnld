@@ -21,6 +21,8 @@ MATRIX_OUTPUT=
 SAMPLE_OUTPUT=
 VARIABLE_OUTPUT=
 W4M_OUTPUT=
+SAMPLE_NA_FILTERING=
+VARIABLE_NA_FILTERING=
 
 # Print help {{{1
 ################################################################
@@ -32,17 +34,19 @@ function print_help {
 	echo "By default it uses the ftp server, but with -a option you can ask for using aspera server (you will need the aspera client ascp to be installed)."
 	echo
 	echo "Options:"
-	echo "   -a, --aspera               Use aspera server for downloading. You need the ascp client to be installed, it is freely available for linux 64. See http://downloads.asperasoft.com."
-	echo "   -g, --debug                Debug mode."
-	echo "   -h, --help                 Print this help message."
-	echo "	 -H, --html		            Write HTML file that list files contained in output directory."
-	echo "   -m, --matrix-output        Set path for the W4M sample x variable matrix output file. Only used if -w option is set."
-	echo "   -M, --metadata-only        Download only the metadata (ISA-Tab files i_*, m_*, s_* and a_*) files. This option has no effet is aspera is selecte (option -a)."
-	echo "   -o, --output value         Set the output directory to use."
-	echo "   -s, --sample-output        Set path for the W4M sample metadata output file. Only used if -w option is set."
-	echo "   -t, --token value          Set the token or password to use."
-	echo "   -v, --variable-output      Set path for the W4M variable metadata output file. Only used if -w option is set."
-	echo "   -w, --w4m-output           Enable W4M format output.  This output consists in 3 tsv files: one for sample metadata, one for variable metadata, and one for sample x variable matrix. Use the options -s, -v and -m to set the paths for those 3 files."
+	echo "   -a, --aspera                Use aspera server for downloading. You need the ascp client to be installed, it is freely available for linux 64. See http://downloads.asperasoft.com."
+	echo "   -g, --debug                 Debug mode."
+	echo "   -h, --help                  Print this help message."
+	echo "	 -H, --html		       FILE  Write HTML file that list files contained in output directory."
+	echo "   -m, --matrix-output   FILE  Set path for the W4M sample x variable matrix output file. Only used if -w option is set."
+	echo "   -M, --metadata-only         Download only the metadata (ISA-Tab files i_*, m_*, s_* and a_*) files. This option has no effet is aspera is selecte (option -a)."
+	echo "   -o, --output          DIR   Set the output directory to use."
+	echo "   -s, --sample-output   FILE  Set path for the W4M sample metadata output file. Only used if -w option is set."
+	echo "   -S, --samp-na-filering NAME Filter out NA values in the specified sample metadata columns. The value is comma separated list of column names."
+	echo "   -t, --token           TOKEN Set the token or password to use."
+	echo "   -v, --variable-output FILE  Set path for the W4M variable metadata output file. Only used if -w option is set."
+	echo "   -V, --var-na-filering NAME  Filter out NA values in the specified variable metadata columns. The value is comma separated list of column names."
+	echo "   -w, --w4m-output            Enable W4M format output.  This output consists in 3 tsv files: one for sample metadata, one for variable metadata, and one for sample x variable matrix. Use the options -s, -v and -m to set the paths for those 3 files."
 }
 
 # Error {{{1
@@ -95,8 +99,10 @@ function read_args {
 			-M|--metadata-only)     METADATA_ONLY=$YES ;;
 			-o|--output)            OUTPUT=$(get_opt_val $1 $2) ; shift_count=2 ;;
 			-s|--sample-output)     SAMPLE_OUTPUT=$(get_opt_val $1 $2) ; shift_count=2 ;;
+			-S|--samp-na-filering)  SAMPLE_NA_FILTERING=$(get_opt_val $1 $2) ; shift_count=2 ;;
 			-t|--token)             TOKEN=$(get_opt_val $1 $2) ; shift_count=2 ;;
 			-v|--variable-output)   VARIABLE_OUTPUT=$(get_opt_val $1 $2) ; shift_count=2 ;;
+			-V|--var-na-filering)   VARIABLE_NA_FILTERING=$(get_opt_val $1 $2) ; shift_count=2 ;;
 			-w|--w4m-output)        W4M_OUTPUT=$YES ;;
 			-) error "Illegal option $1." ;;
 			--) error "Illegal option $1." ;;
@@ -129,13 +135,17 @@ function convert_to_w4m_output {
 	local sample_output="$2"
 	local variable_output="$3"
 	local matrix_output="$4"
+	local samp_na_filtering="$5"
+	local var_na_filtering="$6"
 
-	local outputs=""
-	[ -z "$sample_output" ] || outputs+=" -s $sample_output"
-	[ -z "$variable_output" ] || outputs+=" -v $variable_output"
-	[ -z "$matrix_output" ] || outputs+=" -m $matrix_output"
+	local options=""
+	[ -z "$sample_output" ] || options+=" -s $sample_output"
+	[ -z "$variable_output" ] || options+=" -v $variable_output"
+	[ -z "$matrix_output" ] || options+=" -m $matrix_output"
+	[ -z "$samp_na_filtering" ] || options+=" -S $samp_na_filtering"
+	[ -z "$var_na_filtering" ] || options+=" -V $var_na_filtering"
 
-	$PROG_PATH/isatab2w4m $outputs -i "$folder"
+	$PROG_PATH/isatab2w4m $options -i "$folder"
 }
 
 # MAIN {{{1
@@ -186,7 +196,7 @@ fi
 
 # Convert to W4M format
 if [ -n "$W4M_OUTPUT" ] ; then
-	convert_to_w4m_output "$tmp_output" "$SAMPLE_OUTPUT" "$VARIABLE_OUTPUT" "$MATRIX_OUTPUT"
+	convert_to_w4m_output "$tmp_output" "$SAMPLE_OUTPUT" "$VARIABLE_OUTPUT" "$MATRIX_OUTPUT" "$SAMPLE_NA_FILTERING" "$VARIABLE_NA_FILTERING"
 fi
 
 # Write HTML

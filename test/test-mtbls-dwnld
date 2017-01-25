@@ -67,4 +67,17 @@ for study in MTBLS404 ; do
 		file="$PROG_PATH/$study-$f.tsv"
 		diff -q $ref_file $file || error "Output file \"$file\" differs from reference file \"$ref_file\"."
 	done
+
+	# Remove previously downloaded directory
+	rm -rf $study
+
+	# Download
+	$PROG_PATH/../mtbls-dwnld -gMw -S 'Characteristics[gender]' -V 'mass_to_charge' -s $PROG_PATH/$study-sample-metadata-na-filtering.tsv -v $PROG_PATH/$study-variable-metadata-na-filtering.tsv -m $PROG_PATH/$study-sample-variable-matrix-na-filtering.tsv /studies/public/MTBLS404 || error "Download failed !"
+
+	# Compare
+	for f in sample-metadata-na-filtering variable-metadata-na-filtering sample-variable-matrix-na-filtering ; do
+		ref_file="$RES_PATH/$study/w4m-$f.tsv"
+		file="$PROG_PATH/$study-$f.tsv"
+		diff -q $ref_file $file || error "Output file \"$file\" differs from reference file \"$ref_file\"."
+	done
 done
