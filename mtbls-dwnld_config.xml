@@ -18,7 +18,7 @@
 		-w
 		-s "$w4m_sample_metadata"
 		-v "$w4m_variable_metadata"
-		-m "$w4m_matrix_metadata"
+		-m "$w4m_data_matrix"
 		"$study"
 		## @@@END_CHEETAH@@@
 	]]></command>
@@ -38,7 +38,7 @@
         <data name="html_output" label="ISA-Tab of ${study}.html" format="html"/>
         <data name="w4m_sample_metadata" label="W4M sample metadata.tsv" format="tabular"/>
         <data name="w4m_variable_metadata" label="W4M variable metadata.tsv" format="tabular"/>
-        <data name="w4m_matrix_metadata" label="W4M matrix metadata.tsv" format="tabular"/>
+        <data name="w4m_data_matrix" label="W4M data matrix.tsv" format="tabular"/>
 
         <!-- Using new type by inheriting only from HTML, no class definition -->
    		<!--     <data name="isatab_output_inherit_html" label="ISA-Tab of $study - inherit HTML.isatabhtml" format="isatabhtml"/> -->
@@ -61,7 +61,7 @@
 			<output name="html_output" file="mtbls30.html"/>
 			<!--			<output name="w4m_sample_metadata" file="mtbls30-w4m-sample-metadata.tsv"/>
 			<output name="w4m_variable_metadata" file="mtbls30-w4m-variable-metadata.tsv"/>
-			<output name="w4m_matrix_metadata" file="mtbls30-w4m-sample-variable-matrix.tsv"/>
+			<output name="w4m_data_matrix" file="mtbls30-w4m-sample-variable-matrix.tsv"/>
 -->
 		</test>
 	</tests>

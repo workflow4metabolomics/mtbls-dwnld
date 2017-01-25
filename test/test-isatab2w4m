@@ -37,3 +37,13 @@ for study in MTBLS30 MTBLS404 ; do
 		diff -q $ref_file $file || error "Output file \"$file\" differs from reference file \"$ref_file\"."
 	done
 done
+
+# Testing NA filtering
+study=MTBLS404
+study_path="$RES_PATH/$study"
+$PROG_PATH/../isatab2w4m -i $study_path -S 'Characteristics[gender]' -V 'mass_to_charge' || error "Program terminated abnormaly while processing study $study."
+for f in sample-metadata variable-metadata sample-variable-matrix ; do
+	ref_file="$study_path/w4m-$f-na-filtering.tsv"
+	file="$RES_PATH/$study-$f.tsv"
+	diff -q $ref_file $file || error "Output file \"$file\" differs from reference file \"$ref_file\"."
+done

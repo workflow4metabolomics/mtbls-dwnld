@@ -37,12 +37,20 @@ read.args <- function() {
 		'input',            'i',            1,  'character',    'Input directory containing the ISA-Tab files.',
 		'sample-output',    's',            1,  'character',    'Output file for sample metadata.',
 		'variable-output',  'v',            1,  'character',    'Output file for variable metadata.',
-		'matrix-output',    'm',            1,  'character',    'Output file for sample x variable matrix.'
+		'matrix-output',    'm',            1,  'character',    'Output file for sample x variable matrix.',
+		'samp-na-filering', 'S',            1,  'character',    'Filter out NA values in the specified sample metadata columns. The value is comma separated list of column names.',
+		'var-na-filering',  'V',            1,  'character',    'Filter out NA values in the specified variable metadata columns. The value is comma separated list of column names.'
 		)
 	opt <- getopt(matrix(spec, byrow = TRUE, ncol = 5))
 
 	# Help
 	is.null(opt$help) || print.help(spec)
+
+	# Parse values
+	if ( ! is.null(opt[['samp-na-filering']]))
+		opt[['samp-na-filering']] <- strsplit(opt[['samp-na-filering']], ',')
+	if ( ! is.null(opt[['var-na-filering']]))
+		opt[['var-na-filering']] <- strsplit(opt[['var-na-filering']], ',')
 
 	# Check values
 	! is.null(opt$input) || arg.error('You must set an input directory through -i option.')
@@ -139,6 +147,22 @@ sample.metadata <- cbind(data.frame(sample.name = sample.names), sample.metadata
 # Make sure metadata columns have unique names
 colnames(sample.metadata) <- make.names(colnames(sample.metadata), uniq = TRUE)
 colnames(variable.metadata) <- make.names(colnames(variable.metadata), uniq = TRUE)
+
+# Filter out NA values
+if ( ! is.null(opt[['samp-na-filering']])) {
+	opt[['samp-na-filering']] <- make.names(opt[['samp-na-filering']])
+	cols.to.filter <- colnames(sample.metadata) %in% opt[['samp-na-filering']]
+	good.rows <- complete.cases(sample.metadata[, cols.to.filter, drop = FALSE])
+	sample.variable.matrix <- sample.variable.matrix[, c(TRUE, good.rows), drop = FALSE]
+	sample.metadata <- sample.metadata[good.rows, , drop = FALSE]
+}
+if ( ! is.null(opt[['var-na-filering']])) {
+	opt[['var-na-filering']] <- make.names(opt[['var-na-filering']])
+	cols.to.filter <- colnames(variable.metadata) %in% opt[['var-na-filering']]
+	good.rows <- complete.cases(variable.metadata[, cols.to.filter, drop = FALSE])
+	sample.variable.matrix <- sample.variable.matrix[good.rows, , drop = FALSE]
+	variable.metadata <- variable.metadata[good.rows, , drop = FALSE]
+}
 
 # Write output
 write.table(sample.metadata, file = opt[['sample-output']], sep = "\t", row.names = FALSE)
