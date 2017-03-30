@@ -35,6 +35,8 @@ read.args <- function() {
 	spec <- c(
 		'help',             'h',            0,  'logical',      'Print this help.',
 		'input',            'i',            1,  'character',    'Input directory containing the ISA-Tab files.',
+		'study-name',       'n',            1,  'character',    'Name of the study to extract. If unset, the first study found will be used.',
+		'assay-filename',   'f',            1,  'character',    'Filename of the assay to extract. If unset, the first assay of the chosen study will be used.',
 		'sample-output',    's',            1,  'character',    'Output file for sample metadata.',
 		'variable-output',  'v',            1,  'character',    'Output file for variable metadata.',
 		'matrix-output',    'm',            1,  'character',    'Output file for sample x variable matrix.',
@@ -81,10 +83,18 @@ sample.metadata <- NULL
 variable.metadata <- NULL
 sample.variable.matrix <- NULL
 
-# Get first study
-study.name <- isa@study.identifiers[[1]]
+# Get study name
+if ('study-name' %in% names(opt)) {
+	if ( ! opt[['study-name']] %in% isa@study.identifiers)
+		stop(paste("Cannot find study \"", opt[['study-name']], "\"."))
+	study.name <- opt[['study-name']]
+} else { # Take the first study
+	message('No study name set, choose first study.')
+	study.name <- isa@study.identifiers[[1]]
+}
 if (length(study.name) != 1)
 	stop("No study found.")
+message(paste('Study \"', study.name, '\" has been selected.', sep = ''))
 
 # Get study data frame
 study.df <- isa@study.files[[study.name]]
