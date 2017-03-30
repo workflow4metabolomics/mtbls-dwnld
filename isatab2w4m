@@ -99,12 +99,21 @@ message(paste('Study \"', study.name, '\" has been selected.', sep = ''))
 # Get study data frame
 study.df <- isa@study.files[[study.name]]
 
-# Get first assay of study
+# Get assay
 study.assays <- isa@assay.files.per.study[[study.name]]
 if (length(study.assays) == 0)
 	stop(paste("No assay in study ", study.name, ".", sep = ''))
-study.assay.filename <- isa@assay.filenames[[1]]
-study.assay.df <- study.assays[[1]]
+if ('assay-filename' %in% names(opt)) {
+	study.assay.index <- which(opt[['assay-filename']] == isa@assay.filenames)
+	if (length(study.assay.index) == 0)
+		stop(paste("Found no assay file \"", opt[['assay-filename']], "\" in study \"", study.name, "\".", sep = ''))
+	if (length(study.assay.index) > 1)
+		stop(paste("Found more than one assay file named \"", opt[['assay-filename']], "\" in study \"", study.name, "\".", sep = ''))
+} else
+	study.assay.index <- 1
+study.assay.df <- study.assays[[study.assay.index]]
+study.assay.filename <- isa@assay.filenames[[study.assay.index]]
+message(paste("Assay file n°", study.assay.index, " \"", study.assay.filename, "\" has been selected.", sep = ''))
 
 # Create sample metadata by merging assay and study metadata
 colnames(study.df) <- make.names(colnames(study.df), uniq = TRUE)

@@ -47,7 +47,7 @@ function plain_test {
 function test_assay_selection {
 	study=MTBLS404
 	study_path="$RES_PATH/$study"
-	$PROG_PATH/../isatab2w4m -i $study_path -n $study || error "Program terminated abnormaly while processing study $study."
+	$PROG_PATH/../isatab2w4m -i $study_path -n $study -f a_sacurine.txt || error "Program terminated abnormaly while processing study $study."
 
 	# Check output files
 	for f in sample-metadata variable-metadata sample-variable-matrix ; do
