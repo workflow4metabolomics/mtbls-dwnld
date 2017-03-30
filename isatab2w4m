@@ -120,29 +120,34 @@ colnames(study.df) <- make.names(colnames(study.df), uniq = TRUE)
 colnames(study.assay.df) <- make.names(colnames(study.assay.df), uniq = TRUE)
 sample.metadata <- merge(study.assay.df, study.df, by = "Sample.Name", sort = FALSE)
 
-# Get `m_` file
+# Get data files
 m_file <- study.assay.df[["Metabolite.Assignment.File"]]
 m_file <- m_file[ ! duplicated(m_file)]
 if (length(m_file) != 1)
 	stop(paste("Zero, or More than one metabolite assignement file found in assay \"", study.assay.filename, "\": ", paste(m_file, collapse = ", "), ".", sep = ''))
+message(paste("Data file \"", m_file, "\" has been selected.", sep = ''))
 m.df <- read.table(file = file.path(opt$input, m_file), sep = "\t", header = TRUE, check.names = FALSE)
 
 # Get sample names for matching with m.df columns
-sample.field.names <- c('Sample.Name', 'Extract.Name')
 sample.names <- NULL
-for (sample.field in sample.field.names) {
-	if (sample.field %in% colnames(sample.metadata) && all(! duplicated(sample.metadata[[sample.field]]))) {
-		sample.names <- sample.metadata[[sample.field]]
+sample.names.field <- NULL
+for (sample.field in colnames(sample.metadata)) {
+	if (all(sample.metadata[[sample.field]] %in% colnames(m.df)) && all(! duplicated(sample.metadata[[sample.field]]))) {
+		sample.names.field <- sample.field
 		break
 	}
 }
-if (is.null(sample.names))
-	stop(paste("Impossible to find a column for sample names among ", paste(sample.field.names, collapse = ", "), ". Either those columns do not exist, or contain duplicates.", sep = ''))
+if (is.null(sample.names.field))
+	stop(paste("Impossible to find a column for sample names. Either such a column does not exist, or it contains duplicates.", sep = ''))
+message(paste("Column \"", sample.names.field, "\" has been selected for sample names to match with column names of data file \"", m_file, "\".", sep = ''))
+sample.names <- sample.metadata[[sample.names.field]]
 
 # Extract variable metadata
 variable.metadata <- m.df[ ! colnames(m.df) %in% sample.names]
 
 # Extract matrix
+if (any( ! sample.names %in% colnames(m.df)))
+	stop(paste("Cannot find sample names in column names of \"", m_file, "\".", sep = ''))
 sample.variable.matrix <- m.df[sample.names]
 
 # Create variable names

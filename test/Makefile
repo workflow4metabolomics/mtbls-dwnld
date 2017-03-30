@@ -3,6 +3,6 @@ all:
 	./test-mtbls-dwnld
 
 clean:
-	$(RM) -r MTBLS* *.zip
+	$(RM) -r MTBLS* *.zip outputs
 
 .PHONY: clean all

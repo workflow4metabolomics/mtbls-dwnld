@@ -35,7 +35,7 @@ fi
 for method in $methods ; do
 
 	# Loop on small public studies
-	for study in MTBLS1 MTBLS2 MTBLS30 ; do
+	for study in MTBLS1 MTBLS2 MTBLS30 MTBLS338 ; do
 
 		# Remove previously downloaded directory
 		rm -rf $study

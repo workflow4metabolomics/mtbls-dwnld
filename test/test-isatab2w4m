@@ -6,6 +6,9 @@
 
 PROG_PATH=$(dirname $0)
 RES_PATH=$PROG_PATH/res
+OUTPUT_PATH=$PROG_PATH/outputs
+
+[[ -d $OUTPUT_PATH ]] || mkdir $OUTPUT_PATH
 
 # Error {{{1
 ################################################################
@@ -25,18 +28,23 @@ function error {
 function plain_test {
 
 	# Loop on all studies
-	for study in MTBLS30 MTBLS404 ; do
+	for study in MTBLS30 MTBLS404 MTBLS338 ; do
 
 		study_path="$RES_PATH/$study"
+		output_sample_file=$OUTPUT_PATH/$study-w4m-sample-metadata.tsv
+		output_variable_file=$OUTPUT_PATH/$study-w4m-variable-metadata.tsv
+		output_matrix_file=$OUTPUT_PATH/$study-w4m-sample-variable-matrix.tsv
 
 		# Run program
-		$PROG_PATH/../isatab2w4m -i $study_path || error "Program terminated abnormaly while processing study $study."
+		$PROG_PATH/../isatab2w4m -i $study_path -s $output_sample_file -v $output_variable_file -m  $output_matrix_file || error "Program terminated abnormaly while processing study $study."
 
 		# Check output files
 		for f in sample-metadata variable-metadata sample-variable-matrix ; do
-			ref_file="$study_path/w4m-$f.tsv"
-			file="$RES_PATH/$study-$f.tsv"
-			diff -q $ref_file $file || error "Output file \"$file\" differs from reference file \"$ref_file\"."
+			ref_file="$study_path/$study-w4m-$f.tsv"
+			output_file="$OUTPUT_PATH/$study-w4m-$f.tsv"
+			[[ -f $ref_file ]] || error "Reference file \"$ref_file\" does not exist."
+			[[ -f $output_file ]] || error "Output file \"$output_file\" does not exist."
+			diff -q $ref_file $output_file || error "Output file \"$output_file\" differs from reference file \"$ref_file\"."
 		done
 	done
 }
@@ -45,15 +53,27 @@ function plain_test {
 ################################################################
 
 function test_assay_selection {
-	study=MTBLS404
-	study_path="$RES_PATH/$study"
-	$PROG_PATH/../isatab2w4m -i $study_path -n $study -f a_sacurine.txt || error "Program terminated abnormaly while processing study $study."
 
-	# Check output files
-	for f in sample-metadata variable-metadata sample-variable-matrix ; do
-		ref_file="$study_path/w4m-$f.tsv"
-		file="$RES_PATH/$study-$f.tsv"
-		diff -q $ref_file $file || error "Output file \"$file\" differs from reference file \"$ref_file\"."
+	study=MTBLS338
+	study_path="$RES_PATH/$study"
+
+	#for assay in a_MTBLS338_GCMS_Root_met.txt a_MTBLS338_negative_Root_met_ms.txt a_MTBLS338_positive_Root_met_ms.txt a_MTBLS338_Root_metabolite_profiling_mass_spectrometry_targeted.txt ; do
+	for assay in a_MTBLS338_GCMS_Root_met.txt   a_MTBLS338_Root_metabolite_profiling_mass_spectrometry_targeted.txt ; do
+
+		output_sample_file=$OUTPUT_PATH/$study-w4m-sample-metadata-$assay.tsv
+		output_variable_file=$OUTPUT_PATH/$study-w4m-variable-metadata-$assay.tsv
+		output_matrix_file=$OUTPUT_PATH/$study-w4m-sample-variable-matrix-$assay.tsv
+
+		$PROG_PATH/../isatab2w4m -i $study_path -n $study -f $assay -s $output_sample_file -v $output_variable_file -m  $output_matrix_file || error "Program terminated abnormaly while processing study $study."
+
+		# Check output files
+		for f in sample-metadata variable-metadata sample-variable-matrix ; do
+			ref_file="$study_path/$study-w4m-$f-$assay.tsv"
+			output_file="$OUTPUT_PATH/$study-w4m-$f-$assay.tsv"
+			[[ -f $ref_file ]] || error "Reference file \"$ref_file\" does not exist."
+			[[ -f $output_file ]] || error "Output file \"$output_file\" does not exist."
+			diff -q $ref_file $output_file || error "Output file \"$output_file\" differs from reference file \"$ref_file\"."
+		done
 	done
 }
 
@@ -61,13 +81,20 @@ function test_assay_selection {
 ################################################################
 
 function test_na_filtering {
+
 	study=MTBLS404
 	study_path="$RES_PATH/$study"
-	$PROG_PATH/../isatab2w4m -i $study_path -S 'Characteristics[gender]' -V 'mass_to_charge' || error "Program terminated abnormaly while processing study $study."
+	output_sample_file=$OUTPUT_PATH/$study-w4m-sample-metadata-na-filtering.tsv
+	output_variable_file=$OUTPUT_PATH/$study-w4m-variable-metadata-na-filtering.tsv
+	output_matrix_file=$OUTPUT_PATH/$study-w4m-sample-variable-matrix-na-filtering.tsv
+
+	$PROG_PATH/../isatab2w4m -i $study_path -S 'Characteristics[gender]' -V 'mass_to_charge' -s $output_sample_file -v $output_variable_file -m  $output_matrix_file || error "Program terminated abnormaly while processing study $study."
 	for f in sample-metadata variable-metadata sample-variable-matrix ; do
-		ref_file="$study_path/w4m-$f-na-filtering.tsv"
-		file="$RES_PATH/$study-$f.tsv"
-		diff -q $ref_file $file || error "Output file \"$file\" differs from reference file \"$ref_file\"."
+		ref_file="$study_path/$study-w4m-$f-na-filtering.tsv"
+		output_file="$OUTPUT_PATH/$study-w4m-$f-na-filtering.tsv"
+		[[ -f $ref_file ]] || error "Reference file \"$ref_file\" does not exist."
+		[[ -f $output_file ]] || error "Output file \"$output_file\" does not exist."
+		diff -q $ref_file $output_file || error "Output file \"$output_file\" differs from reference file \"$ref_file\"."
 	done
 }
 
