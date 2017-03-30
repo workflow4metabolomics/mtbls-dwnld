@@ -19,8 +19,12 @@
 		-s "$w4m_sample_metadata"
 		-v "$w4m_variable_metadata"
 		-m "$w4m_data_matrix"
-		-S "$sample_na_filtering"
-		-V "$variable_na_filtering"
+		#if $sample_na_filtering:
+			-S "$sample_na_filtering"
+		#end if
+		#if $variable_na_filtering:
+			-V "$variable_na_filtering"
+		#end if
 		"$study"
 		## @@@END_CHEETAH@@@
 	]]></command>
