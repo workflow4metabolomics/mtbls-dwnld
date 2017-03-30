@@ -73,7 +73,8 @@ options(error = function() { traceback(2) ; quit(status = 1) }, warn = 2 )
 opt <- read.args()
 
 # Read ISA-Tab files
-isa <- readISAtab(opt$input)
+# Suppress message: "No 'Factor Value' column defined in study file s_sacurine.txt. Factors slot will be an empty list for that study.
+isa <- suppressMessages(Risa::readISAtab(opt$input))
 
 # Get w4m format
 sample.metadata <- NULL
