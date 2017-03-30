@@ -210,14 +210,23 @@ if [ -n "$HTML" ] ; then
 		<a href="i_Investigation.txt">Investigation file</a><br/>
 EOF
 
+	echo "<br/>" >>$HTML
 	echo "		Study files:<br/>" >>$HTML
 	for f in $tmp_output/s_*.txt ; do
 		filename=$(basename "$f")
 		echo "		<a href=\"$filename\">$filename</a><br/>" >>$HTML
 	done
 
+	echo "<br/>" >>$HTML
 	echo "		Assay files:<br/>" >>$HTML
 	for f in $tmp_output/a_*.txt ; do
+		filename=$(basename "$f")
+		echo "		<a href=\"$filename\">$filename</a><br/>" >>$HTML
+	done
+
+	echo "<br/>" >>$HTML
+	echo "		Data files:<br/>" >>$HTML
+	for f in $tmp_output/m_*.txt ; do
 		filename=$(basename "$f")
 		echo "		<a href=\"$filename\">$filename</a><br/>" >>$HTML
 	done
