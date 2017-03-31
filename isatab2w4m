@@ -46,7 +46,8 @@ read.args <- function() {
 	opt <- getopt(matrix(spec, byrow = TRUE, ncol = 5))
 
 	# Help
-	is.null(opt$help) || print.help(spec)
+	if ( ! is.null(opt$help))
+		print.help(matrix(spec, byrow = TRUE, ncol = 5))
 
 	# Parse values
 	if ( ! is.null(opt[['samp-na-filering']]))
