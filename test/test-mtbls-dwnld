@@ -7,6 +7,9 @@
 PROG_NAME=$(basename $0)
 PROG_PATH=$(dirname $0)
 RES_PATH=$PROG_PATH/res
+OUTPUT_PATH=$PROG_PATH/outputs
+
+[[ -d $OUTPUT_PATH ]] || mkdir $OUTPUT_PATH
 
 # Error {{{1
 ################################################################
@@ -20,64 +23,127 @@ function error {
 	exit 1
 }
 
-# MAIN {{{1
+# Test downloading {{{1
 ################################################################
 
-# List methods
-methods=default
-if [ -n "$(which ascp)" ] ; then
-	methods+=" ascp"
-else
-	echo "ascp not installed => no tests with Aspera download server." >&2
-fi
+function test_downloading {
 
-# Loop on methods
-for method in $methods ; do
+	# List methods
+	methods=default
+	if [ -n "$(which ascp)" ] ; then
+		methods+=" ascp"
+	else
+		echo "ascp not installed => no tests with Aspera download server." >&2
+	fi
 
-	# Loop on small public studies
-	for study in MTBLS1 MTBLS2 MTBLS30 MTBLS338 ; do
+	# Loop on methods
+	for method in $methods ; do
+
+		# Loop on small public studies
+		for study in MTBLS1 MTBLS2 MTBLS30 MTBLS338 ; do
+
+			# Remove previously downloaded directory
+			rm -rf $study
+
+			# Download
+			options=-gM
+			if [ $method = ascp ] ; then
+				options+=" -a -t Xz68YfDe"
+			fi
+			$PROG_PATH/../mtbls-dwnld $options /studies/public/$study || error "Download of $study failed !"
+
+			# Test downloaded directory
+			[[ -d $study ]] || error "Download of study $study with $method method failed !"
+			[[ -f $study/i_Investigation.txt ]] || error "Download of study $study with $method method failed ! No investigation file found."
+		done
+	done
+}
+
+# Test W4M conversion {{{1
+################################################################
+
+function test_w4m_conversion {
+
+	study=MTBLS404
+
+	# Remove previously downloaded directory
+	rm -rf $study
+
+	output_sample_file=$OUTPUT_PATH/$study-w4m-sample-metadata.tsv
+	output_variable_file=$OUTPUT_PATH/$study-w4m-variable-metadata.tsv
+	output_matrix_file=$OUTPUT_PATH/$study-w4m-sample-variable-matrix.tsv
+
+	# Download
+	$PROG_PATH/../mtbls-dwnld -gMw -s "$output_sample_file" -v "$output_variable_file" -m "$output_matrix_file" /studies/public/$study || error "Download failed !"
+
+	# Compare
+	for f in sample-metadata variable-metadata sample-variable-matrix ; do
+		ref_file="$RES_PATH/$study/$study-w4m-$f.tsv"
+		file="$OUTPUT_PATH/$study-w4m-$f.tsv"
+		diff -q "$ref_file" "$file" || error "Output file \"$file\" differs from reference file \"$ref_file\"."
+	done
+}
+
+# Test W4M conversion with NA filtering {{{1
+################################################################
+
+function test_w4m_na_filtering {
+
+	study=MTBLS404
+
+	# Remove previously downloaded directory
+	rm -rf $study
+
+	output_sample_file=$OUTPUT_PATH/$study-w4m-sample-metadata-na-filtering.tsv
+	output_variable_file=$OUTPUT_PATH/$study-w4m-variable-metadata-na-filtering.tsv
+	output_matrix_file=$OUTPUT_PATH/$study-w4m-sample-variable-matrix-na-filtering.tsv
+
+	# Download
+	$PROG_PATH/../mtbls-dwnld -gMw -S 'Characteristics[gender]' -V 'mass_to_charge' -s "$output_sample_file" -v "$output_variable_file" -m "$output_matrix_file" /studies/public/$study || error "Download failed !"
+
+	# Compare
+	for f in sample-metadata-na-filtering variable-metadata-na-filtering sample-variable-matrix-na-filtering ; do
+		ref_file="$RES_PATH/$study/$study-w4m-$f.tsv"
+		file="$OUTPUT_PATH/$study-w4m-$f.tsv"
+		diff -q "$ref_file" "$file" || error "Output file \"$file\" differs from reference file \"$ref_file\"."
+	done
+}
+
+# Test W4M conversion with choice of a assay file {{{1
+################################################################
+
+function test_w4m_assay_file {
+
+	study=MTBLS30
+	study_path="$RES_PATH/$study"
+
+	for assay in "a_york_src_GCMS_metabolomics_metabolite profiling_mass spectrometry.txt" "a_york_src_LCMS_metabolomics_metabolite profiling_mass spectrometry.txt" ; do
 
 		# Remove previously downloaded directory
 		rm -rf $study
 
+		output_sample_file=$OUTPUT_PATH/$study-w4m-sample-metadata-$assay.tsv
+		output_variable_file=$OUTPUT_PATH/$study-w4m-variable-metadata-$assay.tsv
+		output_matrix_file=$OUTPUT_PATH/$study-w4m-sample-variable-matrix-$assay.tsv
+
 		# Download
-		options=-gM
-		if [ $method = ascp ] ; then
-			options+=" -a -t Xz68YfDe"
-		fi
-		$PROG_PATH/../mtbls-dwnld $options /studies/public/$study || error "Download of $study failed !"
+		$PROG_PATH/../mtbls-dwnld -gMw -f "$assay" -s "$output_sample_file" -v "$output_variable_file" -m "$output_matrix_file" /studies/public/$study || error "Download failed !"
 
-		# Test downloaded directory
-		[ -d $study ] || error "Download of study $study with $method method failed !"
+		# Check output files
+		for f in sample-metadata variable-metadata sample-variable-matrix ; do
+			ref_file="$study_path/$study-w4m-$f-$assay.tsv"
+			output_file="$OUTPUT_PATH/$study-w4m-$f-$assay.tsv"
+			[[ -f $ref_file ]] || error "Reference file \"$ref_file\" does not exist."
+			[[ -f $output_file ]] || error "Output file \"$output_file\" does not exist."
+			diff -q "$ref_file" "$output_file" || error "Output file \"$output_file\" differs from reference file \"$ref_file\"."
+		done
 	done
-done
+}
 
-# Test W4M conversion
-for study in MTBLS404 ; do
+# MAIN {{{1
+################################################################
 
-	# Remove previously downloaded directory
-	rm -rf $study
-
-	# Download
-	$PROG_PATH/../mtbls-dwnld -gMw -s $PROG_PATH/$study-sample-metadata.tsv -v $PROG_PATH/$study-variable-metadata.tsv -m $PROG_PATH/$study-sample-variable-matrix.tsv /studies/public/MTBLS404 || error "Download failed !"
-
-	# Compare
-	for f in sample-metadata variable-metadata sample-variable-matrix ; do
-		ref_file="$RES_PATH/$study/w4m-$f.tsv"
-		file="$PROG_PATH/$study-$f.tsv"
-		diff -q $ref_file $file || error "Output file \"$file\" differs from reference file \"$ref_file\"."
-	done
-
-	# Remove previously downloaded directory
-	rm -rf $study
-
-	# Download
-	$PROG_PATH/../mtbls-dwnld -gMw -S 'Characteristics[gender]' -V 'mass_to_charge' -s $PROG_PATH/$study-sample-metadata-na-filtering.tsv -v $PROG_PATH/$study-variable-metadata-na-filtering.tsv -m $PROG_PATH/$study-sample-variable-matrix-na-filtering.tsv /studies/public/MTBLS404 || error "Download failed !"
-
-	# Compare
-	for f in sample-metadata-na-filtering variable-metadata-na-filtering sample-variable-matrix-na-filtering ; do
-		ref_file="$RES_PATH/$study/w4m-$f.tsv"
-		file="$PROG_PATH/$study-$f.tsv"
-		diff -q $ref_file $file || error "Output file \"$file\" differs from reference file \"$ref_file\"."
-	done
-done
+test_downloading
+test_w4m_conversion
+test_w4m_na_filtering
+test_w4m_assay_file

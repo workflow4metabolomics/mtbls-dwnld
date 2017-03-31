@@ -56,8 +56,10 @@ read.args <- function() {
 		opt[['var-na-filering']] <- strsplit(opt[['var-na-filering']], ',')
 
 	# Check values
-	! is.null(opt$input) || arg.error('You must set an input directory through -i option.')
-	file.exists(opt$input) || arg.error(paste("Directory \"", opt$input, "\" doesn't exist.", sep = ''))
+	if (is.null(opt$input))
+		arg.error('You must set an input directory through -i option.')
+	if ( ! file.exists(opt$input))
+		arg.error(paste("Directory \"", opt$input, "\" doesn't exist.", sep = ''))
 
 	# Set default path for unset outputs
 	if (is.null(opt[['sample-output']])) opt[['sample-output']] <- paste(opt$input, 'sample-metadata.tsv', sep = '-')

@@ -23,6 +23,7 @@ VARIABLE_OUTPUT=
 W4M_OUTPUT=
 SAMPLE_NA_FILTERING=
 VARIABLE_NA_FILTERING=
+ASSAY_FILE=
 
 # Print help {{{1
 ################################################################
@@ -72,13 +73,6 @@ function print_debug_msg {
 	[ $DEBUG -ge $dbglvl ] && echo "[DEBUG] $dbgmsg" >&2
 }
 
-# Get opt val {{{1
-################################################################
-
-function get_opt_val {
-	[ -n "$2" ] || error "\"$1\" requires a non-empty option argument."
-	echo $2
-}
 
 # Read args {{{1
 ################################################################
@@ -92,17 +86,18 @@ function read_args {
 		shift_count=1
 		case $1 in
 			-a|--aspera)            ASPERA=$YES ;;
+			-f|--assay-file)        ASSAY_FILE="$2" ; shift_count=2 ;;
 			-g|--debug)             DEBUG=$((DEBUG + 1)) ;;
 			-h|--help)              print_help ; exit 0 ;;
-			-H|--html)              HTML=$(get_opt_val $1 $2) ; shift_count=2 ;;
-			-m|--matrix-output)     MATRIX_OUTPUT=$(get_opt_val $1 $2) ; shift_count=2 ;;
+			-H|--html)              HTML="$2" ; shift_count=2 ;;
+			-m|--matrix-output)     MATRIX_OUTPUT="$2" ; shift_count=2 ;;
 			-M|--metadata-only)     METADATA_ONLY=$YES ;;
-			-o|--output)            OUTPUT=$(get_opt_val $1 $2) ; shift_count=2 ;;
-			-s|--sample-output)     SAMPLE_OUTPUT=$(get_opt_val $1 $2) ; shift_count=2 ;;
-			-S|--samp-na-filering)  SAMPLE_NA_FILTERING=$(get_opt_val $1 $2) ; shift_count=2 ;;
-			-t|--token)             TOKEN=$(get_opt_val $1 $2) ; shift_count=2 ;;
-			-v|--variable-output)   VARIABLE_OUTPUT=$(get_opt_val $1 $2) ; shift_count=2 ;;
-			-V|--var-na-filering)   VARIABLE_NA_FILTERING=$(get_opt_val $1 $2) ; shift_count=2 ;;
+			-o|--output)            OUTPUT="$2" ; shift_count=2 ;;
+			-s|--sample-output)     SAMPLE_OUTPUT="$2" ; shift_count=2 ;;
+			-S|--samp-na-filering)  SAMPLE_NA_FILTERING="$2" ; shift_count=2 ;;
+			-t|--token)             TOKEN="$2" ; shift_count=2 ;;
+			-v|--variable-output)   VARIABLE_OUTPUT="$2" ; shift_count=2 ;;
+			-V|--var-na-filering)   VARIABLE_NA_FILTERING="$2" ; shift_count=2 ;;
 			-w|--w4m-output)        W4M_OUTPUT=$YES ;;
 			-) error "Illegal option $1." ;;
 			--) error "Illegal option $1." ;;
@@ -122,6 +117,7 @@ function read_args {
 	# Debug
 	print_debug_msg 1 "Arguments are : $args"
 	print_debug_msg 1 "Study to retrieve is : $STUDY"
+	print_debug_msg 1 "Assay file is : $ASSAY_FILE"
 	[ -n "$ASPERA" ] && print_debug_msg 1 "Aspera will be used."
 	[ -n "$TOKEN" ] && print_debug_msg 1 "Token/Password is \"$TOKEN\"."
 }
@@ -132,20 +128,16 @@ function read_args {
 function convert_to_w4m_output {
 
 	local folder="$1"
-	local sample_output="$2"
-	local variable_output="$3"
-	local matrix_output="$4"
-	local samp_na_filtering="$5"
-	local var_na_filtering="$6"
 
-	local options=""
-	[ -z "$sample_output" ] || options+=" -s $sample_output"
-	[ -z "$variable_output" ] || options+=" -v $variable_output"
-	[ -z "$matrix_output" ] || options+=" -m $matrix_output"
-	[ -z "$samp_na_filtering" ] || options+=" -S $samp_na_filtering"
-	[ -z "$var_na_filtering" ] || options+=" -V $var_na_filtering"
+	local options=()
+	[ -z "$ASSAY_FILE" ] || options+=(-f "$ASSAY_FILE")
+	[ -z "$SAMPLE_OUTPUT" ] || options+=(-s "$SAMPLE_OUTPUT")
+	[ -z "$VARIABLE_OUTPUT" ] || options+=(-v "$VARIABLE_OUTPUT")
+	[ -z "$MATRIX_OUTPUT" ] || options+=(-m "$MATRIX_OUTPUT")
+	[ -z "$SAMPLE_NA_FILTERING" ] || options+=(-S "$SAMPLE_NA_FILTERING")
+	[ -z "$VARIABLE_NA_FILTERING" ] || options+=(-V "$VARIABLE_NA_FILTERING")
 
-	$PROG_PATH/isatab2w4m $options -i "$folder"
+	$PROG_PATH/isatab2w4m "${options[@]}" -i "$folder"
 }
 
 # MAIN {{{1
@@ -196,7 +188,7 @@ fi
 
 # Convert to W4M format
 if [ -n "$W4M_OUTPUT" ] ; then
-	convert_to_w4m_output "$tmp_output" "$SAMPLE_OUTPUT" "$VARIABLE_OUTPUT" "$MATRIX_OUTPUT" "$SAMPLE_NA_FILTERING" "$VARIABLE_NA_FILTERING"
+	convert_to_w4m_output "$tmp_output"
 fi
 
 # Write HTML
