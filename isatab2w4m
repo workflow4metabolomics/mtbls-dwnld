@@ -92,12 +92,12 @@ if ('study-name' %in% names(opt)) {
 		stop(paste("Cannot find study \"", opt[['study-name']], "\"."))
 	study.name <- opt[['study-name']]
 } else { # Take the first study
-	message('No study name set, choose first study.')
+	cat("No study name set, choose first study.\n")
 	study.name <- isa@study.identifiers[[1]]
 }
 if (length(study.name) != 1)
 	stop("No study found.")
-message(paste('Study \"', study.name, '\" has been selected.', sep = ''))
+cat(paste("Study \"", study.name, "\" has been selected.\n", sep = ""))
 
 # Get study data frame
 study.df <- isa@study.files[[study.name]]
@@ -116,7 +116,7 @@ if ('assay-filename' %in% names(opt)) {
 	study.assay.index <- 1
 study.assay.df <- study.assays[[study.assay.index]]
 study.assay.filename <- isa@assay.filenames[[study.assay.index]]
-message(paste("Assay file n°", study.assay.index, " \"", study.assay.filename, "\" has been selected.", sep = ''))
+cat(paste("Assay file n°", study.assay.index, " \"", study.assay.filename, "\" has been selected.\n", sep = ''))
 
 # Create sample metadata by merging assay and study metadata
 colnames(study.df) <- make.names(colnames(study.df), uniq = TRUE)
@@ -128,7 +128,7 @@ m_file <- study.assay.df[["Metabolite.Assignment.File"]]
 m_file <- m_file[ ! duplicated(m_file)]
 if (length(m_file) != 1)
 	stop(paste("Zero, or More than one metabolite assignement file found in assay \"", study.assay.filename, "\": ", paste(m_file, collapse = ", "), ".", sep = ''))
-message(paste("Data file \"", m_file, "\" has been selected.", sep = ''))
+cat(paste("Data file \"", m_file, "\" has been selected.\n", sep = ''))
 m.df <- read.table(file = file.path(opt$input, m_file), sep = "\t", header = TRUE, check.names = FALSE)
 
 # Get sample names for matching with m.df columns
@@ -142,7 +142,7 @@ for (sample.field in colnames(sample.metadata)) {
 }
 if (is.null(sample.names.field))
 	stop(paste("Impossible to find a column for sample names. Either such a column does not exist, or it contains duplicates.", sep = ''))
-message(paste("Column \"", sample.names.field, "\" has been selected for sample names to match with column names of data file \"", m_file, "\".", sep = ''))
+cat(paste("Column \"", sample.names.field, "\" has been selected for sample names to match with column names of data file \"", m_file, "\".\n", sep = ''))
 sample.names <- sample.metadata[[sample.names.field]]
 
 # Extract variable metadata

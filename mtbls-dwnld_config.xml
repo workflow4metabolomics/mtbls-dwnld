@@ -2,9 +2,11 @@
 
 	<description>Import ISA TAB data format from public and private MetaboLights studies</description>
 
-	<!--~~~~~~~
-	~ COMMAND ~
-	~~~~~~~~-->
+	<code file="list-assays.py"/>
+
+	<!--=======
+	= COMMAND =
+	========-->
 
 	<command><![CDATA[
 		## @@@BEGIN_CHEETAH@@@
@@ -16,6 +18,9 @@
 		-H "$html_output"
 		-o "$html_output.files_path"
 		-w
+		#if $assay:
+			-f "$assay"
+		#end if
 		-s "$w4m_sample_metadata"
 		-v "$w4m_variable_metadata"
 		-m "$w4m_data_matrix"
@@ -29,13 +34,14 @@
 		## @@@END_CHEETAH@@@
 	]]></command>
 
-	<!--~~~~~~
-	~ INPUTS ~
-	~~~~~~~-->
+	<!--======
+	= INPUTS =
+	=======-->
 
 	<inputs>
-		<param name="study" type="text" label="Study path at MetaboLights FTP Server" help="This should be obtained from the MetaboLights website."/>
-		<param optional="true" format="txt" name="token" type="text" label="Token or password"  help="Token must be obtained from the Metabolights database website."/>
+		<param name="study" type="text" label="Study path at MetaboLights FTP Server" help="This should be obtained from the MetaboLights website." refresh_on_change="true"/>
+		<param name="token" type="text" optional="true" format="txt" label="Token or password"  help="Token must be obtained from the Metabolights database website."/>
+		<param name="assay" type="select" optional="true" dynamic_options="get_assay_files(study = study)" label="Assay file" help="Choose here the assay file you want to extract information from."/>
 		<param name="sample_na_filtering" type="text" label="Sample metadata columns NA filtering" help="The rows that contain NA value in the specified columns will be filtered out. Column names must be separated by commas."/>
 		<param name="variable_na_filtering" type="text" label="Variable metadata columns NA filtering" help="The rows that contain NA value in the specified columns will be filtered out. Column names must be separated by commas."/>
 	</inputs>
