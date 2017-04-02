@@ -18,12 +18,12 @@
 		-H "$html_output"
 		-o "$html_output.files_path"
 		-w
-		#if $assay:
-			-f "$assay"
+		#if $assay.assay:
+			-f "$assay.assay"
+		#else
+			--w4m-all-assays
 		#end if
-		-s "$w4m_sample_metadata"
-		-v "$w4m_variable_metadata"
-		-m "$w4m_data_matrix"
+		-d w4m
 		#if $sample_na_filtering:
 			-S "$sample_na_filtering"
 		#end if
@@ -41,7 +41,22 @@
 	<inputs>
 		<param name="study" type="text" label="Study path at MetaboLights FTP Server" help="This should be obtained from the MetaboLights website." refresh_on_change="true"/>
 		<param name="token" type="text" optional="true" format="txt" label="Token or password"  help="Token must be obtained from the Metabolights database website."/>
-		<param name="assay" type="select" optional="true" dynamic_options="get_assay_files(study = study)" label="Assay file" help="Choose here the assay file you want to extract information from."/>
+
+		<conditional name="assay">
+
+			<param name="import" label="Assays to import" type="select" refresh_on_change="true">
+				<option value="all">All</option>
+				<option value="choose">Choose assay</option>
+			</param>
+
+			<when value="all">
+				<param name="assay" type="text" size="32" value="" hidden="true"/>
+			</when>
+			<when value="choose">
+				<param name="assay" type="select" optional="true" dynamic_options="get_assay_files(study = study)" label="Assay file" help="Choose here the assay file you want to extract information from."/>
+			</when>
+		</conditional>
+
 		<param name="sample_na_filtering" type="text" label="Sample metadata columns NA filtering" help="The rows that contain NA value in the specified columns will be filtered out. Column names must be separated by commas."/>
 		<param name="variable_na_filtering" type="text" label="Variable metadata columns NA filtering" help="The rows that contain NA value in the specified columns will be filtered out. Column names must be separated by commas."/>
 	</inputs>
@@ -50,9 +65,13 @@
 <!-- DEBUG galaxy.datatypes.registry WARNING 2016-10-26 07:19:30,511 unknown mimetype in data factory isatab
  -->
         <data name="html_output" label="ISA-Tab of ${study}.html" format="html"/>
-        <data name="w4m_variable_metadata" label="W4M variable metadata.tsv" format="tabular"/>
+
+		<collection name="w4m_output" type="list" label="Output compatible with W4M tools">
+			    <discover_datasets pattern="__name_and_ext__" directory="w4m" format="tsv"/>
+			</collection>
+		<!--        <data name="w4m_variable_metadata" label="W4M variable metadata.tsv" format="tabular"/>
         <data name="w4m_sample_metadata" label="W4M sample metadata.tsv" format="tabular"/>
-        <data name="w4m_data_matrix" label="W4M data matrix.tsv" format="tabular"/>
+        <data name="w4m_data_matrix" label="W4M data matrix.tsv" format="tabular"/>-->
 
         <!-- Using new type by inheriting only from HTML, no class definition -->
    		<!--     <data name="isatab_output_inherit_html" label="ISA-Tab of $study - inherit HTML.isatabhtml" format="isatabhtml"/> -->

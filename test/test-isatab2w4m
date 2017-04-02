@@ -31,12 +31,12 @@ function plain_test {
 	for study in MTBLS30 MTBLS404 MTBLS338 ; do
 
 		study_path="$RES_PATH/$study"
-		output_sample_file=$OUTPUT_PATH/$study-w4m-sample-metadata.tsv
-		output_variable_file=$OUTPUT_PATH/$study-w4m-variable-metadata.tsv
-		output_matrix_file=$OUTPUT_PATH/$study-w4m-sample-variable-matrix.tsv
+		output_sample_file=%s-w4m-sample-metadata.tsv
+		output_variable_file=%s-w4m-variable-metadata.tsv
+		output_matrix_file=%s-w4m-sample-variable-matrix.tsv
 
 		# Run program
-		$PROG_PATH/../isatab2w4m -i $study_path -s $output_sample_file -v $output_variable_file -m  $output_matrix_file || error "Program terminated abnormaly while processing study $study."
+		$PROG_PATH/../isatab2w4m -i $study_path -d "$OUTPUT_PATH" -s $output_sample_file -v $output_variable_file -m  $output_matrix_file || error "Program terminated abnormaly while processing study $study."
 
 		# Check output files
 		for f in sample-metadata variable-metadata sample-variable-matrix ; do
@@ -59,11 +59,11 @@ function test_assay_selection {
 
 	for assay in "a_york_src_GCMS_metabolomics_metabolite profiling_mass spectrometry.txt" "a_york_src_LCMS_metabolomics_metabolite profiling_mass spectrometry.txt" ; do
 
-		output_sample_file=$OUTPUT_PATH/$study-w4m-sample-metadata-$assay.tsv
-		output_variable_file=$OUTPUT_PATH/$study-w4m-variable-metadata-$assay.tsv
-		output_matrix_file=$OUTPUT_PATH/$study-w4m-sample-variable-matrix-$assay.tsv
+		output_sample_file=%s-w4m-sample-metadata-%a.tsv
+		output_variable_file=%s-w4m-variable-metadata-%a.tsv
+		output_matrix_file=%s-w4m-sample-variable-matrix-%a.tsv
 
-		$PROG_PATH/../isatab2w4m -i $study_path -n $study -f "$assay" -s "$output_sample_file" -v "$output_variable_file" -m  "$output_matrix_file" || error "Program terminated abnormaly while processing study $study."
+		$PROG_PATH/../isatab2w4m -i $study_path -n $study -f "$assay" -d "$OUTPUT_PATH" -s "$output_sample_file" -v "$output_variable_file" -m  "$output_matrix_file" || error "Program terminated abnormaly while processing study $study."
 
 		# Check output files
 		for f in sample-metadata variable-metadata sample-variable-matrix ; do
@@ -83,11 +83,11 @@ function test_na_filtering {
 
 	study=MTBLS404
 	study_path="$RES_PATH/$study"
-	output_sample_file=$OUTPUT_PATH/$study-w4m-sample-metadata-na-filtering.tsv
-	output_variable_file=$OUTPUT_PATH/$study-w4m-variable-metadata-na-filtering.tsv
-	output_matrix_file=$OUTPUT_PATH/$study-w4m-sample-variable-matrix-na-filtering.tsv
+	output_sample_file=%s-w4m-sample-metadata-na-filtering.tsv
+	output_variable_file=%s-w4m-variable-metadata-na-filtering.tsv
+	output_matrix_file=%s-w4m-sample-variable-matrix-na-filtering.tsv
 
-	$PROG_PATH/../isatab2w4m -i $study_path -S 'Characteristics[gender]' -V 'mass_to_charge' -s $output_sample_file -v $output_variable_file -m  $output_matrix_file || error "Program terminated abnormaly while processing study $study."
+	$PROG_PATH/../isatab2w4m -i $study_path -S 'Characteristics[gender]' -V 'mass_to_charge' -d $OUTPUT_PATH -s $output_sample_file -v $output_variable_file -m  $output_matrix_file || error "Program terminated abnormaly while processing study $study."
 	for f in sample-metadata variable-metadata sample-variable-matrix ; do
 		ref_file="$study_path/$study-w4m-$f-na-filtering.tsv"
 		output_file="$OUTPUT_PATH/$study-w4m-$f-na-filtering.tsv"

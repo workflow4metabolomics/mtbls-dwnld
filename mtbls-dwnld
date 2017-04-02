@@ -21,9 +21,11 @@ MATRIX_OUTPUT=
 SAMPLE_OUTPUT=
 VARIABLE_OUTPUT=
 W4M_OUTPUT=
+W4M_DIR=w4m
 SAMPLE_NA_FILTERING=
 VARIABLE_NA_FILTERING=
 ASSAY_FILE=
+W4M_ALL_ASSAYS=
 
 # Print help {{{1
 ################################################################
@@ -98,6 +100,8 @@ function read_args {
 			-t|--token)             TOKEN="$2" ; shift_count=2 ;;
 			-v|--variable-output)   VARIABLE_OUTPUT="$2" ; shift_count=2 ;;
 			-V|--var-na-filering)   VARIABLE_NA_FILTERING="$2" ; shift_count=2 ;;
+			-d|--w4m-dir)           W4M_DIR="$2" ; shift_count=2 ;;
+			--w4m-all-assays)       W4M_ALL_ASSAYS=$YES ;;
 			-w|--w4m-output)        W4M_OUTPUT=$YES ;;
 			-) error "Illegal option $1." ;;
 			--) error "Illegal option $1." ;;
@@ -136,8 +140,9 @@ function convert_to_w4m_output {
 	[ -z "$MATRIX_OUTPUT" ] || options+=(-m "$MATRIX_OUTPUT")
 	[ -z "$SAMPLE_NA_FILTERING" ] || options+=(-S "$SAMPLE_NA_FILTERING")
 	[ -z "$VARIABLE_NA_FILTERING" ] || options+=(-V "$VARIABLE_NA_FILTERING")
+	[[ $W4M_ALL_ASSAYS = $YES ]] && options+=(-a)
 
-	$PROG_PATH/isatab2w4m "${options[@]}" -i "$folder"
+	$PROG_PATH/isatab2w4m "${options[@]}" -i "$folder" -d "$W4M_DIR"
 }
 
 # MAIN {{{1
