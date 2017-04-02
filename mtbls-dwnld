@@ -21,7 +21,7 @@ MATRIX_OUTPUT=
 SAMPLE_OUTPUT=
 VARIABLE_OUTPUT=
 W4M_OUTPUT=
-W4M_DIR=w4m
+W4M_DIR=
 SAMPLE_NA_FILTERING=
 VARIABLE_NA_FILTERING=
 ASSAY_FILE=
@@ -141,8 +141,9 @@ function convert_to_w4m_output {
 	[ -z "$SAMPLE_NA_FILTERING" ] || options+=(-S "$SAMPLE_NA_FILTERING")
 	[ -z "$VARIABLE_NA_FILTERING" ] || options+=(-V "$VARIABLE_NA_FILTERING")
 	[[ $W4M_ALL_ASSAYS = $YES ]] && options+=(-a)
+	[[ -z $W4M_DIR ]] || options+=(-d "$W4M_DIR")
 
-	$PROG_PATH/isatab2w4m "${options[@]}" -i "$folder" -d "$W4M_DIR"
+	$PROG_PATH/isatab2w4m "${options[@]}" -i "$folder"
 }
 
 # MAIN {{{1
