@@ -210,21 +210,21 @@ EOF
 
 	echo "<br/>" >>$HTML
 	echo "		Study files:<br/>" >>$HTML
-	for f in $tmp_output/s_*.txt ; do
+	for f in $tmp_output/s_* ; do
 		filename=$(basename "$f")
 		echo "		<a href=\"$filename\">$filename</a><br/>" >>$HTML
 	done
 
 	echo "<br/>" >>$HTML
 	echo "		Assay files:<br/>" >>$HTML
-	for f in $tmp_output/a_*.txt ; do
+	for f in $tmp_output/a_* ; do
 		filename=$(basename "$f")
 		echo "		<a href=\"$filename\">$filename</a><br/>" >>$HTML
 	done
 
 	echo "<br/>" >>$HTML
 	echo "		Data files:<br/>" >>$HTML
-	for f in $tmp_output/m_*.txt ; do
+	for f in $tmp_output/m_* ; do
 		filename=$(basename "$f")
 		echo "		<a href=\"$filename\">$filename</a><br/>" >>$HTML
 	done
