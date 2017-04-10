@@ -93,11 +93,19 @@
 	<tests>
 		<test>
 			<param name="study" value="MTBLS30"/>
+			<param name="assay" value="a_york_src_GCMS_metabolomics_metabolite profiling_mass spectrometry.txt"/>
 			<output name="html_output" file="mtbls30.html"/>
-			<!--			<output name="w4m_sample_metadata" file="mtbls30-w4m-sample-metadata.tsv"/>
-			<output name="w4m_variable_metadata" file="mtbls30-w4m-variable-metadata.tsv"/>
-			<output name="w4m_data_matrix" file="mtbls30-w4m-sample-variable-matrix.tsv"/>
--->
+			<output name="w4m_sample_metadata" file="mtbls30-gcms-w4m-sample-metadata.tsv"/>
+			<output name="w4m_variable_metadata" file="mtbls30-gcms-w4m-variable-metadata.tsv"/>
+			<output name="w4m_data_matrix" file="mtbls30-gcms-w4m-sample-variable-matrix.tsv"/>
+		</test>
+		<test>
+			<param name="study" value="MTBLS30"/>
+			<param name="assay" value="a_york_src_LCMS_metabolomics_metabolite profiling_mass spectrometry.txt"/>
+			<output name="html_output" file="mtbls30.html"/>
+			<output name="w4m_sample_metadata" file="mtbls30-lcms-w4m-sample-metadata.tsv"/>
+			<output name="w4m_variable_metadata" file="mtbls30-lcms-w4m-variable-metadata.tsv"/>
+			<output name="w4m_data_matrix" file="mtbls30-lcms-w4m-sample-variable-matrix.tsv"/>
 		</test>
 	</tests>
 
