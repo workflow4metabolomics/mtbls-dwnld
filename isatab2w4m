@@ -316,6 +316,7 @@ for (assay.index in (if (is.null(opt[['all-assays']])) get.chosen.assay.index(op
 	for (o in c('sample.metadata', 'variable.metadata', 'sample.variable.matrix')) {
 		output.files[[o]] <- sub('%s', study$name, output.files[[o]])
 		output.files[[o]] <- sub('%a', assay$filename, output.files[[o]])
-		write.table(output.dfs[[o]], file = file.path(opt[['output-directory']], output.files[[o]]), sep = "\t", row.names = FALSE)
+		filepath = if (R.utils::isAbsolutePath(output.files[[o]])) output.files[[o]] else file.path(opt[['output-directory']], output.files[[o]])
+		write.table(output.dfs[[o]], file = filepath, sep = "\t", row.names = FALSE)
 	}
 }

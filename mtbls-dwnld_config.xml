@@ -20,10 +20,10 @@
 		-w
 		#if $assay.assay:
 			-f "$assay.assay"
-		#else
-			--w4m-all-assays
 		#end if
-		-d w4m
+		-s "$w4m_sample_metadata"
+		-v "$w4m_variable_metadata"
+		-m "$w4m_data_matrix"
 		#if $sample_na_filtering:
 			-S "$sample_na_filtering"
 		#end if
@@ -44,15 +44,15 @@
 
 		<conditional name="assay">
 
-			<param name="import" label="Assays to import" type="select" refresh_on_change="true">
-				<option value="all">All</option>
-				<option value="choose">Choose assay</option>
+			<param name="import" label="Assay to import" type="select" refresh_on_change="true">
+				<option value="select">Select from list</option>
+				<option value="text">Input name</option>
 			</param>
 
-			<when value="all">
-				<param name="assay" type="text" size="32" value="" hidden="true"/>
+			<when value="text">
+				<param name="assay" type="text" size="256" value=""/>
 			</when>
-			<when value="choose">
+			<when value="select">
 				<param name="assay" type="select" optional="true" dynamic_options="get_assay_files(study = study)" label="Assay file" help="Choose here the assay file you want to extract information from."/>
 			</when>
 		</conditional>
@@ -66,12 +66,14 @@
  -->
         <data name="html_output" label="ISA-Tab of ${study}.html" format="html"/>
 
-		<collection name="w4m_output" type="list" label="Output compatible with W4M tools">
+		<!--		<collection name="w4m_output" type="list" label="Output compatible with W4M tools">
 			    <discover_datasets pattern="__name_and_ext__" directory="w4m" format="tsv"/>
 			</collection>
-		<!--        <data name="w4m_variable_metadata" label="W4M variable metadata.tsv" format="tabular"/>
+-->
+
+		<data name="w4m_variable_metadata" label="W4M variable metadata.tsv" format="tabular"/>
         <data name="w4m_sample_metadata" label="W4M sample metadata.tsv" format="tabular"/>
-        <data name="w4m_data_matrix" label="W4M data matrix.tsv" format="tabular"/>-->
+        <data name="w4m_data_matrix" label="W4M data matrix.tsv" format="tabular"/>
 
         <!-- Using new type by inheriting only from HTML, no class definition -->
    		<!--     <data name="isatab_output_inherit_html" label="ISA-Tab of $study - inherit HTML.isatabhtml" format="isatabhtml"/> -->
