@@ -1,5 +1,5 @@
 #!/usr/bin/env Rscript
-# vi: ft=R fdm=marker
+# vi: ft=r fdm=marker
 
 library(getopt)
 suppressPackageStartupMessages(library(Risa))
