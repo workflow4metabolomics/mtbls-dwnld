@@ -8,6 +8,7 @@ PROG_NAME=$(basename $0)
 PROG_PATH=$(dirname $0)
 RES_PATH=$PROG_PATH/res
 OUTPUT_PATH=$PROG_PATH/outputs
+TEST_MTBLS_DWNLD_ASPERA_PUBLIC_TOKEN=Xz68YfDe
 
 [[ -d $OUTPUT_PATH ]] || mkdir $OUTPUT_PATH
 
@@ -28,13 +29,35 @@ function error {
 
 function test_downloading {
 
-	# List methods
-	methods=default
-	if [ -n "$(which ascp)" ] ; then
-		methods+=" ascp"
-	else
-		echo "ascp not installed => no tests with Aspera download server." >&2
+	method=$1
+	token=$2
+	study_path=$3
+	study=$(basename $study)
+
+	# Remove previously downloaded directory
+	rm -rf $study
+
+	# Download
+	options=-gM
+	if [ $method = ASPERA ] ; then
+		options+=" -a -t $token"
 	fi
+	if [[ -n $token ]] ; then
+		options+=" -t $token"
+	fi
+	$PROG_PATH/../mtbls-dwnld $options $study_path || error "Download of $study failed !"
+
+	# Test downloaded directory
+	[[ -d $study ]] || error "Download of study $study with $method method failed !"
+	[[ -f $study/i_Investigation.txt ]] || error "Download of study $study with $method method failed ! No investigation file found."
+}
+
+# Test public download {{{1
+################################################################
+
+function test_public_download {
+
+	methods=$1
 
 	# Loop on methods
 	for method in $methods ; do
@@ -42,20 +65,32 @@ function test_downloading {
 		# Loop on small public studies
 		for study in MTBLS1 MTBLS2 MTBLS30 MTBLS338 ; do
 
-			# Remove previously downloaded directory
-			rm -rf $study
+			token=TEST_MTBLS_DWNLD_${method}_PUBLIC_TOKEN
 
-			# Download
-			options=-gM
-			if [ $method = ascp ] ; then
-				options+=" -a -t Xz68YfDe"
-			fi
-			$PROG_PATH/../mtbls-dwnld $options /studies/public/$study || error "Download of $study failed !"
-
-			# Test downloaded directory
-			[[ -d $study ]] || error "Download of study $study with $method method failed !"
-			[[ -f $study/i_Investigation.txt ]] || error "Download of study $study with $method method failed ! No investigation file found."
+			test_downloading $method "${!token}" /studies/public/$study
 		done
+	done
+}
+
+# Test private download {{{1
+################################################################
+
+function test_private_download {
+
+	methods=$1
+
+	study=MTBLS353
+
+	# Loop on methods
+	for method in $methods ; do
+
+		token=TEST_MTBLS_DWNLD_${method}_${study}_PRIVATE_TOKEN
+
+		if [[ -n "${!token}" ]] ; then
+			test_downloading $method "${!token}" /prod/$study
+		else
+			echo "No token to test private download of $study with method $method. Please set environment variable $token." >&2
+		fi
 	done
 }
 
@@ -143,7 +178,17 @@ function test_w4m_assay_file {
 # MAIN {{{1
 ################################################################
 
-test_downloading
+
+# List methods
+methods=WGET
+if [ -n "$(which ascp)" ] ; then
+	methods+=" ASPERA"
+else
+	echo "ascp not installed => no tests with Aspera download server." >&2
+fi
+
+test_public_download "$methods"
+test_private_download "$methods"
 test_w4m_conversion
 test_w4m_na_filtering
 test_w4m_assay_file
