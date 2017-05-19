@@ -13,6 +13,7 @@ YES=yes
 
 DEBUG=0
 ASPERA=
+PRIVATE=
 TOKEN=
 OUTPUT=
 HTML=
@@ -37,13 +38,16 @@ function print_help {
 	echo "By default it uses the ftp server, but with -a option you can ask for using aspera server (you will need the aspera client ascp to be installed)."
 	echo
 	echo "Options:"
+	echo "   -A, --w4m-all-assays        Extract all assays when converting to W4M format."
 	echo "   -a, --aspera                Use aspera server for downloading. You need the ascp client to be installed, it is freely available for linux 64. See http://downloads.asperasoft.com."
+	echo "   -d, --w4m-dir               Path to directory for W4M output."
 	echo "   -g, --debug                 Debug mode."
 	echo "   -h, --help                  Print this help message."
 	echo "	 -H, --html		       FILE  Write HTML file that list files contained in output directory."
 	echo "   -m, --matrix-output   FILE  Set path for the W4M sample x variable matrix output file. Only used if -w option is set."
 	echo "   -M, --metadata-only         Download only the metadata (ISA-Tab files i_*, m_*, s_* and a_*) files. This option has no effet is aspera is selecte (option -a)."
 	echo "   -o, --output          DIR   Set the output directory to use."
+	echo "   -p, --private               Indicate the study to download is not public. This is meant for aspera download, since the URL will be different for a public or a private study."
 	echo "   -s, --sample-output   FILE  Set path for the W4M sample metadata output file. Only used if -w option is set."
 	echo "   -S, --samp-na-filering NAME Filter out NA values in the specified sample metadata columns. The value is comma separated list of column names."
 	echo "   -t, --token           TOKEN Set the token or password to use."
@@ -87,7 +91,9 @@ function read_args {
 	while true ; do
 		shift_count=1
 		case $1 in
+			-A|--w4m-all-assays)    W4M_ALL_ASSAYS=$YES ;;
 			-a|--aspera)            ASPERA=$YES ;;
+			-d|--w4m-dir)           W4M_DIR="$2" ; shift_count=2 ;;
 			-f|--assay-file)        ASSAY_FILE="$2" ; shift_count=2 ;;
 			-g|--debug)             DEBUG=$((DEBUG + 1)) ;;
 			-h|--help)              print_help ; exit 0 ;;
@@ -95,13 +101,12 @@ function read_args {
 			-m|--matrix-output)     MATRIX_OUTPUT="$2" ; shift_count=2 ;;
 			-M|--metadata-only)     METADATA_ONLY=$YES ;;
 			-o|--output)            OUTPUT="$2" ; shift_count=2 ;;
+			-p|--private)           PRIVATE=$YES ;;
 			-s|--sample-output)     SAMPLE_OUTPUT="$2" ; shift_count=2 ;;
 			-S|--samp-na-filering)  SAMPLE_NA_FILTERING="$2" ; shift_count=2 ;;
 			-t|--token)             TOKEN="$2" ; shift_count=2 ;;
 			-v|--variable-output)   VARIABLE_OUTPUT="$2" ; shift_count=2 ;;
 			-V|--var-na-filering)   VARIABLE_NA_FILTERING="$2" ; shift_count=2 ;;
-			-d|--w4m-dir)           W4M_DIR="$2" ; shift_count=2 ;;
-			--w4m-all-assays)       W4M_ALL_ASSAYS=$YES ;;
 			-w|--w4m-output)        W4M_OUTPUT=$YES ;;
 			-) error "Illegal option $1." ;;
 			--) error "Illegal option $1." ;;
@@ -158,7 +163,11 @@ if [ -n "$ASPERA" ] ; then
 
 	export ASPERA_SCP_PASS="$TOKEN"
 
-	dwnld_cmd="ascp -QT -l 1g fasp-ml@fasp.ebi.ac.uk:$STUDY ."
+	if [[ -z $PRIVATE ]] ; then
+		dwnld_cmd="ascp -QT -l 1g fasp-ml@fasp.ebi.ac.uk:$STUDY ."
+	else
+		dwnld_cmd="ascp -QT -l 1g mtblight@ah01.ebi.ac.uk:$STUDY ."
+	fi
 else
 	tmp_output+=.zip
 	file=$(basename $STUDY)
