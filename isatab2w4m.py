@@ -23,6 +23,36 @@ def error(msg):
 def info(msg):
     print('INFO: ' + msg)
 
+# Select study {{{1
+################################################################
+
+def select_study(investigation, study_name = None):
+    
+    study = None
+    
+    # More than one study and no study specified
+    if len(investigation.studies) > 1 and study_name is None :
+        error('The investigation file "' + investigation_file + '" contains more than one study. You need to select one of them.')
+ 
+    # Search for specified study
+    if study_name is not None:
+        
+        # Loop on all studies
+        for s in investigation.studies:
+            if s.filename == study_name:
+                study = s
+                break
+
+        # Specified study not found
+        if study is None :
+            error('Study "' + study_name + '" not found in investigation file "' + investigation_file + '".')
+        
+    # Take first one
+    if study is None and len(investigation.studies) > 0 :
+        study = investigation.studies[0]
+        
+    return(study)
+    
 # Convert to W4M {{{1
 ################################################################
 
@@ -31,31 +61,12 @@ def convert2w4m(input_dir, study_name = None):
     f = open(investigation_file, 'r')
     investigation = ISATAB.load(f)
     
-    # No studies
-    if len(investigation.studies) == 0 :
+    # Select study
+    study = select_study(investigation, study_name)
+    if study is None:
         info('No studies found in investigation file ' + investigation_file)
         return
-    
-    # Select study
-    study = None
-    if len(investigation.studies) > 1 or study_name is not None :
-        if study_name is None :
-            error('The investigation file "' + investigation_file + '" contains more than one study. You need to select one of them.')
-            # TODO find a MTBLS study with several studies inside.
-        # Search for study
-        for s in investigation.studies:
-            if s.filename == study_name:
-                study = s
-                break
-
-        # No study selected
-        if study is None :
-            error('Study "' + study_name + '" not found in investigation file "' + investigation_file + '".')
-    else :
-        study = investigation.studies[0]
-    
     info('Processing study "' + study.filename + '" in "' + investigation_file + '".')
-        
  
 # Main {{{1
 ################################################################
