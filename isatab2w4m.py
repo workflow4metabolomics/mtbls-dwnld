@@ -26,26 +26,26 @@ def info(msg):
 # Select study {{{1
 ################################################################
 
-def select_study(investigation, study_name = None):
+def select_study(investigation, study_filename = None):
     
     study = None
     
     # More than one study and no study specified
-    if len(investigation.studies) > 1 and study_name is None :
+    if len(investigation.studies) > 1 and study_filename is None :
         error('The investigation file "' + investigation_file + '" contains more than one study. You need to select one of them.')
  
     # Search for specified study
-    if study_name is not None:
+    if study_filename is not None:
         
         # Loop on all studies
         for s in investigation.studies:
-            if s.filename == study_name:
+            if s.filename == study_filename:
                 study = s
                 break
 
         # Specified study not found
         if study is None :
-            error('Study "' + study_name + '" not found in investigation file "' + investigation_file + '".')
+            error('Study "' + study_filename + '" not found in investigation file "' + investigation_file + '".')
         
     # Take first one
     if study is None and len(investigation.studies) > 0 :
@@ -53,20 +53,53 @@ def select_study(investigation, study_name = None):
         
     return(study)
     
+# Select assays {{{1
+################################################################
+
+def select_assays(study, assay_filename = None):
+    
+    assays = []
+    
+    # Search for specified assay
+    if assay_filename is not None:
+        
+        # Loop on all assays
+        for a in study.assays:
+            if a.filename == assay_filename:
+                assays.append(a)
+                break
+            
+        # Specified assay not found
+        if len(assays) == 0 :
+            error('Assay "' + assay_filename + '" not found.')
+    
+    # Take all assays
+    if len(assays) == 0:
+        assays = study.assays
+
+    return(assays)
+    
 # Convert to W4M {{{1
 ################################################################
 
-def convert2w4m(input_dir, study_name = None):
+def convert2w4m(input_dir, study_filename = None, assay_filename = None):
     investigation_file = os.path.join(input_dir, 'i_Investigation.txt')
     f = open(investigation_file, 'r')
     investigation = ISATAB.load(f)
     
     # Select study
-    study = select_study(investigation, study_name)
+    study = select_study(investigation, study_filename)
     if study is None:
         info('No studies found in investigation file ' + investigation_file)
         return
     info('Processing study "' + study.filename + '" in "' + investigation_file + '".')
+    
+    # Select assays
+    assays = select_assays(study, assay_filename)
+    
+    # Loop on all assays
+    for assay in assays:
+        info('Processing assay "' + assay.filename + '".')
  
 # Main {{{1
 ################################################################
@@ -76,7 +109,8 @@ if __name__ == '__main__':
     # Parse command line arguments
     parser = argparse.ArgumentParser(description='Script for extracting assays from ISATab data and outputing in W4M format.')
     parser.add_argument('-i', help = 'Input directory containing the ISA-Tab files.',   dest = 'input_dir',    required = True)
-    parser.add_argument('-n', help = 'Filename of the study to extract. If unset, the first study found will be used.',   dest = 'study_name',    required = False)
+    parser.add_argument('-f', help = 'Filename of the assay to extract. If unset, the first assay of the chosen study will be used.',   dest = 'assay_filename',    required = False)
+    parser.add_argument('-n', help = 'Filename of the study to extract. If unset, the first study found will be used.',   dest = 'study_filename',    required = False)
     args = parser.parse_args()
     args_dict = vars(args)
     
