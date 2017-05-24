@@ -4,6 +4,7 @@
 import argparse
 import sys
 import os.path
+import re
 from isatools import isatab as ISATAB
 
 # Check Python version
@@ -79,6 +80,22 @@ def select_assays(study, assay_filename = None):
 
     return(assays)
     
+# Get data file {{{1
+################################################################
+
+def get_data_file(assay):
+    data_filename = None
+    for df in assay.data_files:
+        m = re.match('^m_.*\.(tsv|txt)$', df.filename)
+        if m is not None:
+            if data_filename is not None:
+                error('Found two data files ("', data_filename, '" and "', df.filename, '") in assay "', assay.filename, '".')
+            info('Found data file "' + df.filename + '".')
+            data_filename = df.filename
+    if data_filename is None:
+        error('Found no data file in assay "', assayfilename, '".')
+    
+
 # Convert to W4M {{{1
 ################################################################
 
@@ -100,6 +117,7 @@ def convert2w4m(input_dir, study_filename = None, assay_filename = None):
     # Loop on all assays
     for assay in assays:
         info('Processing assay "' + assay.filename + '".')
+        data_filename = get_data_file(assay)
  
 # Main {{{1
 ################################################################
@@ -114,4 +132,4 @@ if __name__ == '__main__':
     args = parser.parse_args()
     args_dict = vars(args)
     
-    print(convert2w4m(**args_dict))
+    convert2w4m(**args_dict)
