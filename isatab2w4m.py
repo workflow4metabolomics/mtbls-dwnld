@@ -5,6 +5,7 @@ import argparse
 import sys
 import os.path
 import re
+import glob
 from isatools import isatab as ISATAB
 
 # Check Python version
@@ -84,7 +85,10 @@ def select_assays(study, assay_filename = None):
 ################################################################
 
 def get_data_file(assay):
+    
     data_filename = None
+    
+    # Look for data files in assay
     for df in assay.data_files:
         m = re.match('^m_.*\.(tsv|txt)$', df.filename)
         if m is not None:
@@ -92,24 +96,86 @@ def get_data_file(assay):
                 error('Found two data files ("', data_filename, '" and "', df.filename, '") in assay "', assay.filename, '".')
             info('Found data file "' + df.filename + '".')
             data_filename = df.filename
+            
+    # No data file
     if data_filename is None:
         error('Found no data file in assay "', assayfilename, '".')
+        
+    return(data_filename)
     
+# Get data array {{{1
+################################################################
 
+def get_data_array(input_dir, assay):
+    data_filename = get_data_file(assay)
+    array = ISATAB.read_tfile(os.path.join(input_dir, data_filename))
+    return(array)
+
+# Make variable names {{{1
+################################################################
+
+def make_variable_names(data_array):
+
+    var_names = [None] * data_array.axes[0].size
+ 
+    # Make variable names from data values
+    for col in ['mass_to_charge', 'retention_time']:
+        try:
+            c = data_array[col]
+            var_names = [ s + t for s, t in zip(var_names, c)]
+        except:
+            pass
+
+    # Create missing variable names
+    
+    # Remove unwanted characters
+    
+    print(var_names)
+    return(var_names)
+
+# Get investigation file {{{1
+################################################################
+
+def get_investigation_file(input_dir):
+
+    # Search for file
+    investigation_files = glob.glob(os.path.join(input_dir, 'i_*.txt'))
+    
+    # No file
+    if len(investigation_files) == 0:
+        error('No investigation file found.')
+        
+    # More than one file
+    if len(investigation_files) > 1:
+        error('Found more than one investigation file.')
+        
+    # File found
+    investigation_file = investigation_files[0]
+    info('Found investigation file "' + investigation_file + '".')
+    
+    return(investigation_file)
+    
+# Load investigation {{{1
+################################################################
+
+def load_investigation(input_dir):
+    investigation_file = get_investigation_file(input_dir)
+    f = open(investigation_file, 'r')
+    investigation = ISATAB.load(f)
+    return(investigaion)
+    
 # Convert to W4M {{{1
 ################################################################
 
 def convert2w4m(input_dir, study_filename = None, assay_filename = None):
-    investigation_file = os.path.join(input_dir, 'i_Investigation.txt')
-    f = open(investigation_file, 'r')
-    investigation = ISATAB.load(f)
-    
+    investigation = load_investigation(input_dir)
+
     # Select study
     study = select_study(investigation, study_filename)
     if study is None:
-        info('No studies found in investigation file ' + investigation_file)
+        info('No studies found in investigation file.')
         return
-    info('Processing study "' + study.filename + '" in "' + investigation_file + '".')
+    info('Processing study "' + study.filename + '".')
     
     # Select assays
     assays = select_assays(study, assay_filename)
@@ -117,7 +183,10 @@ def convert2w4m(input_dir, study_filename = None, assay_filename = None):
     # Loop on all assays
     for assay in assays:
         info('Processing assay "' + assay.filename + '".')
-        data_filename = get_data_file(assay)
+        data_array = get_data_array(input_dir, assay)
+        print(type(data_array))
+        print(data_array.axes[1].values)
+        var_names = make_variable_names(data_array)
  
 # Main {{{1
 ################################################################
