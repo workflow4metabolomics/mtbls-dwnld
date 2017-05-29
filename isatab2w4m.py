@@ -162,7 +162,7 @@ def load_investigation(input_dir):
     investigation_file = get_investigation_file(input_dir)
     f = open(investigation_file, 'r')
     investigation = ISATAB.load(f)
-    return(investigaion)
+    return(investigation)
     
 # Convert to W4M {{{1
 ################################################################
