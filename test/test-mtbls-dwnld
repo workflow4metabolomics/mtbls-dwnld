@@ -81,14 +81,23 @@ function test_private_download {
 	method=$1
 	study=$2
 
+	# Get path
+	path=TEST_MTBLS_DWNLD_${method}_${study}_PRIVATE_PATH
+	path=$(echo $path | tr '[:lower:]' '[:upper:]')
+	if [[ -z "${!path}" ]] ; then
+		echo "No path to test private download of $study with method $method. Please set environment variable $path." >&2
+		return
+	fi
+
+	# Get token
 	token=TEST_MTBLS_DWNLD_${method}_${study}_PRIVATE_TOKEN
 	token=$(echo $token | tr '[:lower:]' '[:upper:]')
-
-	if [[ -n "${!token}" ]] ; then
-		test_downloading $method "${!token}" /prod/$study 1
-	else
+	if [[ -z "${!token}" ]] ; then
 		echo "No token to test private download of $study with method $method. Please set environment variable $token." >&2
+		return
 	fi
+
+	test_downloading $method "${!token}" "${!path}" 1
 }
 
 # Test wget private download {{{1
@@ -102,7 +111,7 @@ function test_wget_private_download {
 ################################################################
 
 function test_aspera_private_download {
-	test_private_download $ASPERA_CLIENT mtbls353
+	test_private_download $ASPERA_CLIENT MTBLS353
 }
 
 # Test W4M conversion {{{1
