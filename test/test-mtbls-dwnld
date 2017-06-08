@@ -35,7 +35,7 @@ function test_downloading {
 	token=$2
 	study_path=$3
 	private=$4
-	study=$(basename $study)
+	study=$(basename $study_path)
 
 	# Remove previously downloaded directory
 	rm -rf $study
@@ -111,7 +111,7 @@ function test_wget_private_download {
 ################################################################
 
 function test_aspera_private_download {
-	test_private_download $ASPERA_CLIENT MTBLS353
+	test_private_download $ASPERA_CLIENT MTBLS1
 }
 
 # Test W4M conversion {{{1
