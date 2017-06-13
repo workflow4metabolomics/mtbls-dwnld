@@ -138,6 +138,29 @@ function test_w4m_conversion {
 		diff -q "$ref_file" "$file" || error "Output file \"$file\" differs from reference file \"$ref_file\"."
 	done
 }
+# Test W4M conversion of private study {{{1
+################################################################
+
+function test_w4m_conversion_private {
+
+	study=MTBLS353
+	token=$TEST_MTBLS_DWNLD_WGET_MTBLS353_PRIVATE_TOKEN
+
+	if [[ -z $token ]] ; then
+		echo "No token provided for private study $study. Cannot test download and conversion of study $study." >&2
+		return
+	fi
+
+	# Remove previously downloaded directory
+	rm -rf $study
+
+	output_sample_file=$OUTPUT_PATH/$study-w4m-sample-metadata.tsv
+	output_variable_file=$OUTPUT_PATH/$study-w4m-variable-metadata.tsv
+	output_matrix_file=$OUTPUT_PATH/$study-w4m-sample-variable-matrix.tsv
+
+	# Download
+	$PROG_PATH/../mtbls-dwnld -pgMw -t "$token" -s "$output_sample_file" -v "$output_variable_file" -m "$output_matrix_file" $study || error "Download failed !"
+}
 
 # Test W4M conversion with NA filtering {{{1
 ################################################################
@@ -205,6 +228,7 @@ if [[ -z $ASPERA_CLIENT ]] ; then
 	echo "ascp not installed => no tests with Aspera download server." >&2
 fi
 
+test_w4m_conversion_private
 test_wget_public_download
 [[ -z $ASPERA_CLIENT ]] || test_aspera_public_download
 test_wget_private_download
