@@ -39,8 +39,8 @@
 	=======-->
 
 	<inputs>
-		<param name="study" type="text" label="Study path at MetaboLights FTP Server" help="This should be obtained from the MetaboLights website." refresh_on_change="true"/>
-		<param name="token" type="text" optional="true" format="txt" label="Token or password"  help="Token must be obtained from the Metabolights database website."/>
+		<param name="study" type="text" label="Study name" help="Study name in the form MTBLSXXXX." refresh_on_change="true"/>
+		<param name="token" type="text" optional="true" format="txt" label="Token"  help="Token is required for private study." refresh_on_change="true"/>
 
 		<conditional name="assay">
 
