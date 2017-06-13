@@ -171,7 +171,7 @@ get.measures <- function(opt, assay) {
 	m_file <- assay$df[["Metabolite Assignment File"]]
 	m_file <- m_file[ ! duplicated(m_file)]
 	if (length(m_file) != 1)
-		stop(paste("Zero, or More than one metabolite assignement file found in assay \"", assay$filename, "\": ", paste(m_file, collapse = ", "), ".", sep = ''))
+		stop(paste("Zero or more than one metabolite assignement file found in assay \"", assay$filename, "\": ", paste(m_file, collapse = ", "), ".", sep = ''))
 	cat(paste("Data file \"", m_file, "\" has been selected.\n", sep = ''))
 	m.df <- read.table(file = file.path(opt$input, m_file), sep = "\t", header = TRUE, check.names = FALSE)
 
