@@ -3,7 +3,7 @@ notifications:
   recipients:
    - pierrick.roger@gmail.com
 
-dist: xenial
+#dist: xenial
 
 before_install:
     - echo "deb http://cran.univ-paris1.fr/bin/linux/ubuntu precise/" | sudo tee -a /etc/apt/sources.list
