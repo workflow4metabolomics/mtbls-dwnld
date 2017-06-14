@@ -14,6 +14,12 @@
 		#if $token:
 			-t "$token"
 		#end if
+		#if $type == 'private':
+			-p
+		#end if
+		#if $downloader == 'aspera':
+			-a
+		#end if
 		-M
 		-H "$html_output"
 		-o "$html_output.files_path"
@@ -39,9 +45,26 @@
 	=======-->
 
 	<inputs>
-		<param name="study" type="text" label="Study name" help="Study name in the form MTBLSXXXX." refresh_on_change="true"/>
-		<param name="token" type="text" optional="true" format="txt" label="Token"  help="Token is required for private study." refresh_on_change="true"/>
 
+		<!-- Public or private -->
+		<param name="type" label="Study type" type="select">
+			<option value="public">Public</option>
+			<option value="private">Private</option>
+		</param>
+
+		<!-- Downloader -->
+		<param name="downloader" label="Downloader" type="select">
+			<option value="wget">wget</option>
+			<option value="aspera">Aspera</option>
+		</param>
+
+		<!-- Study name -->
+		<param name="study" type="text" label="Study name" help="Study name in the form MTBLSXXXX. For downloading a private study with Aspera client, set to the full path of the study." refresh_on_change="true"/>
+
+		<!-- Token -->
+		<param name="token" type="text" optional="true" format="txt" label="Token"  help="Token is required for private study or for downloading with Aspera client."/>
+
+		<!-- Assay -->
 		<conditional name="assay">
 
 			<param name="import" label="Assay to import" type="select" refresh_on_change="true">
