@@ -167,11 +167,16 @@ make.sample.metadata <- function(study, assay, sample.names = sample.names, norm
 
 get.measures <- function(opt, assay) {
 
+	# Check presence of MAF files
+	maf.field <- "Metabolite Assignment File"
+	if ( ! maf.field %in% colnames(assay$df))
+		return(NULL)
+
 	# Get data file
-	m_file <- assay$df[["Metabolite Assignment File"]]
+	m_file <- assay$df[[maf.field]]
 	m_file <- m_file[ ! duplicated(m_file)]
 	if (length(m_file) != 1)
-		stop(paste("Zero or more than one metabolite assignement file found in assay \"", assay$filename, "\": ", paste(m_file, collapse = ", "), ".", sep = ''))
+		stop(paste("More than one metabolite assignement file found in assay \"", assay$filename, "\": ", paste(m_file, collapse = ", "), ".", sep = ''))
 	cat(paste("Data file \"", m_file, "\" has been selected.\n", sep = ''))
 	m.df <- read.table(file = file.path(opt$input, m_file), sep = "\t", header = TRUE, check.names = FALSE)
 
@@ -276,6 +281,10 @@ for (assay.index in (if (is.null(opt[['all-assays']])) get.chosen.assay.index(op
 
 	# Get measures
 	measures <- get.measures(opt, assay)
+	if (is.null(measures)) {
+		cat("No MAF file found for assay ", assay$filename, ". Output will be empty.\n", sep = '', file = stderr())
+		next
+	}
 
 	# Create variable names
 	variable.names <- make.variable.names(measures)
