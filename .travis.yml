@@ -22,10 +22,6 @@ before_install:
     - wget http://download.asperasoft.com/download/sw/ascp-client/3.5.4/ascp-install-3.5.4.102989-linux-64.sh
     - sudo sh ascp-install-3.5.4.102989-linux-64.sh
     - sudo apt-get install -y python-virtualenv
-    - virtualenv planemo-venv
-    - . planemo-venv/bin/activate
-    - pip install --upgrade pip setuptools
-    - pip install planemo
 
 script:
  - make test
