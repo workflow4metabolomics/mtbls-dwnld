@@ -1,9 +1,7 @@
 notifications:
  email:
   recipients:
-   - pierrick.roger@gmail.com
-
-#dist: xenial
+   - pierrick.rogermele@icloud.com
 
 before_install:
     - echo "deb http://cran.univ-paris1.fr/bin/linux/ubuntu precise/" | sudo tee -a /etc/apt/sources.list
@@ -21,6 +19,8 @@ before_install:
     - sudo apt-get install -y libblas-dev
     - sudo R -e "install.packages(c('getopt'), dependencies = TRUE, repos='http://lib.ugent.be/CRAN/')"
     - sudo R -e "source('http://bioconductor.org/biocLite.R') ; biocLite('Risa')"
+    - wget http://download.asperasoft.com/download/sw/ascp-client/3.5.4/ascp-install-3.5.4.102989-linux-64.sh
+    - sudo sh ascp-install-3.5.4.102989-linux-64.sh
     - sudo apt-get install -y python-virtualenv
     - virtualenv planemo-venv
     - . planemo-venv/bin/activate
