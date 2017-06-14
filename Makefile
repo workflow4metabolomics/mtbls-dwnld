@@ -2,13 +2,15 @@ XMLCFG=mtbls-dwnld_config.xml
 CONDADIR=$(HOME)/w4m-conda
 VENV=$(HOME)/planemo-venv
 ACTIVATE_VENV=$(VENV)/bin/activate
+PLANEMO_VERSION=0.37.0
+GALAXY_VERSION=release_17.01
 
 all:
 
 test: plaintest planemolint planemotest
 
 planemotest: conda
-	. $(ACTIVATE_VENV) && planemo test --conda_prefix $(CONDADIR) --install_galaxy --galaxy_branch release_16.10 --conda_dependency_resolution $(XMLCFG)
+	. $(ACTIVATE_VENV) && planemo test --conda_prefix $(CONDADIR) --install_galaxy --galaxy_branch $(GALAXY_VERSION) --conda_dependency_resolution $(XMLCFG)
 
 $(VENV):
 	virtualenv $@
@@ -18,7 +20,7 @@ $(CONDADIR): planemo-install
 
 planemo-install: $(VENV)
 	. $(ACTIVATE_VENV) && pip install --upgrade pip setuptools
-	. $(ACTIVATE_VENV) && pip install planemo
+	. $(ACTIVATE_VENV) && pip install planemo==$(PLANEMO_VERSION)
 
 conda: $(CONDADIR)
 	. $(ACTIVATE_VENV) && planemo conda_install --conda_prefix $(CONDADIR) $(XMLCFG)
