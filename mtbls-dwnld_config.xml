@@ -68,15 +68,15 @@
 		<conditional name="assay">
 
 			<param name="import" label="Assay to import" type="select" refresh_on_change="true">
-				<option value="select">Select from list</option>
 				<option value="text">Input name</option>
+				<option value="select">Select from list</option>
 			</param>
 
 			<when value="text">
 				<param name="assay" type="text" size="256" value=""/>
 			</when>
 			<when value="select">
-				<param name="assay" type="select" optional="true" dynamic_options="get_assay_files(study = study)" label="Assay file" help="Choose here the assay file you want to extract information from."/>
+				<param name="assay" type="select" optional="true" dynamic_options="get_assay_files(study = study)" label="Assay file" help="Choose here the assay file you want to extract information from. By default, the first found assay will be used."/>
 			</when>
 		</conditional>
 
