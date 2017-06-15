@@ -2,7 +2,7 @@ XMLCFG=mtbls-dwnld_config.xml
 CONDADIR=$(HOME)/w4m-conda
 VENV=$(HOME)/planemo-venv
 ACTIVATE_VENV=$(VENV)/bin/activate
-PLANEMO_VERSION=0.37.0
+PLANEMO_VERSION=0.41.0
 GALAXY_VERSION=release_17.01
 
 all:
