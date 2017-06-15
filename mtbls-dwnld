@@ -164,7 +164,14 @@ if [ -n "$ASPERA" ] ; then
 	export ASPERA_SCP_PASS="$TOKEN"
 
 	if [[ -z $PRIVATE ]] ; then
-		dwnld_cmd="ascp -QT -l 1g fasp-ml@fasp.ebi.ac.uk:$STUDY ."
+
+		# Make full path for public study
+		study_path=$STUDY
+		if [[ -z ${study_path##MTBLS*} ]] ; then
+			study_path="/studies/public/$study_path"
+		fi
+
+		dwnld_cmd="ascp -QT -l 1g fasp-ml@fasp.ebi.ac.uk:$study_path ."
 	else
 		dwnld_cmd="ascp -QT -l 1g mtblight@ah01.ebi.ac.uk:$STUDY ."
 	fi
