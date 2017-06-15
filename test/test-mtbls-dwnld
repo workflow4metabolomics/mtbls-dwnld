@@ -70,7 +70,7 @@ function test_aspera_public_download {
 
 	study=MTBLS1
 
-	test_downloading $ASPERA_CLIENT "$TEST_MTBLS_DWNLD_ASPERA_PUBLIC_TOKEN" /studies/public/$study
+	test_downloading $ASPERA_CLIENT "$TEST_MTBLS_DWNLD_ASPERA_PUBLIC_TOKEN" $study
 }
 
 # Test private download {{{1
