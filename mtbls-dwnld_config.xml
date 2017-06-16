@@ -84,16 +84,16 @@
 		<!-- Assay -->
 		<conditional name="assay">
 
-			<param name="import" label="Assay to import" type="select" refresh_on_change="true">
+			<param name="import" type="select" label="Assay to import" help="One of the assays will be set to fixed dataset names, so you can use it in workflow. Select here the way to specify this assay. By default this is will be the first assay found." refresh_on_change="true">
 				<option value="text">Input name</option>
 				<option value="select">Select from list</option>
 			</param>
 
 			<when value="text">
-				<param name="assay" type="text" size="256" value=""/>
+				<param name="assay" type="text" size="256" value="" help="Type here the name of the assay file you want to extract."/>
 			</when>
 			<when value="select">
-				<param name="assay" type="select" optional="true" dynamic_options="get_assay_files(study = study)" label="Assay file" help="Choose here the assay file you want to extract information from. By default, the first found assay will be used."/>
+				<param name="assay" type="select" optional="true" dynamic_options="get_assay_files(study = study)" label="Assay file" help="Choose here the assay file you want to extract."/>
 			</when>
 		</conditional>
 
