@@ -10,7 +10,9 @@
 
 	<command><![CDATA[
 		## @@@BEGIN_CHEETAH@@@
+
 		$__tool_directory__/mtbls-dwnld
+
 		#if $token:
 			-t "$token"
 		#end if
@@ -21,22 +23,37 @@
 			-a
 		#end if
 		-M
+
+		## HTML output
 		-H "$html_output"
 		-o "$html_output.files_path"
+
+		## W4M output
 		-w
-		#if $assay.assay:
-			-f "$assay.assay"
-		#end if
-		-s "$w4m_sample_metadata"
-		-v "$w4m_variable_metadata"
-		-m "$w4m_data_matrix"
-		#if $sample_na_filtering:
-			-S "$sample_na_filtering"
-		#end if
-		#if $variable_na_filtering:
-			-V "$variable_na_filtering"
-		#end if
+
+			## All assays output
+			-A
+			-d w4m
+
+			## Single assay output
+			#if $assay.assay:
+				-f "$assay.assay"
+			#end if
+			-s "$w4m_sample_metadata"
+			-v "$w4m_variable_metadata"
+			-m "$w4m_data_matrix"
+
+			## Filtering
+			#if $sample_na_filtering:
+				-S "$sample_na_filtering"
+			#end if
+			#if $variable_na_filtering:
+				-V "$variable_na_filtering"
+			#end if
+
+		## Study to output
 		"$study"
+
 		## @@@END_CHEETAH@@@
 	]]></command>
 
@@ -88,6 +105,10 @@
 <!-- DEBUG galaxy.datatypes.registry WARNING 2016-10-26 07:19:30,511 unknown mimetype in data factory isatab
  -->
         <data name="html_output" label="ISA-Tab of ${study}.html" format="html"/>
+
+		<data format="tsv" name="w4m_all_assays">
+			<discover_datasets pattern="__designation_and_ext__" directory="w4m" visible="true"/>
+		</data>
 
 		<!--		<collection name="w4m_output" type="list" label="Output compatible with W4M tools">
 			    <discover_datasets pattern="__name_and_ext__" directory="w4m" format="tsv"/>

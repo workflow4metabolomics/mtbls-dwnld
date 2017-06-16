@@ -22,7 +22,7 @@ MATRIX_OUTPUT=
 SAMPLE_OUTPUT=
 VARIABLE_OUTPUT=
 W4M_OUTPUT=
-W4M_DIR=
+W4M_ALL_ASSAYS_DIR=
 SAMPLE_NA_FILTERING=
 VARIABLE_NA_FILTERING=
 ASSAY_FILE=
@@ -40,7 +40,7 @@ function print_help {
 	echo "Options:"
 	echo "   -A, --w4m-all-assays        Extract all assays when converting to W4M format."
 	echo "   -a, --aspera                Use aspera server for downloading. You need the ascp client to be installed, it is freely available for linux 64. See http://downloads.asperasoft.com."
-	echo "   -d, --w4m-dir               Path to directory for W4M output."
+	echo "   -d, --w4m-all-assays-dir    Path to directory where to put all W4M outputs."
 	echo "   -g, --debug                 Debug mode."
 	echo "   -h, --help                  Print this help message."
 	echo "	 -H, --html		       FILE  Write HTML file that list files contained in output directory."
@@ -93,7 +93,7 @@ function read_args {
 		case $1 in
 			-A|--w4m-all-assays)    W4M_ALL_ASSAYS=$YES ;;
 			-a|--aspera)            ASPERA=$YES ;;
-			-d|--w4m-dir)           W4M_DIR="$2" ; shift_count=2 ;;
+			-d|--w4m-all-assays-dir) W4M_ALL_ASSAYS_DIR="$2" ; shift_count=2 ;;
 			-f|--assay-file)        ASSAY_FILE="$2" ; shift_count=2 ;;
 			-g|--debug)             DEBUG=$((DEBUG + 1)) ;;
 			-h|--help)              print_help ; exit 0 ;;
@@ -138,6 +138,7 @@ function convert_to_w4m_output {
 
 	local folder="$1"
 
+	# Output one assay
 	local options=()
 	[ -z "$ASSAY_FILE" ] || options+=(-f "$ASSAY_FILE")
 	[ -z "$SAMPLE_OUTPUT" ] || options+=(-s "$SAMPLE_OUTPUT")
@@ -145,9 +146,14 @@ function convert_to_w4m_output {
 	[ -z "$MATRIX_OUTPUT" ] || options+=(-m "$MATRIX_OUTPUT")
 	[ -z "$SAMPLE_NA_FILTERING" ] || options+=(-S "$SAMPLE_NA_FILTERING")
 	[ -z "$VARIABLE_NA_FILTERING" ] || options+=(-V "$VARIABLE_NA_FILTERING")
-	[[ $W4M_ALL_ASSAYS = $YES ]] && options+=(-a)
-	[[ -z $W4M_DIR ]] || options+=(-d "$W4M_DIR")
+	$PROG_PATH/isatab2w4m "${options[@]}" -i "$folder"
 
+	# Output all assays
+	local options=()
+	[[ $W4M_ALL_ASSAYS = $YES ]] && options+=(-a)
+	[[ -z $W4M_ALL_ASSAYS_DIR ]] || options+=(-d "$W4M_ALL_ASSAYS_DIR")
+	[ -z "$SAMPLE_NA_FILTERING" ] || options+=(-S "$SAMPLE_NA_FILTERING")
+	[ -z "$VARIABLE_NA_FILTERING" ] || options+=(-V "$VARIABLE_NA_FILTERING")
 	$PROG_PATH/isatab2w4m "${options[@]}" -i "$folder"
 }
 
