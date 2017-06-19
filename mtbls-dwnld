@@ -248,34 +248,14 @@ function unzip_study {
 	echo $tmp_output
 }
 
-# MAIN {{{1
+# Output HTML {{{1
 ################################################################
 
-read_args "$@"
+function output_html {
 
-tmp_output=$(basename $STUDY)
+	local HTML=$1
+	local tmp_output=$2
 
-if [[ -z $SKIP_DOWNLOAD ]] ; then
-	download "$tmp_output"
-fi
-
-# Zip file?
-if [ ${tmp_output##*.} = 'zip' ] ; then
-	tmp_output=$(unzip_study "$tmp_output")
-fi
-
-# Convert to W4M format
-if [[ -n $W4M_OUTPUT ]] ; then
-	convert_to_w4m_output "$tmp_output"
-fi
-
-# Extract files by extension
-if [[ -n $EXTRACT_BY_EXT ]] ; then
-	extract_by_ext "$tmp_output"
-fi
-
-# Write HTML
-if [[ -n $HTML ]] ; then
 	cat >$HTML <<EOF
 <html>
 	<header>
@@ -310,6 +290,37 @@ EOF
 	</body>
 </html>
 EOF
+}
+
+# MAIN {{{1
+################################################################
+
+read_args "$@"
+
+tmp_output=$(basename $STUDY)
+
+if [[ -z $SKIP_DOWNLOAD ]] ; then
+	download "$tmp_output"
+fi
+
+# Zip file?
+if [ ${tmp_output##*.} = 'zip' ] ; then
+	tmp_output=$(unzip_study "$tmp_output")
+fi
+
+# Convert to W4M format
+if [[ -n $W4M_OUTPUT ]] ; then
+	convert_to_w4m_output "$tmp_output"
+fi
+
+# Extract files by extension
+if [[ -n $EXTRACT_BY_EXT ]] ; then
+	extract_by_ext "$tmp_output"
+fi
+
+# Write HTML
+if [[ -n $HTML ]] ; then
+	output_html "$HTML" "$tmp_output"
 fi
 
 # Rename output directory
