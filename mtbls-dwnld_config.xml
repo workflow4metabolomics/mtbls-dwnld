@@ -2,6 +2,11 @@
 
 	<description>Import ISA TAB data format from public and private MetaboLights studies</description>
 
+	<requirements>
+		<requirement type="package" version="1.20.0">r-getopt</requirement>
+		<requirement type="package" version="1.0.0">bioconductor-risa</requirement>
+	</requirements>
+
 	<code file="list-assays.py"/>
 
 	<!--=======
