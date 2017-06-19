@@ -225,6 +225,8 @@ function download {
 		echo "Cannot download $tmp_output file. Command \"$dwnld_cmd\" has failed." >&2
 		exit 1
 	fi
+
+	echo "$tmp_output"
 }
 
 # Unzip study {{{1
@@ -233,6 +235,8 @@ function download {
 function unzip_study {
 
 	local tmp_output=$1
+
+	print_debug_msg 1 "Unzipping file $tmp_output."
 
 	[ -n "$(which unzip)" ] || error "unzip command not found. Please install zip package."
 
@@ -300,7 +304,7 @@ read_args "$@"
 tmp_output=$(basename $STUDY)
 
 if [[ -z $SKIP_DOWNLOAD ]] ; then
-	download "$tmp_output"
+	tmp_output=$(download "$tmp_output")
 fi
 
 # Zip file?
