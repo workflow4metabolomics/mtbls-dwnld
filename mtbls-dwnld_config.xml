@@ -22,7 +22,11 @@
 		#if $downloader == 'aspera':
 			-a
 		#end if
-		-M
+
+		## Download only the metadata
+		#if $metadata:
+			-M
+		#end if
 
 		## HTML output
 		-H "$html_output"
@@ -74,6 +78,9 @@
 			<option value="wget">wget</option>
 			<option value="aspera">Aspera</option>
 		</param>
+
+		<!-- Metadata -->
+		<param name="metadata" label="Download only the metadata" type="boolean" checked="true" truevalue="1" falsevalue="0"/>
 
 		<!-- Study name -->
 		<param name="study" type="text" label="Study name" help="Study name in the form MTBLSXXXX. For downloading a private study with Aspera client, set to the full path of the study." refresh_on_change="true"/>

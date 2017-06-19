@@ -27,6 +27,7 @@ SAMPLE_NA_FILTERING=
 VARIABLE_NA_FILTERING=
 ASSAY_FILE=
 W4M_ALL_ASSAYS=
+SKIP_DOWNLOAD=
 
 # Print help {{{1
 ################################################################
@@ -41,6 +42,7 @@ function print_help {
 	echo "   -A, --w4m-all-assays        Extract all assays when converting to W4M format."
 	echo "   -a, --aspera                Use aspera server for downloading. You need the ascp client to be installed, it is freely available for linux 64. See http://downloads.asperasoft.com."
 	echo "   -d, --w4m-all-assays-dir    Path to directory where to put all W4M outputs."
+	echo "   -e, --extract-by-ext  EXT   Extract all files having the same extension and place them inside a directory having this extension as name. You ca specify multiple extensions, separated by commas."
 	echo "   -g, --debug                 Debug mode."
 	echo "   -h, --help                  Print this help message."
 	echo "	 -H, --html		       FILE  Write HTML file that list files contained in output directory."
@@ -54,6 +56,7 @@ function print_help {
 	echo "   -v, --variable-output FILE  Set path for the W4M variable metadata output file. Only used if -w option is set."
 	echo "   -V, --var-na-filering NAME  Filter out NA values in the specified variable metadata columns. The value is comma separated list of column names."
 	echo "   -w, --w4m-output            Enable W4M format output.  This output consists in 3 tsv files: one for sample metadata, one for variable metadata, and one for sample x variable matrix. Use the options -s, -v and -m to set the paths for those 3 files."
+	echo "   -z, --skip-download         Skip download step and use directly the zip file name or folder name provided on command line."
 }
 
 # Error {{{1
@@ -94,6 +97,7 @@ function read_args {
 			-A|--w4m-all-assays)    W4M_ALL_ASSAYS=$YES ;;
 			-a|--aspera)            ASPERA=$YES ;;
 			-d|--w4m-all-assays-dir) W4M_ALL_ASSAYS_DIR="$2" ; shift_count=2 ;;
+			-e|--extract-by-ext)    EXTRACT_BY_EXT="$2" ; shift_count=2 ;;
 			-f|--assay-file)        ASSAY_FILE="$2" ; shift_count=2 ;;
 			-g|--debug)             DEBUG=$((DEBUG + 1)) ;;
 			-h|--help)              print_help ; exit 0 ;;
@@ -108,6 +112,7 @@ function read_args {
 			-v|--variable-output)   VARIABLE_OUTPUT="$2" ; shift_count=2 ;;
 			-V|--var-na-filering)   VARIABLE_NA_FILTERING="$2" ; shift_count=2 ;;
 			-w|--w4m-output)        W4M_OUTPUT=$YES ;;
+			-z|--skip-download)     SKIP_DOWNLOAD=$YES ;;
 			-) error "Illegal option $1." ;;
 			--) error "Illegal option $1." ;;
 			--*) error "Illegal option $1." ;;
@@ -127,8 +132,28 @@ function read_args {
 	print_debug_msg 1 "Arguments are : $args"
 	print_debug_msg 1 "Study to retrieve is : $STUDY"
 	print_debug_msg 1 "Assay file is : $ASSAY_FILE"
-	[ -n "$ASPERA" ] && print_debug_msg 1 "Aspera will be used."
-	[ -n "$TOKEN" ] && print_debug_msg 1 "Token/Password is \"$TOKEN\"."
+	[[ -n $ASPERA ]] && print_debug_msg 1 "Aspera will be used."
+	[[ -n $TOKEN ]] && print_debug_msg 1 "Token/Password is \"$TOKEN\"."
+}
+
+# Extract by extension {{{1
+################################################################
+
+function extract_by_ext {
+
+	local folder="$1"
+
+	for ext in $(echo $EXTRACT_BY_EXT | tr "," " ") ; do
+
+		# Create destination directory
+		if [[ -d $ext ]] ; then
+			rm -r $ext
+		fi
+		mkdir $ext
+
+		# Copy all files having this extension
+		find $folder -iname "*.$ext" | xargs -I % cp % $ext
+	done
 }
 
 # Convert to W4M output {{{1
@@ -157,6 +182,51 @@ function convert_to_w4m_output {
 	$PROG_PATH/isatab2w4m "${options[@]}" -i "$folder"
 }
 
+# Download {{{1
+################################################################
+
+function download {
+
+	local tmp_output=$1
+
+	# Set download command
+	if [ -n "$ASPERA" ] ; then
+
+		export ASPERA_SCP_PASS="$TOKEN"
+
+		if [[ -z $PRIVATE ]] ; then
+
+			# Make full path for public study
+			study_path=$STUDY
+			if [[ -z ${study_path##MTBLS*} ]] ; then
+				study_path="/studies/public/$study_path"
+			fi
+
+			dwnld_cmd="ascp -QT -l 1g fasp-ml@fasp.ebi.ac.uk:$study_path ."
+		else
+			dwnld_cmd="ascp -QT -l 1g mtblight@ah01.ebi.ac.uk:$STUDY ."
+		fi
+	else
+		tmp_output+=.zip
+		file=$(basename $STUDY)
+		if [ -n "$METADATA_ONLY" ]; then
+			file=metadata
+		fi
+		dwnld_cmd="wget -q -O $tmp_output http://www.ebi.ac.uk/metabolights/$(basename $STUDY)/files/$file"
+		if [ -n "$TOKEN" ] ; then
+			dwnld_cmd+="?token=$TOKEN"
+		fi
+	fi
+
+	# Run download command
+	print_debug_msg 1 "Download command: $dwnld_cmd"
+	$dwnld_cmd 2>&1
+	if [ -f $tmp_output -a ! -s $tmp_output ] ; then
+		echo "Cannot download $tmp_output file. Command \"$dwnld_cmd\" has failed." >&2
+		exit 1
+	fi
+}
+
 # MAIN {{{1
 ################################################################
 
@@ -164,41 +234,8 @@ read_args "$@"
 
 tmp_output=$(basename $STUDY)
 
-# Set download command
-if [ -n "$ASPERA" ] ; then
-
-	export ASPERA_SCP_PASS="$TOKEN"
-
-	if [[ -z $PRIVATE ]] ; then
-
-		# Make full path for public study
-		study_path=$STUDY
-		if [[ -z ${study_path##MTBLS*} ]] ; then
-			study_path="/studies/public/$study_path"
-		fi
-
-		dwnld_cmd="ascp -QT -l 1g fasp-ml@fasp.ebi.ac.uk:$study_path ."
-	else
-		dwnld_cmd="ascp -QT -l 1g mtblight@ah01.ebi.ac.uk:$STUDY ."
-	fi
-else
-	tmp_output+=.zip
-	file=$(basename $STUDY)
-	if [ -n "$METADATA_ONLY" ]; then
-		file=metadata
-	fi
-	dwnld_cmd="wget -q -O $tmp_output http://www.ebi.ac.uk/metabolights/$(basename $STUDY)/files/$file"
-	if [ -n "$TOKEN" ] ; then
-		dwnld_cmd+="?token=$TOKEN"
-	fi
-fi
-
-# Run download command
-print_debug_msg 1 "Download command: $dwnld_cmd"
-$dwnld_cmd 2>&1
-if [ -f $tmp_output -a ! -s $tmp_output ] ; then
-	echo "Cannot download $tmp_output file. Command \"$dwnld_cmd\" has failed." >&2
-	exit 1
+if [[ -z $SKIP_DOWNLOAD ]] ; then
+	download "$tmp_output"
 fi
 
 # Zip file?
@@ -215,12 +252,17 @@ if [ ${tmp_output##*.} = 'zip' ] ; then
 fi
 
 # Convert to W4M format
-if [ -n "$W4M_OUTPUT" ] ; then
+if [[ -n $W4M_OUTPUT ]] ; then
 	convert_to_w4m_output "$tmp_output"
 fi
 
+# Extract files by extension
+if [[ -n $EXTRACT_BY_EXT ]] ; then
+	extract_by_ext "$tmp_output"
+fi
+
 # Write HTML
-if [ -n "$HTML" ] ; then
+if [[ -n $HTML ]] ; then
 	cat >$HTML <<EOF
 <html>
 	<header>
@@ -257,7 +299,7 @@ EOF
 EOF
 fi
 
-# Move output directory
+# Rename output directory
 if [ -n "$OUTPUT" ] ; then
 	mv $tmp_output $OUTPUT
 fi
