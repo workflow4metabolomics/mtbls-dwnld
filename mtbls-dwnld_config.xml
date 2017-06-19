@@ -26,6 +26,8 @@
 		## Download only the metadata
 		#if $metadata:
 			-M
+		#else
+			-e mzML,mzData
 		#end if
 
 		## HTML output
@@ -80,7 +82,7 @@
 		</param>
 
 		<!-- Metadata -->
-		<param name="metadata" label="Download only the metadata" type="boolean" checked="true" truevalue="1" falsevalue="0"/>
+		<param name="metadata" label="Download only the metadata" type="boolean" help="If set to 'No', found mzData and mzML files will be extracted and output as collections." checked="true" truevalue="yes" falsevalue=""/>
 
 		<!-- Study name -->
 		<param name="study" type="text" label="Study name" help="Study name in the form MTBLSXXXX. For downloading a private study with Aspera client, set to the full path of the study." refresh_on_change="true"/>
@@ -116,6 +118,14 @@
 		<data format="tsv" name="w4m_all_assays">
 			<discover_datasets pattern="__designation_and_ext__" directory="w4m" visible="true"/>
 		</data>
+
+		<collection name="mzML" type="list" label="mzML files">
+			<discover_datasets pattern="__name_and_ext__" directory="mzML" format="mzml"/>
+		</collection>
+
+		<collection name="mzData" type="list" label="mzData files">
+			<discover_datasets pattern="__name_and_ext__" directory="mzData" format="mzdata"/>
+		</collection>
 
 		<!--		<collection name="w4m_output" type="list" label="Output compatible with W4M tools">
 			    <discover_datasets pattern="__name_and_ext__" directory="w4m" format="tsv"/>
