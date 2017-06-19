@@ -227,6 +227,27 @@ function download {
 	fi
 }
 
+# Unzip study {{{1
+################################################################
+
+function unzip_study {
+
+	local tmp_output=$1
+
+	[ -n "$(which unzip)" ] || error "unzip command not found. Please install zip package."
+
+	zip=$tmp_output
+	tmp_output=${zip%.*}
+	[[ -d "$tmp_output" ]] && rm -r "$tmp_output"
+	curdir=$(pwd)
+	mkdir $tmp_output
+	cd $tmp_output
+	unzip -qq "$curdir/$zip" || error "Unable to unzip archive $curdir/$zip."
+	cd $curdir
+
+	echo $tmp_output
+}
+
 # MAIN {{{1
 ################################################################
 
@@ -240,15 +261,7 @@ fi
 
 # Zip file?
 if [ ${tmp_output##*.} = 'zip' ] ; then
-	[ -n "$(which unzip)" ] || error "unzip command not found. Please install zip package."
-
-	zip=$tmp_output
-	tmp_output=${zip%.*}
-	curdir=$(pwd)
-	mkdir $tmp_output
-	cd $tmp_output
-	unzip -qq "$curdir/$zip" || error "Unable to unzip archive $curdir/$zip."
-	cd $curdir
+	tmp_output=$(unzip_study "$tmp_output")
 fi
 
 # Convert to W4M format
