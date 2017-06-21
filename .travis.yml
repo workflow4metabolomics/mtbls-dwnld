@@ -1,3 +1,5 @@
+language: python
+
 notifications:
  email:
   recipients:
@@ -11,5 +13,5 @@ install:
     - pip install planemo==$PLANEMO_RELEASE
        
 script:
-    - planemo lint .
-    - planemo test --conda_auto_init --conda_auto_install --conda_dependency_resolution --galaxy_branch $GALAXY_RELEASE --no_cache_galaxy .
+    - planemo lint $TRAVIS_BUILD_DIR
+    - planemo test --conda_auto_init --conda_auto_install --conda_dependency_resolution --galaxy_branch $GALAXY_RELEASE --no_cache_galaxy $TRAVIS_BUILD_DIR
