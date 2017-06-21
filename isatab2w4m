@@ -138,7 +138,7 @@ get.assay <- function(isa, study.name, assay.index) {
 	study.assays <- isa@assay.files.per.study[[study.name]]
 	study.assay.df <- study.assays[[assay.index]]
 	study.assay.filename <- isa@assay.filenames[[assay.index]]
-	cat(paste("Assay file n°", assay.index, " \"", study.assay.filename, "\" has been selected.\n", sep = ''))
+	cat(paste("Assay file ", assay.index, " \"", study.assay.filename, "\" has been selected.\n", sep = ''))
 
 	return(list(filename = study.assay.filename, df = study.assay.df))
 }
