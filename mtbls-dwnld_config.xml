@@ -4,7 +4,7 @@
 
 	<requirements>
 		<requirement type="package" version="1.20.0">r-getopt</requirement>
-		<requirement type="package" version="1.20.0">r-r.utils</requirement>
+		<requirement type="package">r-r.utils</requirement>
 		<requirement type="package">bioconductor-risa</requirement>
 	</requirements>
 
