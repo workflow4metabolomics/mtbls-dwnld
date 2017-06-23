@@ -4,7 +4,7 @@ notifications:
    - pierrick.rogermele@icloud.com
 
 install:
-    - apt-get install -y --no-install-recommends apt-utils wget r-base git make g++ libxml2-dev libcurl4-openssl-dev libnetcdf-dev gfortran liblapack-dev libblas-dev
+    - sudo apt-get install -y --no-install-recommends apt-utils wget r-base git make g++ libxml2-dev libcurl4-openssl-dev libnetcdf-dev gfortran liblapack-dev libblas-dev
     - R -e "install.packages(c('getopt', 'R.utils'), repos = 'http://cran.rstudio.com', dependencies = TRUE)"
     - R -e "source('http://bioconductor.org/biocLite.R') ; biocLite('Risa')"
     - wget http://download.asperasoft.com/download/sw/ascp-client/3.5.4/ascp-install-3.5.4.102989-linux-64.sh
