@@ -4,7 +4,7 @@ notifications:
    - pierrick.rogermele@icloud.com
 
 install:
-    - sudo add-apt-repository "deb http://cran.univ-paris1.fr/bin/linux/ubuntu precise"
+    - sudo add-apt-repository "deb http://cran.univ-paris1.fr/bin/linux/ubuntu precise/"
     - sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E084DAB9
     - sudo apt-get update
     - sudo apt-get install -y --no-install-recommends apt-utils wget r-base git make g++ libxml2-dev libcurl4-openssl-dev libnetcdf-dev gfortran liblapack-dev libblas-dev
