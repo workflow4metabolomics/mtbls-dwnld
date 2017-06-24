@@ -19,6 +19,11 @@ For more information, see the galaxy tool page, help section, available inside `
  
 ## Updates
 
+### 2.0.4
+
+ * Test presence of downloader program.
+ * Correct running of `wget`.
+
 ### 2.0.3
 
  * Allow to choose the downloading method (`wget` or `aspera`).

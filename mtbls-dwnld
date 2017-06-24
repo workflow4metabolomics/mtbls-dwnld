@@ -189,8 +189,10 @@ function download {
 
 	local tmp_output=$1
 
-	# Set download command
+	# aspera
 	if [ -n "$ASPERA" ] ; then
+
+		[ -n "$(which ascp)" ] || error "ascp command not found. Please install Aspera client."
 
 		export ASPERA_SCP_PASS="$TOKEN"
 
@@ -206,7 +208,11 @@ function download {
 		else
 			dwnld_cmd="ascp -QT -l 1g mtblight@ah01.ebi.ac.uk:$STUDY ."
 		fi
+
+	# wget
 	else
+		[ -n "$(which wget)" ] || error "wget command not found."
+
 		tmp_output+=.zip
 		file=$(basename $STUDY)
 		if [ -n "$METADATA_ONLY" ]; then
