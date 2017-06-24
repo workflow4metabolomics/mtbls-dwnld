@@ -1,4 +1,4 @@
-<tool id="mtbls-dwnld" name="Metabolights downloader" version="2.0.0">
+<tool id="mtbls-dwnld" name="Metabolights downloader" version="2.0.3">
 
 	<description>Import ISA TAB data format from public and private MetaboLights studies</description>
 
@@ -75,23 +75,23 @@
 
 	<inputs>
 
+		<!-- Study name -->
+		<param name="study" type="text" label="Study name" help="Study name in the form MTBLSXXXX. For downloading a private study with Aspera client, set to the full path of the study." refresh_on_change="true"/>
+
 		<!-- Public or private -->
-		<param name="type" label="Study type" type="select">
+		<param name="type" label="Study type" type="select" help="Indicate here if the study you want to download is public or private.">
 			<option value="public">Public</option>
 			<option value="private">Private</option>
 		</param>
 
 		<!-- Downloader -->
-		<param name="downloader" label="Downloader" type="select">
+		<param name="downloader" label="Downloader" type="select" help="If downloading only the metadata prefer wget, otherwise you can choose aspera for which you will need a token both in case of public and private data.">
 			<option value="wget">wget</option>
 			<option value="aspera">Aspera</option>
 		</param>
 
 		<!-- Metadata -->
 		<param name="metadata" label="Download only the metadata" type="boolean" help="If set to 'No', found mzData and mzML files will be extracted and output as collections." checked="true" truevalue="yes" falsevalue=""/>
-
-		<!-- Study name -->
-		<param name="study" type="text" label="Study name" help="Study name in the form MTBLSXXXX. For downloading a private study with Aspera client, set to the full path of the study." refresh_on_change="true"/>
 
 		<!-- Token -->
 		<param name="token" type="text" optional="true" format="txt" label="Token"  help="Token is required for private study or for downloading with Aspera client."/>
@@ -176,10 +176,111 @@
 		</test>
 	</tests>
 
-    <help><![CDATA[
-**Overview**
-A tool to transfer MetaboLights studies. 
-    ]]></help>
+    <help>
+<!-- @@@BEGIN_RST@@@ -->
+
+=======================
+Metabolights Downloader
+=======================
+
+A tool to download data from MetaboLights studies. You can download either a private or a public study, using `wget` as well as `aspera` methods.
+
+The following outputs are available:
+ - A single assay in W4M three files format.
+ - All assays in W4M three files format.
+ - A collection of mzML files found inside the study.
+ - A collection of mzData files found inside the study.
+
+-------------
+Input setting
+-------------
+
+Study name
+==========
+
+Fill this field with the name of the study you want to download.
+
+.. class:: warningmark
+
+In case of the download of a private study with *aspera* downloader, you must write the full path of the study, not only the name.
+
+Study type
+==========
+
+You must select here the type of the study, which can be either *public* or *private*. In case of a *private* study, you will have to input a security token.
+
+Downloader
+==========
+
+With this field, you can control the program used for downloading the study. You have the choice between standard *wget* and *aspera*. *wget* will download the data through *http*, while *aspera* will do it through *ftp*. If you are only interested in the metadata, choose *wget* since it is able to download only these data. If you are interested in *mzML* or *mzData* files, choose *aspera* as it is a faster downloader.
+
+Metadata
+========
+
+If you are only interested in metadata, choose *Yes*, and make sure to select *wget* as well in the **Downloader** field.
+If you set this field to *No*, then the tool will try to extract *mzData* and *mzML* files and output them as collections.
+
+Token
+=====
+
+You need to provide a token when downloading with *aspera* (both for private and public studies), or when downloading a private study with *wget*.
+
+Assay
+=====
+
+For any study, the tool will try to output one of the assay into W4M three files format. The names of the 3 output datasets being fixed, you can use them as input to other tools.
+By default the first assay will be chosen. Here you can specify a different assay to extract, either by typing the name of the assay file, or, in case of a public study, by selecting it into a list.
+
+Sample metadata columns NA filtering
+====================================
+
+This field is used to apply some filtering on the sample medata file of the W4M three files format output.
+Set a comma separated list of column names into this field. When building the sample medata table, each row containing an NA value in any of the specified columns will be removed.
+
+Variable metadata columns NA filtering
+======================================
+
+Same filtering than for the sample metadata, but applied on the variable metadata.
+
+------------
+Output files
+------------
+
+HTML output
+===========
+
+An HTML file listing the ISA-Tab files: `i_*.txt`, `s_*.txt`, `a_*.txt` and `m_*.txt`.
+
+Single assay in W4M three files format
+======================================
+
+The assay chosen with the **Assay** field or the first assay will be output in W4M three files format:
+ * `W4M variable metadata.tsv`.
+ * `W4M sample metadata.tsv`.
+ * `W4M data matrix.tsv`.
+
+All assays in W4M three files format
+====================================
+
+All assay files will also be output in W4M three files format, one by one. For each assay the names of the three datasets will be:
+ * `[study_name]-[assay_name]-variable-metadata.tsv`.
+ * `[study_name]-[assay_name]-sample-metadata.tsv`.
+ * `[study_name]-[assay_name]-sample-variable-matrix.tsv`.
+
+Collection of mzData files
+==========================
+
+If you have unselected the **Metadata only** field, then the tool will try to find *mzData* files and put them inside this collection.
+The collection will be empty if the **Metadata only** field is set to **Yes**.
+
+Collection of mzML files
+========================
+
+If you have unselected the **Metadata only** field, then the tool will try to find *mzML* files and put them inside this collection.
+The collection will be empty if the **Metadata only** field is set to **Yes**.
+
+<!-- @@@END_RST@@@ -->
+    </help>
 
 	<!-- CITATIONS {{{1 -->
     <citations>
