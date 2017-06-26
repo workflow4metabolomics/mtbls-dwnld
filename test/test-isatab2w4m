@@ -79,15 +79,16 @@ function test_assay_selection {
 # Test NA filtering {{{1
 ################################################################
 
-function test_na_filtering {
+function do_test_na_filtering {
 
-	study=MTBLS404
-	study_path="$RES_PATH/$study"
-	output_sample_file=%s-w4m-sample-metadata-na-filtering.tsv
-	output_variable_file=%s-w4m-variable-metadata-na-filtering.tsv
-	output_matrix_file=%s-w4m-sample-variable-matrix-na-filtering.tsv
+	local var_filtering="$1"
+	local study=MTBLS404
+	local study_path="$RES_PATH/$study"
+	local output_sample_file=%s-w4m-sample-metadata-na-filtering.tsv
+	local output_variable_file=%s-w4m-variable-metadata-na-filtering.tsv
+	local output_matrix_file=%s-w4m-sample-variable-matrix-na-filtering.tsv
 
-	$PROG_PATH/../isatab2w4m -i $study_path -S 'Characteristics[gender]' -V 'mass_to_charge' -d $OUTPUT_PATH -s $output_sample_file -v $output_variable_file -m  $output_matrix_file || error "Program terminated abnormaly while processing study $study."
+	$PROG_PATH/../isatab2w4m -i $study_path -S 'Characteristics[gender]' -V "$var_filtering" -d $OUTPUT_PATH -s $output_sample_file -v $output_variable_file -m  $output_matrix_file || error "Program terminated abnormaly while processing study $study."
 	for f in sample-metadata variable-metadata sample-variable-matrix ; do
 		ref_file="$study_path/$study-w4m-$f-na-filtering.tsv"
 		output_file="$OUTPUT_PATH/$study-w4m-$f-na-filtering.tsv"
@@ -97,6 +98,10 @@ function test_na_filtering {
 	done
 }
 
+function test_na_filtering {
+	do_test_na_filtering mass_to_charge
+	do_test_na_filtering mass_to_charge,mass_to_charge
+}
 # MAIN {{{1
 ################################################################
 
