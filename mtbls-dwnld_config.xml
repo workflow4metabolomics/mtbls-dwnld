@@ -119,7 +119,7 @@
 
         <data name="html_output" label="ISA-Tab of ${study}.html" format="html"/>
 
-		<data format="tsv" name="w4m_all_assays">
+		<data format="tabular" name="w4m_all_assays">
 			<discover_datasets pattern="__designation_and_ext__" directory="w4m" visible="true"/>
 		</data>
 
