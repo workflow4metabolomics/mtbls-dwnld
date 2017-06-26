@@ -225,16 +225,43 @@ Assay
 For any study, the tool will try to output one of the assay into W4M three files format. The names of the 3 output datasets being fixed, you can use them as input to other tools.
 By default the first assay will be chosen. Here you can specify a different assay to extract, either by typing the name of the assay file, or, in case of a public study, by selecting it into a list.
 
-Sample metadata columns NA filtering
-====================================
+NA filtering of W4M outputs
+===========================
 
-This field is used to apply some filtering on the sample medata file of the W4M three files format output.
-Set a comma separated list of column names into this field. When building the sample medata table, each row containing an NA value in any of the specified columns will be removed.
+These fields are used to apply some filtering on the W4M output files.
+Set a comma separated list of column names into this field. When building the output file, each row containing an NA value in any of the specified columns will be removed.
+
+.. class:: warningmark
+
+Be aware that if you specify the name of a column in which all values are NA, then the output file will be empty and will make Galaxy think the tool has failed. It should output an error like this one:
+
+::
+	Traceback (most recent call last):
+	  File "/home/pierrick/dev/galaxy/lib/galaxy/jobs/runners/local.py", line 130, in queue_job
+	  	job_wrapper.finish( stdout, stderr, exit_code )
+	  File "/home/pierrick/dev/galaxy/lib/galaxy/jobs/__init__.py", line 1386, in finish
+	  	'primary': self.tool.collect_primary_datasets(out_data, tool_working_directory, input_ext, input_dbkey)
+	  File "/home/pierrick/dev/galaxy/lib/galaxy/tools/__init__.py", line 1613, in collect_primary_datasets
+	  	return output_collect.collect_primary_datasets( self, output, job_working_directory, input_ext, input_dbkey=input_dbkey )
+	  File "/home/pierrick/dev/galaxy/lib/galaxy/tools/parameters/output_collect.py", line 325, in collect_primary_datasets
+	  	primary_data.set_meta()
+	  File "/home/pierrick/dev/galaxy/lib/galaxy/model/__init__.py", line 2038, in set_meta
+	  	return self.datatype.set_meta( self, **kwd )
+	  File "/home/pierrick/dev/galaxy/lib/galaxy/datatypes/tabular.py", line 978, in set_meta
+	  	data_row = next(reader)
+	StopIteration
+
+An issue (#4231) concerning this point has been submitted to the Galaxy team.
+
+Sample metadata columns NA filtering
+------------------------------------
+
+Use this field to apply NA filtering on the sample metadata file of the W4M three files format output.
 
 Variable metadata columns NA filtering
-======================================
+--------------------------------------
 
-Same filtering than for the sample metadata, but applied on the variable metadata.
+Use this field to apply NA filtering on the variable metadata file of the W4M three files format output.
 
 ------------
 Output files
