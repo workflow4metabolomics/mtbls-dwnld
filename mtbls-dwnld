@@ -225,9 +225,10 @@ function download {
 	fi
 
 	# Run download command
-	print_debug_msg 1 "Download command: $(which wget)"
+	print_debug_msg 1 "wget: $(which wget)"
+	print_debug_msg 1 "ascp: $(which ascp)"
 	print_debug_msg 1 "Download command: $dwnld_cmd"
-	$dwnld_cmd 2>/dev/null || error "Downloading of study $STUDY has failed."
+	$dwnld_cmd 2>&1 >/dev/null || error "Downloading of study $STUDY has failed."
 	if [ -f $tmp_output -a ! -s $tmp_output ] ; then
 		echo "Cannot download $tmp_output file. Command \"$dwnld_cmd\" has failed." >&2
 		exit 1
@@ -317,7 +318,7 @@ if [[ -z $SKIP_DOWNLOAD ]] ; then
 fi
 
 # Zip file?
-if [ ${tmp_output##*.} = 'zip' ] ; then
+if [[ ${tmp_output##*.} == 'zip' ]] ; then
 	tmp_output=$(unzip_study "$tmp_output")
 fi
 
@@ -337,6 +338,6 @@ if [[ -n $HTML ]] ; then
 fi
 
 # Rename output directory
-if [ -n "$OUTPUT" ] ; then
+if [[ -n $OUTPUT ]] ; then
 	mv $tmp_output $OUTPUT
 fi

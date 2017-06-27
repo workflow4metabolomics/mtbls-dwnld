@@ -61,9 +61,9 @@ read.args <- function() {
 
 	# Parse values
 	if ( ! is.null(opt[['samp-na-filering']]))
-		opt[['samp-na-filering']] <- strsplit(opt[['samp-na-filering']], ',')
+		opt[['samp-na-filering']] <- strsplit(opt[['samp-na-filering']], ',')[[1]]
 	if ( ! is.null(opt[['var-na-filering']]))
-		opt[['var-na-filering']] <- strsplit(opt[['var-na-filering']], ',')
+		opt[['var-na-filering']] <- strsplit(opt[['var-na-filering']], ',')[[1]]
 
 	# Check values
 	if (is.null(opt$input))
