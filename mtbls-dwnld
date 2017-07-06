@@ -228,7 +228,7 @@ function download {
 	print_debug_msg 1 "wget: $(which wget)"
 	print_debug_msg 1 "ascp: $(which ascp)"
 	print_debug_msg 1 "Download command: $dwnld_cmd"
-	$dwnld_cmd 2>&1 >/dev/null || error "Downloading of study $STUDY has failed."
+	$dwnld_cmd 2>/dev/null >/dev/null || error "Downloading of study $STUDY has failed."
 	if [ -f $tmp_output -a ! -s $tmp_output ] ; then
 		echo "Cannot download $tmp_output file. Command \"$dwnld_cmd\" has failed." >&2
 		exit 1
