@@ -1,16 +1,10 @@
-XMLCFG=mtbls-dwnld_config.xml
-CONDADIR=$(HOME)/w4m-conda
-VENV=$(HOME)/planemo-venv
-ACTIVATE_VENV=$(VENV)/bin/activate
-PLANEMO_VERSION=0.41.0
-GALAXY_VERSION=release_17.01
-
 all:
 
-test: plaintest planemolint planemotest
+test: 
+	$(MAKE) -C test
 
-planemotest: conda
-	. $(ACTIVATE_VENV) && planemo test --conda_prefix $(CONDADIR) --install_galaxy --galaxy_branch $(GALAXY_VERSION) --conda_dependency_resolution $(XMLCFG)
+planemotest:
+	planemo test --install_galaxy --galaxy_branch 17.01 --conda_dependency_resolution
 
 $(VENV):
 	virtualenv $@
@@ -25,11 +19,10 @@ planemo-install: $(VENV)
 conda: $(CONDADIR)
 	. $(ACTIVATE_VENV) && planemo conda_install --conda_prefix $(CONDADIR) $(XMLCFG)
 
-planemolint: planemo-install
-	. $(ACTIVATE_VENV) && planemo lint $(XMLCFG)
+planemolint:
+	planemo lint
 
 plaintest:
-	$(MAKE) -C test
 
 clean:
 	$(MAKE) -C test $@
