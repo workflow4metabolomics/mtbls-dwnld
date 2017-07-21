@@ -11,23 +11,24 @@ YES=yes
 # Global variables {{{1
 ################################################################
 
-DEBUG=0
 ASPERA=
-PRIVATE=
-TOKEN=
-OUTPUT=
-HTML=
-METADATA_ONLY=
-MATRIX_OUTPUT=
-SAMPLE_OUTPUT=
-VARIABLE_OUTPUT=
-W4M_OUTPUT=
-W4M_ALL_ASSAYS_DIR=
-SAMPLE_NA_FILTERING=
-VARIABLE_NA_FILTERING=
 ASSAY_FILE=
-W4M_ALL_ASSAYS=
+DEBUG=0
+HTML=
+MATRIX_OUTPUT=
+METADATA_ONLY=
+OUTPUT=
+PRIVATE=
+QUIET=0
+SAMPLE_NA_FILTERING=
+SAMPLE_OUTPUT=
 SKIP_DOWNLOAD=
+TOKEN=
+VARIABLE_NA_FILTERING=
+VARIABLE_OUTPUT=
+W4M_ALL_ASSAYS=
+W4M_ALL_ASSAYS_DIR=
+W4M_OUTPUT=
 
 # Print help {{{1
 ################################################################
@@ -47,9 +48,10 @@ function print_help {
 	echo "   -h, --help                  Print this help message."
 	echo "	 -H, --html		       FILE  Write HTML file that list files contained in output directory."
 	echo "   -m, --matrix-output   FILE  Set path for the W4M sample x variable matrix output file. Only used if -w option is set."
-	echo "   -M, --metadata-only         Download only the metadata (ISA-Tab files i_*, m_*, s_* and a_*) files. This option has no effet is aspera is selecte (option -a)."
+	echo "   -M, --metadata-only         Download only the metadata (ISA-Tab files i_*, m_*, s_* and a_*) files. This option has no effet if aspera is selected (option -a)."
 	echo "   -o, --output          DIR   Set the output directory to use."
 	echo "   -p, --private               Indicate the study to download is not public. This is meant for aspera download, since the URL will be different for a public or a private study."
+	echo "   -q, --quiet                 Does not print any output. Can be specified twice in order to be real quiet."
 	echo "   -s, --sample-output   FILE  Set path for the W4M sample metadata output file. Only used if -w option is set."
 	echo "   -S, --samp-na-filering NAME Filter out NA values in the specified sample metadata columns. The value is comma separated list of column names."
 	echo "   -t, --token           TOKEN Set the token or password to use."
@@ -106,6 +108,7 @@ function read_args {
 			-M|--metadata-only)     METADATA_ONLY=$YES ;;
 			-o|--output)            OUTPUT="$2" ; shift_count=2 ;;
 			-p|--private)           PRIVATE=$YES ;;
+			-q|--quiet)             QUIET=$((QUIET + 1)) ;;
 			-s|--sample-output)     SAMPLE_OUTPUT="$2" ; shift_count=2 ;;
 			-S|--samp-na-filering)  SAMPLE_NA_FILTERING="$2" ; shift_count=2 ;;
 			-t|--token)             TOKEN="$2" ; shift_count=2 ;;
@@ -188,13 +191,19 @@ function convert_to_w4m_output {
 function download {
 
 	local tmp_output=$1
+	local dwnld_flags=
+
+	# Silence downloader output
+	[[ $QUIET -eq 0 ]] || dwnld_flags=-q
 
 	# aspera
 	if [ -n "$ASPERA" ] ; then
 
+		dwnld_flags+=" -QT -l 1g"
 		[ -n "$(which ascp)" ] || error "ascp command not found. Please install Aspera client."
 
 		export ASPERA_SCP_PASS="$TOKEN"
+		src=
 
 		if [[ -z $PRIVATE ]] ; then
 
@@ -203,11 +212,13 @@ function download {
 			if [[ -z ${study_path##MTBLS*} ]] ; then
 				study_path="/studies/public/$study_path"
 			fi
+			src="fasp-ml@fasp.ebi.ac.uk:$study_path"
 
-			dwnld_cmd="ascp -QT -l 1g fasp-ml@fasp.ebi.ac.uk:$study_path ."
 		else
-			dwnld_cmd="ascp -QT -l 1g mtblight@ah01.ebi.ac.uk:$STUDY ."
+			src="mtblight@ah01.ebi.ac.uk:$STUDY"
 		fi
+
+		dwnld_cmd="ascp $dwnld_flags $src ."
 
 	# wget
 	else
@@ -218,7 +229,7 @@ function download {
 		if [ -n "$METADATA_ONLY" ]; then
 			file=metadata
 		fi
-		dwnld_cmd="wget -q -O $tmp_output http://www.ebi.ac.uk/metabolights/$(basename $STUDY)/files/$file"
+		dwnld_cmd="wget $dwnld_flags -O $tmp_output http://www.ebi.ac.uk/metabolights/$(basename $STUDY)/files/$file"
 		if [ -n "$TOKEN" ] ; then
 			dwnld_cmd+="?token=$TOKEN"
 		fi
@@ -228,7 +239,12 @@ function download {
 	print_debug_msg 1 "wget: $(which wget)"
 	print_debug_msg 1 "ascp: $(which ascp)"
 	print_debug_msg 1 "Download command: $dwnld_cmd"
-	$dwnld_cmd 2>/dev/null >/dev/null || error "Downloading of study $STUDY has failed."
+	if [[ $QUIET -ge 2 ]] ; then
+		$dwnld_cmd 2>/dev/null >/dev/null
+	else
+		$dwnld_cmd
+	fi
+	[[ $? == 0 ]] || error "Downloading of study $STUDY has failed."
 	if [ -f $tmp_output -a ! -s $tmp_output ] ; then
 		echo "Cannot download $tmp_output file. Command \"$dwnld_cmd\" has failed." >&2
 		exit 1
@@ -243,6 +259,10 @@ function download {
 function unzip_study {
 
 	local tmp_output=$1
+	local unzip_flags=
+
+	# Silence unzip program
+	[[ $QUIET -eq 0 ]] || unzip_flags=-qq
 
 	print_debug_msg 1 "Unzipping file \"$tmp_output\"."
 
@@ -256,7 +276,7 @@ function unzip_study {
 	curdir=$(pwd)
 	mkdir $tmp_output
 	cd $tmp_output
-	unzip -qq "$curdir/$zip" || error "Unable to unzip archive $curdir/$zip."
+	unzip $unzip_flags "$curdir/$zip" || error "Unable to unzip archive $curdir/$zip."
 	cd $curdir
 
 	echo $tmp_output

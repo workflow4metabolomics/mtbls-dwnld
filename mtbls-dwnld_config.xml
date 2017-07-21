@@ -18,6 +18,7 @@
 
 		$__tool_directory__/mtbls-dwnld
 
+		-qq
 		#if $token:
 			-t "$token"
 		#end if
