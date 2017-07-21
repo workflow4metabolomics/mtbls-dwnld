@@ -14,4 +14,5 @@ install:
     - sudo bash ascp-install-3.5.4.102989-linux-64.sh
 
 script:
-    - make plaintest
+    - make test
+    - make planemolint
