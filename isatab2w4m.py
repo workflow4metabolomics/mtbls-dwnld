@@ -12,19 +12,43 @@ from isatools import isatab as ISATAB
 if sys.hexversion < 0x03040000:
     sys.exit("Python 3.4 or newer is required to run this program.")
 
-# Error message
+# Error message {{{1
 ################################################################
 
 def error(msg):
     print('ERROR: ' + msg, file = sys.stderr)
     sys.exit(1)
     
-# Information message
+# Information message {{{1
 ################################################################
 
 def info(msg):
     print('INFO: ' + msg)
 
+# Read arguments {{{1
+################################################################
+
+def read_args():
+    
+    s1 = 'You can use it as a template, where %%s will be replaced by the study name and %%a by the assay filename.'
+	
+    # Default values
+    dft_output_dir = '.'
+    dft_sample_file = '%s-%a-sample-metadata.tsv'
+    dft_variable_file = '%s-%a-variable-metadata.tsv'
+    dft_matrix_file = '%s-%a-sample-variable-matrix.tsv'
+    
+    parser = argparse.ArgumentParser(description='Script for extracting assays from ISATab data and outputing in W4M format.')
+    parser.add_argument('-i', help = 'Input directory containing the ISA-Tab files.', dest = 'input_dir', required = True)
+    parser.add_argument('-f', help = 'Filename of the assay to extract. If unset, the first assay of the chosen study will be used.',   dest = 'assay_filename', required = False)
+    parser.add_argument('-n', help = 'Filename of the study to extract. If unset, the first study found will be used.', dest = 'study_filename', required = False)
+    parser.add_argument('-d', help = 'Set output directory. Default is "' + dft_output_dir + '".', dest = "output_dir", required = False, default = dft_output_dir)
+    parser.add_argument('-s', help = 'Output file for sample metadata. ' + s1 + ' Default is "' + dft_sample_file.replace('%', '%%') + '".', dest = "sample_output", required = False, default = dft_sample_file)
+    parser.add_argument('-v', help = 'Output file for variable metadata. ' + s1 + ' Default is "' + dft_variable_file.replace('%', '%%') + '".', dest = 'variable_output', required = False, default = dft_variable_file)
+    parser.add_argument('-m', help = 'Output file for sample x variable matrix. ' + s1 + ' Default is "' + dft_matrix_file.replace('%', '%%') + '".', dest = 'matrix_output', required = False, default = dft_matrix_file)
+    args = parser.parse_args()
+    return vars(args)
+    
 # Select study {{{1
 ################################################################
 
@@ -53,7 +77,7 @@ def select_study(investigation, study_filename = None):
     if study is None and len(investigation.studies) > 0 :
         study = investigation.studies[0]
         
-    return(study)
+    return study
     
 # Select assays {{{1
 ################################################################
@@ -79,7 +103,7 @@ def select_assays(study, assay_filename = None):
     if len(assays) == 0:
         assays = study.assays
 
-    return(assays)
+    return assays
     
 # Get data file {{{1
 ################################################################
@@ -101,7 +125,7 @@ def get_data_file(assay):
     if data_filename is None:
         error('Found no data file in assay "', assayfilename, '".')
         
-    return(data_filename)
+    return data_filename
     
 # Get data array {{{1
 ################################################################
@@ -109,7 +133,7 @@ def get_data_file(assay):
 def get_data_array(input_dir, assay):
     data_filename = get_data_file(assay)
     array = ISATAB.read_tfile(os.path.join(input_dir, data_filename))
-    return(array)
+    return array
 
 # Make variable names {{{1
 ################################################################
@@ -130,8 +154,10 @@ def make_variable_names(data_array):
     
     # Remove unwanted characters
     
+    print('--------------------------------------------------------------------------------')
+    print('VAR NAMES')
     print(var_names)
-    return(var_names)
+    return var_names
 
 # Get investigation file {{{1
 ################################################################
@@ -153,7 +179,7 @@ def get_investigation_file(input_dir):
     investigation_file = investigation_files[0]
     info('Found investigation file "' + investigation_file + '".')
     
-    return(investigation_file)
+    return investigation_file
     
 # Load investigation {{{1
 ################################################################
@@ -162,7 +188,7 @@ def load_investigation(input_dir):
     investigation_file = get_investigation_file(input_dir)
     f = open(investigation_file, 'r')
     investigation = ISATAB.load(f)
-    return(investigation)
+    return investigation
     
 # Convert to W4M {{{1
 ################################################################
@@ -181,6 +207,8 @@ def convert2w4m(input_dir, study_filename = None, assay_filename = None):
     assays = select_assays(study, assay_filename)
     
     # Loop on all assays
+    print('--------------------------------------------------------------------------------')
+    print('ASSAYS')
     for assay in assays:
         info('Processing assay "' + assay.filename + '".')
         data_array = get_data_array(input_dir, assay)
@@ -194,11 +222,6 @@ def convert2w4m(input_dir, study_filename = None, assay_filename = None):
 if __name__ == '__main__':
     
     # Parse command line arguments
-    parser = argparse.ArgumentParser(description='Script for extracting assays from ISATab data and outputing in W4M format.')
-    parser.add_argument('-i', help = 'Input directory containing the ISA-Tab files.',   dest = 'input_dir',    required = True)
-    parser.add_argument('-f', help = 'Filename of the assay to extract. If unset, the first assay of the chosen study will be used.',   dest = 'assay_filename',    required = False)
-    parser.add_argument('-n', help = 'Filename of the study to extract. If unset, the first study found will be used.',   dest = 'study_filename',    required = False)
-    args = parser.parse_args()
-    args_dict = vars(args)
+    args_dict = read_args()
     
-    convert2w4m(**args_dict)
+    convert2w4m(input_dir = args_dict['input_dir'], study_filename = args_dict['study_filename'], assay_filename = args_dict['assay_filename'])
