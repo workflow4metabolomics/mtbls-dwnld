@@ -7,7 +7,7 @@
 PROG_PATH=$(dirname $0)
 RES_PATH=$PROG_PATH/res
 OUTPUT_PATH=$PROG_PATH/outputs
-ISATAB2W4M=$ISATAB2W4M
+ISATAB2W4M=$PROG_PATH/../isatab2w4m
 
 [[ -d $OUTPUT_PATH ]] || mkdir $OUTPUT_PATH
 
@@ -33,6 +33,15 @@ function read_args {
 	[[ $# -eq 1 ]] && ISATAB2W4M="$1"
 }
 
+# Run isatab2w4m {{{1
+################################################################
+
+function run_isatab2w4m {
+
+	echo "Running command '$ISATAB2W4M $@'..."
+	$ISATAB2W4M "$@"
+}
+
 # Plain test {{{1
 ################################################################
 
@@ -47,9 +56,7 @@ function plain_test {
 		output_matrix_file=%s-w4m-sample-variable-matrix.tsv
 
 		# Run program
-		cmd="$ISATAB2W4M -i $study_path -d \"$OUTPUT_PATH\" -s $output_sample_file -v $output_variable_file -m  $output_matrix_file"
-		echo "Running command '$cmd'..."
-		$cmd || error "Program terminated abnormaly while processing study $study."
+		run_isatab2w4m -i $study_path -d "$OUTPUT_PATH" -s $output_sample_file -v $output_variable_file -m  $output_matrix_file || error "Program terminated abnormaly while processing study $study."
 
 		# Check output files
 		for f in sample-metadata variable-metadata sample-variable-matrix ; do
@@ -77,9 +84,7 @@ function test_assay_selection {
 		output_matrix_file=%s-w4m-sample-variable-matrix-%a.tsv
 
 		# Run program
-		cmd="$ISATAB2W4M -i $study_path -n $study -f \"$assay\" -d \"$OUTPUT_PATH\" -s \"$output_sample_file\" -v \"$output_variable_file\" -m  \"$output_matrix_file\""
-		echo "Running command '$cmd'..."
-		$cmd || error "Program terminated abnormaly while processing study $study."
+		run_isatab2w4m -i $study_path -n $study -f "$assay" -d "$OUTPUT_PATH" -s "$output_sample_file" -v "$output_variable_file" -m  "$output_matrix_file" || error "Program terminated abnormaly while processing study $study."
 
 		# Check output files
 		for f in sample-metadata variable-metadata sample-variable-matrix ; do
@@ -105,9 +110,7 @@ function do_test_na_filtering {
 	local output_matrix_file=%s-$var_filtering-na-filtering-w4m-sample-variable-matrix.tsv
 
 	# Run program
-	cmd="$ISATAB2W4M -i $study_path -S 'Characteristics[gender]' -V \"$var_filtering\" -d $OUTPUT_PATH -s $output_sample_file -v $output_variable_file -m  $output_matrix_file"
-	echo "Running command '$cmd'..."
-	$cmd || error "Program terminated abnormaly while processing study $study."
+	run_isatab2w4m -i $study_path -S 'Characteristics[gender]' -V "$var_filtering" -d $OUTPUT_PATH -s $output_sample_file -v $output_variable_file -m  $output_matrix_file || error "Program terminated abnormaly while processing study $study."
 
 	for f in sample-metadata variable-metadata sample-variable-matrix ; do
 		ref_file="$study_path/$study-w4m-$f-na-filtering.tsv"
