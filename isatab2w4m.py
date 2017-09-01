@@ -46,6 +46,8 @@ def read_args():
     parser.add_argument('-s', help = 'Output file for sample metadata. ' + s1 + ' Default is "' + dft_sample_file.replace('%', '%%') + '".', dest = "sample_output", required = False, default = dft_sample_file)
     parser.add_argument('-v', help = 'Output file for variable metadata. ' + s1 + ' Default is "' + dft_variable_file.replace('%', '%%') + '".', dest = 'variable_output', required = False, default = dft_variable_file)
     parser.add_argument('-m', help = 'Output file for sample x variable matrix. ' + s1 + ' Default is "' + dft_matrix_file.replace('%', '%%') + '".', dest = 'matrix_output', required = False, default = dft_matrix_file)
+    parser.add_argument('-S', help = 'Filter out NA values in the specified sample metadata columns. The value is comma separated list of column names.',   dest = 'samp_na_filering', required = False)
+    parser.add_argument('-V', help = 'Filter out NA values in the specified variable metadata columns. The value is comma separated list of column names.', dest = 'var_na_filering',  required = False)
     args = parser.parse_args()
     return vars(args)
     
@@ -140,23 +142,30 @@ def get_data_array(input_dir, assay):
 
 def make_variable_names(data_array):
 
-    var_names = [None] * data_array.axes[0].size
+    var_names = None
  
     # Make variable names from data values
     for col in ['mass_to_charge', 'retention_time']:
         try:
-            c = data_array[col]
-            var_names = [ s + t for s, t in zip(var_names, c)]
+            if var_names is None:
+                var_names = data_array[col].values
+            else:
+                var_names = [ s + ('' if str(t) == '' else ('_' + str(t))) for s, t in zip(var_names, data_array[col].values)]
         except:
             pass
-
-    # Create missing variable names
     
     # Remove unwanted characters
+    for i, x in enumerate(var_names):
+        if x != '':
+            var_names[i] = re.sub(r'[^A-Za-z0-9_.]', '.', x)
+
+    # Create missing variable names
+    j = 0
+    for i, x in enumerate(var_names):
+        if x == '':
+            var_names[i] = 'X' + ('' if j == 0 else ('.' + str(j)))
+            j += 1
     
-    print('--------------------------------------------------------------------------------')
-    print('VAR NAMES')
-    print(var_names)
     return var_names
 
 # Get investigation file {{{1
@@ -207,13 +216,9 @@ def convert2w4m(input_dir, study_filename = None, assay_filename = None):
     assays = select_assays(study, assay_filename)
     
     # Loop on all assays
-    print('--------------------------------------------------------------------------------')
-    print('ASSAYS')
     for assay in assays:
         info('Processing assay "' + assay.filename + '".')
         data_array = get_data_array(input_dir, assay)
-        print(type(data_array))
-        print(data_array.axes[1].values)
         var_names = make_variable_names(data_array)
  
 # Main {{{1
