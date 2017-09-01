@@ -47,7 +47,9 @@ function plain_test {
 		output_matrix_file=%s-w4m-sample-variable-matrix.tsv
 
 		# Run program
-		$ISATAB2W4M -i $study_path -d "$OUTPUT_PATH" -s $output_sample_file -v $output_variable_file -m  $output_matrix_file || error "Program terminated abnormaly while processing study $study."
+		cmd="$ISATAB2W4M -i $study_path -d \"$OUTPUT_PATH\" -s $output_sample_file -v $output_variable_file -m  $output_matrix_file"
+		echo "Running command '$cmd'..."
+		$cmd || error "Program terminated abnormaly while processing study $study."
 
 		# Check output files
 		for f in sample-metadata variable-metadata sample-variable-matrix ; do
@@ -74,7 +76,10 @@ function test_assay_selection {
 		output_variable_file=%s-w4m-variable-metadata-%a.tsv
 		output_matrix_file=%s-w4m-sample-variable-matrix-%a.tsv
 
-		$ISATAB2W4M -i $study_path -n $study -f "$assay" -d "$OUTPUT_PATH" -s "$output_sample_file" -v "$output_variable_file" -m  "$output_matrix_file" || error "Program terminated abnormaly while processing study $study."
+		# Run program
+		cmd="$ISATAB2W4M -i $study_path -n $study -f \"$assay\" -d \"$OUTPUT_PATH\" -s \"$output_sample_file\" -v \"$output_variable_file\" -m  \"$output_matrix_file\""
+		echo "Running command '$cmd'..."
+		$cmd || error "Program terminated abnormaly while processing study $study."
 
 		# Check output files
 		for f in sample-metadata variable-metadata sample-variable-matrix ; do
@@ -99,7 +104,11 @@ function do_test_na_filtering {
 	local output_variable_file=%s-$var_filtering-na-filtering-w4m-variable-metadata.tsv
 	local output_matrix_file=%s-$var_filtering-na-filtering-w4m-sample-variable-matrix.tsv
 
-	$ISATAB2W4M -i $study_path -S 'Characteristics[gender]' -V "$var_filtering" -d $OUTPUT_PATH -s $output_sample_file -v $output_variable_file -m  $output_matrix_file || error "Program terminated abnormaly while processing study $study."
+	# Run program
+	cmd="$ISATAB2W4M -i $study_path -S 'Characteristics[gender]' -V \"$var_filtering\" -d $OUTPUT_PATH -s $output_sample_file -v $output_variable_file -m  $output_matrix_file"
+	echo "Running command '$cmd'..."
+	$cmd || error "Program terminated abnormaly while processing study $study."
+
 	for f in sample-metadata variable-metadata sample-variable-matrix ; do
 		ref_file="$study_path/$study-w4m-$f-na-filtering.tsv"
 		output_file="$OUTPUT_PATH/$study-$var_filtering-na-filtering-w4m-$f.tsv"
@@ -116,6 +125,7 @@ function test_na_filtering {
 	do_test_na_filtering MTBLS404 database
 	do_test_na_filtering MTBLS404 charge,database
 }
+
 # MAIN {{{1
 ################################################################
 
