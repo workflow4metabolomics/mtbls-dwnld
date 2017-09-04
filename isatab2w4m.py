@@ -199,6 +199,12 @@ def load_investigation(input_dir):
     investigation = ISATAB.load(f)
     return investigation
     
+# Get sample names {{{1
+################################################################
+
+def get_sample_names(assay):
+    return [sample.name for sample in assay.materials['samples']]
+
 # Convert to W4M {{{1
 ################################################################
 
@@ -219,7 +225,8 @@ def convert2w4m(input_dir, study_filename = None, assay_filename = None):
     for assay in assays:
         info('Processing assay "' + assay.filename + '".')
         data_array = get_data_array(input_dir, assay)
-        var_names = make_variable_names(data_array)
+        variable_names = make_variable_names(data_array)
+        sample_names = get_sample_names(assay)
  
 # Main {{{1
 ################################################################

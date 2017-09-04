@@ -186,7 +186,7 @@ get.measures <- function(opt, assay) {
 # Get sample names {{{1
 ################################################################
 
-get.sample.names <- function (sample.metadata, measures) {
+get.sample.names <- function (assay, measures) {
 
 	sample.names <- NULL
 	sample.names.field <- NULL
