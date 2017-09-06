@@ -146,7 +146,7 @@ get.assay <- function(isa, study.name, assay.index) {
 # Make sample metadata {{{1
 ################################################################
 
-make.sample.metadata <- function(study, assay, sample.names = sample.names, normalize = TRUE) {
+make.sample.metadata <- function(study, assay, sample.names, normalize = TRUE) {
 
 	# Create sample metadata by merging assay and study metadata
 	colnames(study$df) <- make.names(colnames(study$df), uniq = TRUE)
