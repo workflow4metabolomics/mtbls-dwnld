@@ -153,8 +153,9 @@ def get_study_df(input_dir, study):
 # Make names {{{1
 ################################################################
 
-def make_names(v, uniq = False):
+def make_names(u, uniq = False):
  
+    v = u[:]
     j = 0
     for i in range(len(v)):
         
@@ -265,8 +266,8 @@ def make_sample_metadata(study_df, assay_df, sample_names, normalize = True):
 
     # Normalize
     if (normalize):
-        sample_names = make_names(sample_names, uniq = True)
-        sample_metadata.insert(0, 'sample.name', sample_names)
+        norm_sample_names = make_names(sample_names, uniq = True)
+        sample_metadata.insert(0, 'sample.name', norm_sample_names)
         sample_metadata.set_axis(1, make_names(sample_metadata.axes[1].tolist(), uniq = True))
 
     return sample_metadata
@@ -290,6 +291,29 @@ def make_variable_metadata(measures_df, sample_names, variable_names, normalize 
     
     return variable_metadata
     
+# Make matrix {{{1
+################################################################
+
+def make_matrix(measures_df, sample_names, variable_names, normalize = True):
+    
+    # Take all sample columns from measures data frame
+    sample_variable_matrix = measures_df.get(sample_names)
+    
+    # Check that we got all columns
+    if sample_variable_matrix is None or len(sample_variable_matrix.axes[1]) != len(sample_names):
+        raise Exception('Some or all sample names were not found among the column names of the data array.')
+
+    # Add variable names as columns
+    sample_variable_matrix.insert(0, 'variable.name', variable_names)
+
+    # Normalize sample names
+    if normalize:
+        norm_sample_names = make_names(sample_names, uniq = True)
+        norm_sample_names.insert(0, 'variable.name')
+        sample_variable_matrix.set_axis(1, norm_sample_names)
+
+    return sample_variable_matrix
+
 # Convert to W4M {{{1
 ################################################################
 
@@ -316,6 +340,7 @@ def convert2w4m(input_dir, study_filename = None, assay_filename = None):
         assay_df = get_assay_df(input_dir, assay)
         sample_metadata = make_sample_metadata(study_df = study_df, assay_df = assay_df, sample_names = sample_names, normalize = True)
         variable_metadata = make_variable_metadata(measures_df = measures_df, sample_names = sample_names, variable_names = variable_names, normalize = True)
+        sample_variable_matrix = make_matrix(measures_df = measures_df, sample_names = sample_names, variable_names = variable_names, normalize = True)
  
 # Main {{{1
 ################################################################
