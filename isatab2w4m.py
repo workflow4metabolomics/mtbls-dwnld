@@ -6,6 +6,7 @@ import sys
 import os.path
 import re
 import glob
+import collections
 from isatools import isatab as ISATAB
 
 # Check Python version
@@ -129,18 +130,72 @@ def get_data_file(assay):
         
     return data_filename
     
-# Get data array {{{1
+# Get assay data frame {{{1
 ################################################################
 
-def get_data_array(input_dir, assay):
+def get_assay_df(input_dir, assay):
+    return ISATAB.read_tfile(os.path.join(input_dir, assay.filename))
+    
+# Get measures data frame {{{1
+################################################################
+
+def get_measures_df(input_dir, assay):
     data_filename = get_data_file(assay)
     array = ISATAB.read_tfile(os.path.join(input_dir, data_filename))
     return array
 
+# Get study data frame {{{1
+################################################################
+
+def get_study_df(input_dir, study):
+    return ISATAB.read_tfile(os.path.join(input_dir, study.filename))
+
+# Make names {{{1
+################################################################
+
+def make_names(v, uniq = False):
+ 
+    j = 0
+    for i in range(len(v)):
+        
+        # Create missing names
+        if v[i] == '':
+            v[i] = 'X' + ('' if j == 0 else ('.' + str(j)))
+            j += 1
+            
+        # Remove unvanted characters
+        else:
+            v[i] = re.sub(r'[^A-Za-z0-9_.]', '.', v[i])
+            
+    # Make sure all elements are unique  
+    if uniq:
+        # List all indices of items
+        item_indices = collections.defaultdict(list)
+        for i, x in enumerate(v):
+            item_indices[x].append(i)
+            
+        # Look for duplicates
+        for x in item_indices.keys():
+            
+            # Is this item duplicated?
+            if len(item_indices[x]) > 1:
+                
+                # Rename all duplicates
+                j = 1
+                for i in item_indices[x][1:]:
+                    while True:
+                        new_name = v[i] + "." + str(j)
+                        if new_name not in item_indices:
+                            break
+                        j += 1
+                    v[i] = new_name
+        
+    return v
+    
 # Make variable names {{{1
 ################################################################
 
-def make_variable_names(data_array):
+def make_variable_names(assay_df):
 
     var_names = None
  
@@ -148,24 +203,15 @@ def make_variable_names(data_array):
     for col in ['mass_to_charge', 'retention_time']:
         try:
             if var_names is None:
-                var_names = data_array[col].values
+                var_names = assay_df[col].values
             else:
-                var_names = [ s + ('' if str(t) == '' else ('_' + str(t))) for s, t in zip(var_names, data_array[col].values)]
+                var_names = [ s + ('' if str(t) == '' else ('_' + str(t))) for s, t in zip(var_names, assay_df[col].values)]
         except:
             pass
     
-    # Remove unwanted characters
-    for i, x in enumerate(var_names):
-        if x != '':
-            var_names[i] = re.sub(r'[^A-Za-z0-9_.]', '.', x)
+    # Normlize names
+    var_names = make_names(var_names)
 
-    # Create missing variable names
-    j = 0
-    for i, x in enumerate(var_names):
-        if x == '':
-            var_names[i] = 'X' + ('' if j == 0 else ('.' + str(j)))
-            j += 1
-    
     return var_names
 
 # Get investigation file {{{1
@@ -205,6 +251,26 @@ def load_investigation(input_dir):
 def get_sample_names(assay):
     return [sample.name for sample in assay.materials['samples']]
 
+# Make sample metadata {{{1
+################################################################
+
+def make_sample_metadata(study_df, assay_df, sample_names, normalize = True):
+    
+    # Normalize column names
+    study_df.set_axis(1, make_names(study_df.axes[1].tolist()))
+    assay_df.set_axis(1, make_names(assay_df.axes[1].tolist()))
+    
+    # Merge data frames
+    sample_metadata = assay_df.merge(study_df, on = 'Sample.Name', sort = False)
+
+    # Normalize
+    if (normalize):
+        sample_names = make_names(sample_names, uniq = True)
+        sample_metadata.insert(0, 'sample.name', sample_names)
+        sample_metadata.set_axis(1, make_names(sample_metadata.axes[1].tolist(), uniq = True))
+
+    return(sample_metadata)
+
 # Convert to W4M {{{1
 ################################################################
 
@@ -224,9 +290,12 @@ def convert2w4m(input_dir, study_filename = None, assay_filename = None):
     # Loop on all assays
     for assay in assays:
         info('Processing assay "' + assay.filename + '".')
-        data_array = get_data_array(input_dir, assay)
-        variable_names = make_variable_names(data_array)
+        measures_df = get_measures_df(input_dir, assay)
+        variable_names = make_variable_names(measures_df)
         sample_names = get_sample_names(assay)
+        study_df = get_study_df(input_dir, study)
+        assay_df = get_assay_df(input_dir, assay)
+        sample_metadata = make_sample_metadata(study_df = study_df, assay_df = assay_df, sample_names = sample_names, normalize = True)
  
 # Main {{{1
 ################################################################
