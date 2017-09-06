@@ -269,8 +269,27 @@ def make_sample_metadata(study_df, assay_df, sample_names, normalize = True):
         sample_metadata.insert(0, 'sample.name', sample_names)
         sample_metadata.set_axis(1, make_names(sample_metadata.axes[1].tolist(), uniq = True))
 
-    return(sample_metadata)
+    return sample_metadata
 
+# Make variable metadata
+################################################################
+
+def make_variable_metadata(measures_df, sample_names, variable_names, normalize = True):
+    
+    # Get variable columns from measures data frame
+    all_cols = measures_df.axes[1].tolist()
+    variable_cols = [x for x in all_cols if x not in sample_names]
+    variable_metadata = measures_df.get(variable_cols)
+    
+    # Add variable names as columns
+    variable_metadata.insert(0, 'variable.name', variable_names)
+
+    # Normalize
+    if normalize:
+        variable_metadata.set_axis(1, make_names(variable_metadata.axes[1].tolist(), uniq = True))
+    
+    return variable_metadata
+    
 # Convert to W4M {{{1
 ################################################################
 
@@ -296,6 +315,7 @@ def convert2w4m(input_dir, study_filename = None, assay_filename = None):
         study_df = get_study_df(input_dir, study)
         assay_df = get_assay_df(input_dir, assay)
         sample_metadata = make_sample_metadata(study_df = study_df, assay_df = assay_df, sample_names = sample_names, normalize = True)
+        variable_metadata = make_variable_metadata(measures_df = measures_df, sample_names = sample_names, variable_names = variable_names, normalize = True)
  
 # Main {{{1
 ################################################################
