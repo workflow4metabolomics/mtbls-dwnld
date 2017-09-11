@@ -7,11 +7,15 @@ import os.path
 import re
 import glob
 import collections
+from string import Template
 from isatools import isatab as ISATAB
 
 # Check Python version
 if sys.hexversion < 0x03040000:
     sys.exit("Python 3.4 or newer is required to run this program.")
+
+class FilenameTemplate(Template):
+    delimiter='%'
 
 # Error message {{{1
 ################################################################
@@ -47,10 +51,11 @@ def read_args():
     parser.add_argument('-s', help = 'Output file for sample metadata. ' + s1 + ' Default is "' + dft_sample_file.replace('%', '%%') + '".', dest = "sample_output", required = False, default = dft_sample_file)
     parser.add_argument('-v', help = 'Output file for variable metadata. ' + s1 + ' Default is "' + dft_variable_file.replace('%', '%%') + '".', dest = 'variable_output', required = False, default = dft_variable_file)
     parser.add_argument('-m', help = 'Output file for sample x variable matrix. ' + s1 + ' Default is "' + dft_matrix_file.replace('%', '%%') + '".', dest = 'matrix_output', required = False, default = dft_matrix_file)
-    parser.add_argument('-S', help = 'Filter out NA values in the specified sample metadata columns. The value is comma separated list of column names.',   dest = 'samp_na_filering', required = False)
-    parser.add_argument('-V', help = 'Filter out NA values in the specified variable metadata columns. The value is comma separated list of column names.', dest = 'var_na_filering',  required = False)
+    parser.add_argument('-S', help = 'Filter out NA values in the specified sample metadata columns. The value is a comma separated list of column names.',   dest = 'samp_na_filering', required = False)
+    parser.add_argument('-V', help = 'Filter out NA values in the specified variable metadata columns. The value is a comma separated list of column names.', dest = 'var_na_filering',  required = False)
     args = parser.parse_args()
-    return vars(args)
+    args = vars(args)
+    return args
     
 # Select study {{{1
 ################################################################
@@ -331,6 +336,7 @@ def convert2w4m(input_dir, study_filename = None, assay_filename = None):
     assays = select_assays(study, assay_filename)
     
     # Loop on all assays
+    w4m_assays = []
     for assay in assays:
         info('Processing assay "' + assay.filename + '".')
         measures_df = get_measures_df(input_dir, assay)
@@ -341,7 +347,38 @@ def convert2w4m(input_dir, study_filename = None, assay_filename = None):
         sample_metadata = make_sample_metadata(study_df = study_df, assay_df = assay_df, sample_names = sample_names, normalize = True)
         variable_metadata = make_variable_metadata(measures_df = measures_df, sample_names = sample_names, variable_names = variable_names, normalize = True)
         sample_variable_matrix = make_matrix(measures_df = measures_df, sample_names = sample_names, variable_names = variable_names, normalize = True)
+        w4m_assays.append(dict( samp = sample_metadata, var = variable_metadata, mat = sample_variable_matrix, filename = assay.filename, study = study.filename))
+        
+    return w4m_assays
  
+# Write data frame {{{1
+################################################################
+
+def write_data_frame(df, output_dir, template_filename, study, assay):
+    filename = FilenameTemplate(template_filename).substitute(s = study, a = assay)
+    if output_dir is not None:
+        filename = os.path.join(output_dir, filename)
+    print('--------------------------------------------------------------------------------')
+    print(filename)
+    df.to_csv(path_or_buf = filename, sep = "\t", na_rep = 'NA')
+    
+# Write assays into files {{{1
+################################################################
+
+def write_assays(assays, output_dir, samp_file, var_file, mat_file):
+ 
+    # Create output directory if necessary
+    if output_dir is not None and not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+    
+    # Make dict for file names
+    filenames = dict(samp = samp_file, var = var_file, mat = mat_file)
+    
+    # Loop on all assays
+    for assay in assays:
+        for df in ['samp', 'var', 'mat']:
+            write_data_frame(df = assay[df], output_dir = output_dir, template_filename = filenames[df], study = assay['study'], assay = assay['filename'])
+    
 # Main {{{1
 ################################################################
 
@@ -350,4 +387,10 @@ if __name__ == '__main__':
     # Parse command line arguments
     args_dict = read_args()
     
-    convert2w4m(input_dir = args_dict['input_dir'], study_filename = args_dict['study_filename'], assay_filename = args_dict['assay_filename'])
+    # Convert assays to W4M 3 tables format
+    assays = convert2w4m(input_dir = args_dict['input_dir'], study_filename = args_dict['study_filename'], assay_filename = args_dict['assay_filename'])
+    
+    # Filter NA values TODO
+    
+    # Write into files
+    write_assays(assays, output_dir = args_dict['output_dir'], samp_file = args_dict['sample_output'], var_file = args_dict['variable_output'], mat_file = args_dict['matrix_output'])
