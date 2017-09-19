@@ -86,9 +86,9 @@ read.args <- function() {
 get.study <- function(opt, isa) {
 
 	if ('study-name' %in% names(opt)) {
-		if ( ! opt[['study-name']] %in% isa@study.identifiers)
-			stop(paste("Cannot find study \"", opt[['study-name']], "\"."))
-		study.name <- opt[['study-name']]
+		if ( ! opt[['study-name']] %in% isa@study.filenames)
+			stop(paste("Cannot find study \"", opt[['study-name']], "\".", sep = ''))
+		study.name <- isa@study.identifiers[[which(opt[['study-name']] == isa@study.filenames)]]
 	} else { # Take the first study
 		cat("No study name set, choose first study.\n")
 		study.name <- isa@study.identifiers[[1]]

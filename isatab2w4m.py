@@ -67,13 +67,14 @@ def read_args():
 # Select study {{{1
 ################################################################
 
-def select_study(investigation, study_filename = None):
+def select_study(investigation_file, study_filename = None):
     
+    investigation = load_investigation(investigation_file)
     study = None
     
     # More than one study and no study specified
     if len(investigation.studies) > 1 and study_filename is None :
-        error('The investigation file "' + investigation.filename + '" contains more than one study. You need to select one of them.')
+        error('The investigation file "' + investigation_file + '" contains more than one study. You need to select one of them.')
  
     # Search for specified study
     if study_filename is not None:
@@ -85,8 +86,8 @@ def select_study(investigation, study_filename = None):
                 break
 
         # Specified study not found
-        if study is None :
-            error('Study "' + study_filename + '" not found in investigation file "' + investigation.filename + '".')
+        if study is None:
+            error('Study "' + study_filename + '" not found in investigation file "' + investigation_file + '".')
         
     # Take first one
     if study is None and len(investigation.studies) > 0 :
@@ -256,8 +257,7 @@ def get_investigation_file(input_dir):
 # Load investigation {{{1
 ################################################################
 
-def load_investigation(input_dir):
-    investigation_file = get_investigation_file(input_dir)
+def load_investigation(investigation_file):
     f = open(investigation_file, 'r')
     investigation = ISATAB.load(f)
     return investigation
@@ -348,10 +348,10 @@ def make_matrix(measures_df, sample_names, variable_names, normalize = True):
 ################################################################
 
 def convert2w4m(input_dir, study_filename = None, assay_filename = None, all_assays = False):
-    investigation = load_investigation(input_dir)
-
+    
     # Select study
-    study = select_study(investigation, study_filename)
+    investigation_file = get_investigation_file(input_dir)
+    study = select_study(investigation_file, study_filename)
     if study is None:
         info('No studies found in investigation file.')
         return

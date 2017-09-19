@@ -75,6 +75,7 @@ function plain_test {
 function test_assay_selection {
 
 	study=MTBLS30
+	study_filename=s_York_SRC_metabolomics.txt
 	study_path="$RES_PATH/$study"
 
 	for assay in "a_york_src_GCMS_metabolomics_metabolite profiling_mass spectrometry.txt" "a_york_src_LCMS_metabolomics_metabolite profiling_mass spectrometry.txt" ; do
@@ -84,7 +85,7 @@ function test_assay_selection {
 		output_matrix_file=%s-w4m-sample-variable-matrix-%a.tsv
 
 		# Run program
-		run_isatab2w4m -i $study_path -n $study -f "$assay" -d "$OUTPUT_PATH" -s "$output_sample_file" -v "$output_variable_file" -m  "$output_matrix_file" || error "Program terminated abnormaly while processing study $study."
+		run_isatab2w4m -i $study_path -n $study_filename -f "$assay" -d "$OUTPUT_PATH" -s "$output_sample_file" -v "$output_variable_file" -m  "$output_matrix_file" || error "Program terminated abnormaly while processing study $study."
 
 		# Check output files
 		for f in sample-metadata variable-metadata sample-variable-matrix ; do
