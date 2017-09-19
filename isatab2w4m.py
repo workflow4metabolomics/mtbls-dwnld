@@ -73,7 +73,7 @@ def select_study(investigation, study_filename = None):
     
     # More than one study and no study specified
     if len(investigation.studies) > 1 and study_filename is None :
-        error('The investigation file "' + investigation_file + '" contains more than one study. You need to select one of them.')
+        error('The investigation file "' + investigation.filename + '" contains more than one study. You need to select one of them.')
  
     # Search for specified study
     if study_filename is not None:
@@ -86,7 +86,7 @@ def select_study(investigation, study_filename = None):
 
         # Specified study not found
         if study is None :
-            error('Study "' + study_filename + '" not found in investigation file "' + investigation_file + '".')
+            error('Study "' + study_filename + '" not found in investigation file "' + investigation.filename + '".')
         
     # Take first one
     if study is None and len(investigation.studies) > 0 :
