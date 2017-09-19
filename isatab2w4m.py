@@ -409,7 +409,7 @@ def filter_na_values(assays, table, cols):
     
     # Loop on all assays
     for assay in assays:
-        assay[table].dropna(axis = 0, how = 'all', subset = cols, inplace = True)
+        assay[table].dropna(axis = 0, how = 'all', subset = make_names(cols), inplace = True)
         
 # Main {{{1
 ################################################################
