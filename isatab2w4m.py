@@ -44,6 +44,7 @@ def read_args():
     dft_matrix_file = '%s-%a-sample-variable-matrix.tsv'
     
     parser = argparse.ArgumentParser(description='Script for extracting assays from ISATab data and outputing in W4M format.')
+    parser.add_argument('-a', help = 'Extract all assays.', dest = 'all_assays', required = False, default = False, type = bool)
     parser.add_argument('-i', help = 'Input directory containing the ISA-Tab files.', dest = 'input_dir', required = True)
     parser.add_argument('-f', help = 'Filename of the assay to extract. If unset, the first assay of the chosen study will be used.',   dest = 'assay_filename', required = False)
     parser.add_argument('-n', help = 'Filename of the study to extract. If unset, the first study found will be used.', dest = 'study_filename', required = False)
@@ -55,6 +56,12 @@ def read_args():
     parser.add_argument('-V', help = 'Filter out NA values in the specified variable metadata columns. The value is a comma separated list of column names.', dest = 'var_na_filering',  required = False)
     args = parser.parse_args()
     args = vars(args)
+    
+    # Split comma separated list
+    for opt in ['samp_na_filering', 'var_na_filering']:
+        if opt in args and args[opt] is not None:
+            args[opt] = args[opt].split(',')
+            
     return args
     
 # Select study {{{1
@@ -90,12 +97,12 @@ def select_study(investigation, study_filename = None):
 # Select assays {{{1
 ################################################################
 
-def select_assays(study, assay_filename = None):
+def select_assays(study, assay_filename = None, all_assays = False):
     
     assays = []
     
     # Search for specified assay
-    if assay_filename is not None:
+    if assay_filename is not None and not all_assays:
         
         # Loop on all assays
         for a in study.assays:
@@ -108,8 +115,12 @@ def select_assays(study, assay_filename = None):
             error('Assay "' + assay_filename + '" not found.')
     
     # Take all assays
-    if len(assays) == 0:
+    elif all_assays:
         assays = study.assays
+        
+    # Take first one
+    else:
+        assays = study.assays[0:1]
 
     return assays
     
@@ -254,8 +265,22 @@ def load_investigation(input_dir):
 # Get sample names {{{1
 ################################################################
 
-def get_sample_names(assay):
-    return [sample.name for sample in assay.materials['samples']]
+def get_sample_names(assay, assay_df, measures_df):
+    
+    # Get sample names
+    sample_names = [sample.name for sample in assay.materials['samples']]
+    measures_cols = measures_df.axes[1]
+    
+    # XXX If the column 'Sample Name' of the assay file contains duplicated names, then `assay.materials['samples']]` will return less sample names than there are. It may happen that, as in MTBLS404 with the column 'Extract Name', another column contains "real" sample names that are all different.
+    if len(sample_names) != assay_df.shape[0] or any([x not in measures_cols for x in sample_names]):
+        # TODO send warning message
+        for col in assay_df.axes[1]:
+            n = assay_df.get(col).tolist()
+            if len(n) == len(set(n)) and all([x in measures_cols for x in n]):
+                sample_names = n
+                break
+
+    return sample_names
 
 # Make sample metadata {{{1
 ################################################################
@@ -322,7 +347,7 @@ def make_matrix(measures_df, sample_names, variable_names, normalize = True):
 # Convert to W4M {{{1
 ################################################################
 
-def convert2w4m(input_dir, study_filename = None, assay_filename = None):
+def convert2w4m(input_dir, study_filename = None, assay_filename = None, all_assays = False):
     investigation = load_investigation(input_dir)
 
     # Select study
@@ -333,17 +358,17 @@ def convert2w4m(input_dir, study_filename = None, assay_filename = None):
     info('Processing study "' + study.filename + '".')
     
     # Select assays
-    assays = select_assays(study, assay_filename)
+    assays = select_assays(study = study, assay_filename = assay_filename, all_assays = all_assays)
     
     # Loop on all assays
     w4m_assays = []
     for assay in assays:
         info('Processing assay "' + assay.filename + '".')
-        measures_df = get_measures_df(input_dir, assay)
-        variable_names = make_variable_names(measures_df)
-        sample_names = get_sample_names(assay)
         study_df = get_study_df(input_dir, study)
         assay_df = get_assay_df(input_dir, assay)
+        measures_df = get_measures_df(input_dir, assay)
+        variable_names = make_variable_names(measures_df)
+        sample_names = get_sample_names(assay = assay, assay_df = assay_df, measures_df = measures_df)
         sample_metadata = make_sample_metadata(study_df = study_df, assay_df = assay_df, sample_names = sample_names, normalize = True)
         variable_metadata = make_variable_metadata(measures_df = measures_df, sample_names = sample_names, variable_names = variable_names, normalize = True)
         sample_variable_matrix = make_matrix(measures_df = measures_df, sample_names = sample_names, variable_names = variable_names, normalize = True)
@@ -358,8 +383,6 @@ def write_data_frame(df, output_dir, template_filename, study, assay):
     filename = FilenameTemplate(template_filename).substitute(s = study, a = assay)
     if output_dir is not None:
         filename = os.path.join(output_dir, filename)
-    print('--------------------------------------------------------------------------------')
-    print(filename)
     df.to_csv(path_or_buf = filename, sep = "\t", na_rep = 'NA')
     
 # Write assays into files {{{1
@@ -379,6 +402,15 @@ def write_assays(assays, output_dir, samp_file, var_file, mat_file):
         for df in ['samp', 'var', 'mat']:
             write_data_frame(df = assay[df], output_dir = output_dir, template_filename = filenames[df], study = assay['study'], assay = assay['filename'])
     
+# Filter NA values {{{1
+################################################################
+
+def filter_na_values(assays, table, cols):
+    
+    # Loop on all assays
+    for assay in assays:
+        assay[table].dropna(axis = 0, how = 'all', subset = cols, inplace = True)
+        
 # Main {{{1
 ################################################################
 
@@ -388,9 +420,13 @@ if __name__ == '__main__':
     args_dict = read_args()
     
     # Convert assays to W4M 3 tables format
-    assays = convert2w4m(input_dir = args_dict['input_dir'], study_filename = args_dict['study_filename'], assay_filename = args_dict['assay_filename'])
+    assays = convert2w4m(input_dir = args_dict['input_dir'], study_filename = args_dict['study_filename'], assay_filename = args_dict['assay_filename'], all_assays = args_dict['all_assays'])
     
     # Filter NA values TODO
+    if args_dict['samp_na_filering'] is not None:
+        filter_na_values(assays, table = 'samp', cols = args_dict['samp_na_filering'])
+    if args_dict['var_na_filering'] is not None:
+        filter_na_values(assays, table = 'var', cols = args_dict['var_na_filering'])
     
     # Write into files
     write_assays(assays, output_dir = args_dict['output_dir'], samp_file = args_dict['sample_output'], var_file = args_dict['variable_output'], mat_file = args_dict['matrix_output'])
