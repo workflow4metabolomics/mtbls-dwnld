@@ -230,8 +230,8 @@ fi
 
 test_w4m_conversion_private
 test_wget_public_download
-[[ -z $ASPERA_CLIENT ]] || test_aspera_public_download
 test_wget_private_download
+[[ -z $ASPERA_CLIENT ]] || test_aspera_public_download
 [[ -z $ASPERA_CLIENT ]] || test_aspera_private_download
 test_w4m_conversion
 test_w4m_na_filtering
