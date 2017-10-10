@@ -78,7 +78,7 @@ function test_assay_selection {
 	study_filename=s_York_SRC_metabolomics.txt
 	study_path="$RES_PATH/$study"
 
-	for assay in "a_york_src_GCMS_metabolomics_metabolite profiling_mass spectrometry.txt" "a_york_src_LCMS_metabolomics_metabolite profiling_mass spectrometry.txt" ; do
+	for assay in "a_york_src_GC_mass_spectrometry.txt" "a_york_src_FIA_mass_spectrometry.txt" ; do
 
 		output_sample_file=%s-w4m-sample-metadata-%a.tsv
 		output_variable_file=%s-w4m-variable-metadata-%a.tsv

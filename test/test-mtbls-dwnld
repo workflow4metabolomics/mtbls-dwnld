@@ -195,7 +195,7 @@ function test_w4m_assay_file {
 	study=MTBLS30
 	study_path="$RES_PATH/$study"
 
-	for assay in "a_york_src_GCMS_metabolomics_metabolite profiling_mass spectrometry.txt" "a_york_src_LCMS_metabolomics_metabolite profiling_mass spectrometry.txt" ; do
+	for assay in "a_york_src_GC_mass_spectrometry.txt" "a_york_src_FIA_mass_spectrometry.txt" ; do
 
 		# Remove previously downloaded directory
 		rm -rf $study
