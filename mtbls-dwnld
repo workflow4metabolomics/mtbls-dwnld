@@ -199,13 +199,16 @@ function download {
 	# aspera
 	if [ -n "$ASPERA" ] ; then
 
-		dwnld_flags+=" -QT -l 1g -P33001"
+		dwnld_flags+=" -QT -l 1g"
 		[ -n "$(which ascp)" ] || error "ascp command not found. Please install Aspera client."
 
 		export ASPERA_SCP_PASS="$TOKEN"
 		src=
 
+		# Public study
 		if [[ -z $PRIVATE ]] ; then
+
+			dwnld_flags+=" -P33001"
 
 			# Make full path for public study
 			study_path=$STUDY
@@ -214,6 +217,7 @@ function download {
 			fi
 			src="fasp-ml@fasp.ebi.ac.uk:$study_path"
 
+		# Private study
 		else
 			src="mtblight@ah01.ebi.ac.uk:$STUDY"
 		fi
