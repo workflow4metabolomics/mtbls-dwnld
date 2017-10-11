@@ -16,4 +16,4 @@ install:
 
 script:
     - make test
-    - make planemolint
+      #    - make planemolint
