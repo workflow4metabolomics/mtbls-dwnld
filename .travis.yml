@@ -12,8 +12,8 @@ install:
     - sudo R -e "source('http://bioconductor.org/biocLite.R') ; biocLite('Risa')"
     - wget http://download.asperasoft.com/download/sw/ascp-client/3.5.4/ascp-install-3.5.4.102989-linux-64.sh
     - sudo bash ascp-install-3.5.4.102989-linux-64.sh
-    - sudo apt-get install -y python3
-    - pip install isatools
+    - sudo pip install --upgrade pip
+    - sudo pip install isatools
 
 script:
     - make test
