@@ -422,7 +422,7 @@ if __name__ == '__main__':
     # Convert assays to W4M 3 tables format
     assays = convert2w4m(input_dir = args_dict['input_dir'], study_filename = args_dict['study_filename'], assay_filename = args_dict['assay_filename'], all_assays = args_dict['all_assays'])
     
-    # Filter NA values TODO
+    # Filter NA values
     if args_dict['samp_na_filering'] is not None:
         filter_na_values(assays, table = 'samp', cols = args_dict['samp_na_filering'])
     if args_dict['var_na_filering'] is not None:
