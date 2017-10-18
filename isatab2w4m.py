@@ -54,6 +54,7 @@ def read_args():
     parser.add_argument('-m', help = 'Output file for sample x variable matrix. ' + s1 + ' Default is "' + dft_matrix_file.replace('%', '%%') + '".', dest = 'matrix_output', required = False, default = dft_matrix_file)
     parser.add_argument('-S', help = 'Filter out NA values in the specified sample metadata columns. The value is a comma separated list of column names.',   dest = 'samp_na_filering', required = False)
     parser.add_argument('-V', help = 'Filter out NA values in the specified variable metadata columns. The value is a comma separated list of column names.', dest = 'var_na_filering',  required = False)
+    parser.add_argument('-q', help = 'Quiet.', dest = 'quiet', required = False, default = False, type = bool)
     args = parser.parse_args()
     args = vars(args)
     
@@ -420,7 +421,7 @@ if __name__ == '__main__':
     args_dict = read_args()
     
     # Convert assays to W4M 3 tables format
-    assays = convert2w4m(input_dir = args_dict['input_dir'], study_filename = args_dict['study_filename'], assay_filename = args_dict['assay_filename'], all_assays = args_dict['all_assays'])
+    assays = convert2w4m(input_dir = args_dict['input_dir'], study_filename = args_dict['study_filename'], assay_filename = args_dict['assay_filename'], all_assays = args_dict['all_assays'], quiet = args_dict['quiet'])
     
     # Filter NA values
     if args_dict['samp_na_filering'] is not None:
