@@ -9,6 +9,7 @@
 		## @@@BEGIN_CHEETAH@@@
 
 		$__tool_directory__/isatab2w4m.py
+		-q
 		-i "$isa.extra_files_path"
 		-s "$w4m_sample_metadata"
 		-v "$w4m_variable_metadata"
