@@ -1,7 +1,7 @@
 notifications:
  email:
   recipients:
-   - pierrick.rogermele@icloud.com
+   - pk.roger@icloud.com
 
 install:
     - sudo sed -i -e '$adeb http://cran.univ-paris1.fr/bin/linux/ubuntu trusty/' /etc/apt/sources.list
@@ -13,6 +13,11 @@ install:
     - wget http://download.asperasoft.com/download/sw/ascp-client/3.5.4/ascp-install-3.5.4.102989-linux-64.sh
     - sudo bash ascp-install-3.5.4.102989-linux-64.sh
     - sudo pip3 install isatools
+
+branches:
+  only:
+    - master
+    - develop
 
 script:
     - make test
