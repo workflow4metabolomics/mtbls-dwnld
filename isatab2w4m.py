@@ -28,7 +28,8 @@ def error(msg):
 ################################################################
 
 def info(msg):
-    print('INFO: ' + msg)
+    if not QUIET:
+        print('INFO: ' + msg)
 
 # Read arguments {{{1
 ################################################################
@@ -44,20 +45,20 @@ def read_args():
     dft_matrix_file = '%s-%a-sample-variable-matrix.tsv'
     
     parser = argparse.ArgumentParser(description='Script for extracting assays from ISATab data and outputing in W4M format.')
-    parser.add_argument('-a', help = 'Extract all assays.', dest = 'all_assays', required = False, default = False, type = bool)
+    parser.add_argument('-a', help = 'Extract all assays.', dest = 'all_assays', action = 'store_true')
     parser.add_argument('-i', help = 'Input directory containing the ISA-Tab files.', dest = 'input_dir', required = True)
-    parser.add_argument('-f', help = 'Filename of the assay to extract. If unset, the first assay of the chosen study will be used.',   dest = 'assay_filename', required = False)
-    parser.add_argument('-n', help = 'Filename of the study to extract. If unset, the first study found will be used.', dest = 'study_filename', required = False)
-    parser.add_argument('-d', help = 'Set output directory. Default is "' + dft_output_dir + '".', dest = "output_dir", required = False, default = dft_output_dir)
-    parser.add_argument('-s', help = 'Output file for sample metadata. ' + s1 + ' Default is "' + dft_sample_file.replace('%', '%%') + '".', dest = "sample_output", required = False, default = dft_sample_file)
-    parser.add_argument('-v', help = 'Output file for variable metadata. ' + s1 + ' Default is "' + dft_variable_file.replace('%', '%%') + '".', dest = 'variable_output', required = False, default = dft_variable_file)
-    parser.add_argument('-m', help = 'Output file for sample x variable matrix. ' + s1 + ' Default is "' + dft_matrix_file.replace('%', '%%') + '".', dest = 'matrix_output', required = False, default = dft_matrix_file)
-    parser.add_argument('-S', help = 'Filter out NA values in the specified sample metadata columns. The value is a comma separated list of column names.',   dest = 'samp_na_filering', required = False)
-    parser.add_argument('-V', help = 'Filter out NA values in the specified variable metadata columns. The value is a comma separated list of column names.', dest = 'var_na_filering',  required = False)
-    parser.add_argument('-q', help = 'Quiet.', dest = 'quiet', required = False, default = False, type = bool)
+    parser.add_argument('-f', help = 'Filename of the assay to extract. If unset, the first assay of the chosen study will be used.',   dest = 'assay_filename')
+    parser.add_argument('-n', help = 'Filename of the study to extract. If unset, the first study found will be used.', dest = 'study_filename')
+    parser.add_argument('-d', help = 'Set output directory. Default is "' + dft_output_dir + '".', dest = "output_dir", default = dft_output_dir)
+    parser.add_argument('-s', help = 'Output file for sample metadata. ' + s1 + ' Default is "' + dft_sample_file.replace('%', '%%') + '".', dest = "sample_output", default = dft_sample_file)
+    parser.add_argument('-v', help = 'Output file for variable metadata. ' + s1 + ' Default is "' + dft_variable_file.replace('%', '%%') + '".', dest = 'variable_output', default = dft_variable_file)
+    parser.add_argument('-m', help = 'Output file for sample x variable matrix. ' + s1 + ' Default is "' + dft_matrix_file.replace('%', '%%') + '".', dest = 'matrix_output', default = dft_matrix_file)
+    parser.add_argument('-S', help = 'Filter out NA values in the specified sample metadata columns. The value is a comma separated list of column names.',   dest = 'samp_na_filering')
+    parser.add_argument('-V', help = 'Filter out NA values in the specified variable metadata columns. The value is a comma separated list of column names.', dest = 'var_na_filering')
+    parser.add_argument('-q', help = 'Quiet.', dest = 'quiet', action = 'store_true')
     args = parser.parse_args()
     args = vars(args)
-    
+ 
     # Split comma separated list
     for opt in ['samp_na_filering', 'var_na_filering']:
         if opt in args and args[opt] is not None:
@@ -419,9 +420,12 @@ if __name__ == '__main__':
     
     # Parse command line arguments
     args_dict = read_args()
+    QUIET = False
+    if args_dict['quiet'] is not None:
+        QUIET = args_dict['quiet']
     
     # Convert assays to W4M 3 tables format
-    assays = convert2w4m(input_dir = args_dict['input_dir'], study_filename = args_dict['study_filename'], assay_filename = args_dict['assay_filename'], all_assays = args_dict['all_assays'], quiet = args_dict['quiet'])
+    assays = convert2w4m(input_dir = args_dict['input_dir'], study_filename = args_dict['study_filename'], assay_filename = args_dict['assay_filename'], all_assays = args_dict['all_assays'])
     
     # Filter NA values
     if args_dict['samp_na_filering'] is not None:
