@@ -1,0 +1,237 @@
+#!/bin/bash
+# vi: fdm=marker
+
+# Constants {{{1
+################################################################
+
+PROG_NAME=$(basename $0)
+PROG_PATH=$(dirname $0)
+YES=yes
+
+# Global variables {{{1
+################################################################
+
+ASPERA=
+COMPRESSED=
+DEBUG=0
+METADATA_ONLY=
+OUTPUT=
+PRIVATE=
+QUIET=0
+TOKEN=
+
+# Print help {{{1
+################################################################
+
+function print_help {
+	echo "Usage: $PROG_NAME [options] study"
+	echo
+	echo "Retrieves a study from Metabolights database."
+	echo "By default it uses the ftp server, but with -a option you can ask for using aspera server (you will need the aspera client ascp to be installed)."
+	echo
+	echo "Options:"
+	echo "   -a, --aspera                Use aspera server for downloading. You need the ascp client to be installed, it is freely available for linux 64. See http://downloads.asperasoft.com."
+	echo "   -c, --compressed            Output in compressed format. If unset, the output will be a directory."
+	echo "   -g, --debug                 Debug mode."
+	echo "   -h, --help                  Print this help message."
+	echo "   -M, --metadata-only         Download only the metadata (ISA-Tab files i_*, m_*, s_* and a_*) files. This option has no effet if aspera is selected (option -a)."
+	echo "   -o, --output          NAME  Set the name of the output (both for directory output or compressed file output). By default the name of the output is determined by the download tool."
+	echo "   -p, --private               Indicate the study to download is not public. This is meant for aspera download, since the URL will be different for a public or a private study."
+	echo "   -q, --quiet                 Does not print any output. Can be specified twice in order to be real quiet."
+	echo "   -t, --token           TOKEN Set the token or password to use."
+}
+
+# Error {{{1
+################################################################
+
+function error {
+
+	local msg=$1
+
+	echo "ERROR: $msg" >&2
+
+	exit 1
+}
+
+# Print debug msg {{{1
+################################################################
+
+function print_debug_msg {
+
+	local dbglvl=$1
+	local dbgmsg=$2
+
+	[ $DEBUG -ge $dbglvl ] && echo "[DEBUG] $dbgmsg" >&2
+}
+
+
+# Read args {{{1
+################################################################
+
+function read_args {
+
+	local args="$*" # save arguments for debugging purpose
+	
+	# Read options
+	while true ; do
+		shift_count=1
+		case $1 in
+			-a|--aspera)            ASPERA=$YES ;;
+			-c|--compressed)        COMPRESSED=$YES ;;
+			-g|--debug)             DEBUG=$((DEBUG + 1)) ;;
+			-h|--help)              print_help ; exit 0 ;;
+			-M|--metadata-only)     METADATA_ONLY=$YES ;;
+			-o|--output)            OUTPUT="$2" ; shift_count=2 ;;
+			-p|--private)           PRIVATE=$YES ;;
+			-q|--quiet)             QUIET=$((QUIET + 1)) ;;
+			-t|--token)             TOKEN="$2" ; shift_count=2 ;;
+			-) error "Illegal option $1." ;;
+			--) error "Illegal option $1." ;;
+			--*) error "Illegal option $1." ;;
+			-?) error "Unknown option $1." ;;
+			-[^-]*) split_opt=$(echo $1 | sed 's/^-//' | sed 's/\([a-zA-Z]\)/ -\1/g') ; set -- $1$split_opt "${@:2}" ;;
+			*) break
+		esac
+		shift $shift_count
+	done
+	shift $((OPTIND - 1))
+
+	# Read remaining arguments
+	[ $# -eq 1 ] || error "You must specify one, and only one, study to retrieve."
+	STUDY="$1"
+
+	# Debug
+	print_debug_msg 1 "Arguments are : $args"
+	print_debug_msg 1 "Study to retrieve is : $STUDY"
+	[[ -n $ASPERA ]] && print_debug_msg 1 "Aspera will be used."
+	[[ -n $TOKEN ]] && print_debug_msg 1 "Token/Password is \"$TOKEN\"."
+}
+
+# Download {{{1
+################################################################
+
+function download {
+
+	local tmp_output=$1
+	local dwnld_flags=
+
+	# Silence downloader output
+	[[ $QUIET -eq 0 ]] || dwnld_flags=-q
+
+	# aspera
+	if [ -n "$ASPERA" ] ; then
+
+		dwnld_flags+=" -QT -l 1g"
+		[ -n "$(which ascp)" ] || error "ascp command not found. Please install Aspera client."
+
+		export ASPERA_SCP_PASS="$TOKEN"
+		src=
+
+		# Public study
+		if [[ -z $PRIVATE ]] ; then
+
+			dwnld_flags+=" -P33001"
+
+			# Make full path for public study
+			study_path=$STUDY
+			if [[ -z ${study_path##MTBLS*} ]] ; then
+				study_path="/studies/public/$study_path"
+			fi
+			src="fasp-ml@fasp.ebi.ac.uk:$study_path"
+
+		# Private study
+		else
+			src="mtblight@ah01.ebi.ac.uk:$STUDY"
+		fi
+
+		dwnld_cmd="ascp $dwnld_flags $src ."
+
+	# wget
+	else
+		[ -n "$(which wget)" ] || error "wget command not found."
+
+		tmp_output+=.zip
+		file=$(basename $STUDY)
+		if [ -n "$METADATA_ONLY" ]; then
+			file=metadata
+		fi
+		dwnld_cmd="wget $dwnld_flags -O $tmp_output http://www.ebi.ac.uk/metabolights/$(basename $STUDY)/files/$file"
+		if [ -n "$TOKEN" ] ; then
+			dwnld_cmd+="?token=$TOKEN"
+		fi
+	fi
+
+	# Run download command
+	print_debug_msg 1 "wget: $(which wget)"
+	print_debug_msg 1 "ascp: $(which ascp)"
+	print_debug_msg 1 "Download command: $dwnld_cmd"
+	if [[ $QUIET -ge 2 ]] ; then
+		$dwnld_cmd 2>/dev/null >/dev/null
+	else
+		$dwnld_cmd
+	fi
+	[[ $? == 0 ]] || error "Downloading of study $STUDY has failed."
+	if [ -f $tmp_output -a ! -s $tmp_output ] ; then
+		echo "Cannot download $tmp_output file. Command \"$dwnld_cmd\" has failed." >&2
+		exit 1
+	fi
+
+	echo "$tmp_output"
+}
+
+# Unzip study {{{1
+################################################################
+
+function unzip_study {
+
+	local tmp_output=$1
+	local unzip_flags=
+
+	# Silence unzip program
+	[[ $QUIET -eq 0 ]] || unzip_flags=-qq
+
+	print_debug_msg 1 "Unzipping file \"$tmp_output\"."
+
+	[ -n "$(which unzip)" ] || error "unzip command not found. Please install zip package."
+
+	zip=$tmp_output
+	print_debug_msg 1 "Zipped file is \"$zip\"."
+	tmp_output=${zip%.*}
+	print_debug_msg 1 "Output directory will be \"$tmp_output\"."
+	[[ -d "$tmp_output" ]] && rm -r "$tmp_output"
+	curdir=$(pwd)
+	mkdir $tmp_output
+	cd $tmp_output
+	unzip $unzip_flags "$curdir/$zip" >&2 || error "Unable to unzip archive $curdir/$zip."
+	cd $curdir
+
+	echo $tmp_output
+}
+
+# MAIN {{{1
+################################################################
+
+read_args "$@"
+
+study_name=$(basename $STUDY)
+
+tmp_output=$(download "$study_name")
+
+# Uncompress zip file
+if [[ -z $COMPRESSED ]] ; then
+	if [[ ${tmp_output##*.} == 'zip' ]] ; then
+		tmp_output=$(unzip_study "$tmp_output")
+	fi
+
+# Compress folder
+else
+	if [[ -d $tmp_output ]] ; then
+		zip $study_name.zip $tmp_output/*
+		tmp_output=$study_name.zip
+	fi
+fi
+
+# Rename output
+if [[ -n $OUTPUT ]] ; then
+	mv $tmp_output $OUTPUT
+fi
