@@ -1,5 +1,5 @@
 <!-- vi: se fdm=marker : -->
-<tool id="mtbls-dwnld-only" name="Metabolights downloader ONLY" version="2.0.5">
+<tool id="mtbls-dwnld" name="Metabolights downloader" version="3.0">
 
 	<description>Import ISA TAB data format from public and private MetaboLights studies</description>
 
@@ -8,7 +8,7 @@
 	<command><![CDATA[
 		## @@@BEGIN_CHEETAH@@@
 
-		$__tool_directory__/mtbls-dwnld-only
+		$__tool_directory__/mtbls-dwnld
 
 		-qq
 		#if $token:
