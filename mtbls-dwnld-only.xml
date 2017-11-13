@@ -26,11 +26,8 @@
 			-M
 		#end if
 
-		## Get compressed file
-		-c
-
 		## Set output file
-		-o "$isastudy"
+		-o "$isastudy.files_path"
 
 		## Study to output
 		"$study"
