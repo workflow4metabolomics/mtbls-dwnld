@@ -74,7 +74,7 @@
 	<inputs>
 
 		<!-- Study name -->
-		<param name="study" type="text" label="Study name" help="Study name in the form MTBLSXXXX. For downloading a private study with Aspera client, set to the full path of the study." refresh_on_change="true"/>
+		<param name="study" type="text" label="Study name" help="Study name in the form MTBLSXXXX. For downloading a private study with Aspera client, set to the full path of the study. See details below." refresh_on_change="true"/>
 
 		<!-- Public or private -->
 		<param name="type" label="Study type" type="select" help="Indicate here if the study you want to download is public or private.">
@@ -198,6 +198,7 @@ Fill this field with the name of the study you want to download.
 .. class:: warningmark
 
 In case of the download of a private study with *aspera* downloader, you must write the full path of the study, not only the name.
+It is a requirement that you have requested an "FTP folder" for the private study from the metabolights-curation@ebi.ac.uk team.	    
 
 Study type
 ==========
