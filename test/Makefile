@@ -1,8 +1,4 @@
-all: isatab2w4m mtbls-dwnld
-
-isatab2w4m:
-	./test-isatab2w4m
-	./test-isatab2w4m $(CURDIR)/../isatab2w4m.py
+all: mtbls-dwnld
 
 mtbls-dwnld:
 	./test-mtbls-dwnld

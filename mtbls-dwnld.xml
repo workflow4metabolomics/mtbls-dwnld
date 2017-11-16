@@ -88,12 +88,7 @@ Metabolights Downloader
 =======================
 
 A tool to download data from MetaboLights studies. You can download either a private or a public study, using `wget` as well as `aspera` methods.
-
-The following outputs are available:
- - A single assay in W4M three files format.
- - All assays in W4M three files format.
- - A collection of mzML files found inside the study.
- - A collection of mzData files found inside the study.
+The output is an ISA dataset.
 
 -------------
 Input setting
@@ -130,17 +125,20 @@ Token
 
 You need to provide a token when downloading with *aspera* (both for private and public studies), or when downloading a private study with *wget*.
 
------------
-Output file
------------
+------
+Output
+------
+
+The output is an ISA dataset that can be used in subsequent tools like isa2w4m.
+The ISA dataset stores all files contain in the downloaded Metabolights study.
 
 <!-- @@@END_RST@@@ -->
     </help>
 
 	<!-- Citations {{{1 -->
     <citations>
-        <citation type="doi">10.1002/0471250953.bi1413s53</citation>
-        <citation type="doi">10.1007/s11306-015-0879-3</citation>
-        <citation type="doi">10.1038/ng.1054</citation>
+        <citation type="doi">10.1002/0471250953.bi1413s53</citation> <!-- Metabolights -->
+        <citation type="doi">10.1007/s11306-015-0879-3</citation> <!-- Metabolights -->
+        <citation type="doi">10.1038/ng.1054</citation> <!-- ISA -->
     </citations>
 </tool>

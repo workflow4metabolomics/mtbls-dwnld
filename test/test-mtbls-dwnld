@@ -114,110 +114,6 @@ function test_aspera_private_download {
 	test_private_download $ASPERA_CLIENT MTBLS1
 }
 
-# Test W4M conversion {{{1
-################################################################
-
-function test_w4m_conversion {
-
-	study=MTBLS404
-
-	# Remove previously downloaded directory
-	rm -rf $study
-
-	output_sample_file=$OUTPUT_PATH/$study-w4m-sample-metadata.tsv
-	output_variable_file=$OUTPUT_PATH/$study-w4m-variable-metadata.tsv
-	output_matrix_file=$OUTPUT_PATH/$study-w4m-sample-variable-matrix.tsv
-
-	# Download
-	$PROG_PATH/../mtbls-dwnld -gMw -s "$output_sample_file" -v "$output_variable_file" -m "$output_matrix_file" /studies/public/$study || error "Download failed !"
-
-	# Compare
-	for f in sample-metadata variable-metadata sample-variable-matrix ; do
-		ref_file="$RES_PATH/$study/$study-w4m-$f.tsv"
-		file="$OUTPUT_PATH/$study-w4m-$f.tsv"
-		diff -q "$ref_file" "$file" || error "Output file \"$file\" differs from reference file \"$ref_file\"."
-	done
-}
-# Test W4M conversion of private study {{{1
-################################################################
-
-function test_w4m_conversion_private {
-
-	study=MTBLS353
-	token=$TEST_MTBLS_DWNLD_WGET_MTBLS353_PRIVATE_TOKEN
-
-	if [[ -z $token ]] ; then
-		echo "No token provided for private study $study. Cannot test download and conversion of study $study." >&2
-		return
-	fi
-
-	# Remove previously downloaded directory
-	rm -rf $study
-
-	output_sample_file=$OUTPUT_PATH/$study-w4m-sample-metadata.tsv
-	output_variable_file=$OUTPUT_PATH/$study-w4m-variable-metadata.tsv
-	output_matrix_file=$OUTPUT_PATH/$study-w4m-sample-variable-matrix.tsv
-
-	# Download
-	$PROG_PATH/../mtbls-dwnld -pgMw -t "$token" -s "$output_sample_file" -v "$output_variable_file" -m "$output_matrix_file" $study || error "Download failed !"
-}
-
-# Test W4M conversion with NA filtering {{{1
-################################################################
-
-function test_w4m_na_filtering {
-
-	study=MTBLS404
-
-	# Remove previously downloaded directory
-	rm -rf $study
-
-	output_sample_file=$OUTPUT_PATH/$study-w4m-sample-metadata-na-filtering.tsv
-	output_variable_file=$OUTPUT_PATH/$study-w4m-variable-metadata-na-filtering.tsv
-	output_matrix_file=$OUTPUT_PATH/$study-w4m-sample-variable-matrix-na-filtering.tsv
-
-	# Download
-	$PROG_PATH/../mtbls-dwnld -gMw -S 'Characteristics[gender]' -V 'mass_to_charge' -s "$output_sample_file" -v "$output_variable_file" -m "$output_matrix_file" /studies/public/$study || error "Download failed !"
-
-	# Compare
-	for f in sample-metadata-na-filtering variable-metadata-na-filtering sample-variable-matrix-na-filtering ; do
-		ref_file="$RES_PATH/$study/$study-w4m-$f.tsv"
-		file="$OUTPUT_PATH/$study-w4m-$f.tsv"
-		diff -q "$ref_file" "$file" || error "Output file \"$file\" differs from reference file \"$ref_file\"."
-	done
-}
-
-# Test W4M conversion with choice of a assay file {{{1
-################################################################
-
-function test_w4m_assay_file {
-
-	study=MTBLS30
-	study_path="$RES_PATH/$study"
-
-	for assay in "a_york_src_GC_mass_spectrometry.txt" "a_york_src_FIA_mass_spectrometry.txt" ; do
-
-		# Remove previously downloaded directory
-		rm -rf $study
-
-		output_sample_file=$OUTPUT_PATH/$study-w4m-sample-metadata-$assay.tsv
-		output_variable_file=$OUTPUT_PATH/$study-w4m-variable-metadata-$assay.tsv
-		output_matrix_file=$OUTPUT_PATH/$study-w4m-sample-variable-matrix-$assay.tsv
-
-		# Download
-		$PROG_PATH/../mtbls-dwnld -gMw -f "$assay" -s "$output_sample_file" -v "$output_variable_file" -m "$output_matrix_file" /studies/public/$study || error "Download failed !"
-
-		# Check output files
-		for f in sample-metadata variable-metadata sample-variable-matrix ; do
-			ref_file="$study_path/$study-w4m-$f-$assay.tsv"
-			output_file="$OUTPUT_PATH/$study-w4m-$f-$assay.tsv"
-			[[ -f $ref_file ]] || error "Reference file \"$ref_file\" does not exist."
-			[[ -f $output_file ]] || error "Output file \"$output_file\" does not exist."
-			diff -q "$ref_file" "$output_file" || error "Output file \"$output_file\" differs from reference file \"$ref_file\"."
-		done
-	done
-}
-
 # MAIN {{{1
 ################################################################
 
@@ -228,11 +124,7 @@ if [[ -z $ASPERA_CLIENT ]] ; then
 	echo "ascp not installed => no tests with Aspera download server." >&2
 fi
 
-test_w4m_conversion_private
 test_wget_public_download
 test_wget_private_download
 [[ -z $ASPERA_CLIENT ]] || test_aspera_public_download
 [[ -z $ASPERA_CLIENT ]] || test_aspera_private_download
-test_w4m_conversion
-test_w4m_na_filtering
-test_w4m_assay_file
