@@ -17,6 +17,7 @@ planemotest: planemo-venv/bin/planemo
 	. planemo-venv/bin/activate && planemo test --conda_dependency_resolution --galaxy_branch release_17.05
 
 clean:
+	$(MAKE) -C test $@
 	$(RM) -r $(HOME)/.planemo
 	$(RM) -r planemo-venv
 
