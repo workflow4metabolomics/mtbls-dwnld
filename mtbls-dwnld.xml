@@ -1,7 +1,7 @@
 <!-- vi: se fdm=marker : -->
 <tool id="mtbls-dwnld" name="Metabolights downloader" version="3.0">
 
-	<description>Import ISA TAB data format from public and private MetaboLights studies</description>
+	<description>Import public and private MetaboLights studies</description>
 
 	<!-- Command {{{1 -->
 
@@ -27,6 +27,7 @@
 		#end if
 
 		## Set output file
+		-H "$isastudy"
 		-o "$isastudy.files_path"
 
 		## Study to output
@@ -75,7 +76,7 @@
 			<param name="downloader" value="wget"/>
 			<param name="metadata" value="yes"/>
 			<param name="token" value=""/>
-			<output name="isastudy" file="what/file?"/>
+			<output name="isastudy" file="MTBLS30.html"/>
 		</test>
 	</tests>
 

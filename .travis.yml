@@ -4,15 +4,9 @@ notifications:
    - pk.roger@icloud.com
 
 install:
-    - sudo sed -i -e '$adeb http://cran.univ-paris1.fr/bin/linux/ubuntu trusty/' /etc/apt/sources.list
-    - sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E084DAB9
-    - sudo apt-get update
-    - sudo apt-get install -y --no-install-recommends apt-utils wget r-base git make g++ libxml2-dev libcurl4-openssl-dev libnetcdf-dev gfortran liblapack-dev libblas-dev python3-pip
-    - sudo R -e "install.packages(c('getopt', 'R.utils'), dependencies = TRUE, repos = 'http://cran.univ-paris1.fr/')"
-    - sudo R -e "source('http://bioconductor.org/biocLite.R') ; biocLite('Risa')"
     - wget http://download.asperasoft.com/download/sw/ascp-client/3.5.4/ascp-install-3.5.4.102989-linux-64.sh
     - sudo bash ascp-install-3.5.4.102989-linux-64.sh
-    - sudo pip3 install isatools
+    - sudo apt-get install -y python-virtualenv
 
 branches:
   only:
@@ -21,4 +15,5 @@ branches:
 
 script:
     - make test
-      #    - make planemolint
+    - make planemolint
+    - make planemotest

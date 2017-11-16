@@ -14,6 +14,7 @@ YES=yes
 ASPERA=
 COMPRESSED=
 DEBUG=0
+HTML=
 METADATA_ONLY=
 OUTPUT=
 PRIVATE=
@@ -34,11 +35,12 @@ function print_help {
 	echo "   -c, --compressed            Output in compressed format. If unset, the output will be a directory."
 	echo "   -g, --debug                 Debug mode."
 	echo "   -h, --help                  Print this help message."
+	echo "   -H, --html           FILE   Write HTML file that list files contained in output directory. Not compatible with compressed output."
 	echo "   -M, --metadata-only         Download only the metadata (ISA-Tab files i_*, m_*, s_* and a_*) files. This option has no effet if aspera is selected (option -a)."
-	echo "   -o, --output          NAME  Set the name of the output (both for directory output or compressed file output). By default the name of the output is determined by the download tool."
+	echo "   -o, --output         NAME   Set the name of the output (both for directory output or compressed file output). By default the name of the output is determined by the download tool."
 	echo "   -p, --private               Indicate the study to download is not public. This is meant for aspera download, since the URL will be different for a public or a private study."
 	echo "   -q, --quiet                 Does not print any output. Can be specified twice in order to be real quiet."
-	echo "   -t, --token           TOKEN Set the token or password to use."
+	echo "   -t, --token          TOKEN  Set the token or password to use."
 }
 
 # Error {{{1
@@ -81,6 +83,7 @@ function read_args {
 			-g|--debug)             DEBUG=$((DEBUG + 1)) ;;
 			-h|--help)              print_help ; exit 0 ;;
 			-M|--metadata-only)     METADATA_ONLY=$YES ;;
+			-H|--html)              HTML="$2" ; shift_count=2 ;;
 			-o|--output)            OUTPUT="$2" ; shift_count=2 ;;
 			-p|--private)           PRIVATE=$YES ;;
 			-q|--quiet)             QUIET=$((QUIET + 1)) ;;
@@ -208,6 +211,50 @@ function unzip_study {
 	echo $tmp_output
 }
 
+# Write HTML file {{{1
+################################################################
+
+function write_html_file {
+
+	local HTML=$1
+	local tmp_output=$2
+
+	cat >$HTML <<EOF
+<html>
+	<header>
+		<title>Metabolights study</title>
+	</header>
+	<body>
+		<a href="i_Investigation.txt">Investigation file</a><br/>
+EOF
+
+	echo "<br/>" >>$HTML
+	echo "          Study files:<br/>" >>$HTML
+	for f in $tmp_output/s_* ; do
+		filename=$(basename "$f")
+		echo "          <a href=\"$filename\">$filename</a><br/>" >>$HTML
+	done
+
+	echo "<br/>" >>$HTML
+	echo "          Assay files:<br/>" >>$HTML
+	for f in $tmp_output/a_* ; do
+		filename=$(basename "$f")
+		echo "          <a href=\"$filename\">$filename</a><br/>" >>$HTML
+	done
+
+	echo "<br/>" >>$HTML
+	echo "          Data files:<br/>" >>$HTML
+	for f in $tmp_output/m_* ; do
+		filename=$(basename "$f")
+		echo "          <a href=\"$filename\">$filename</a><br/>" >>$HTML
+	done
+
+	cat >>$HTML <<EOF
+	</body>
+</html>
+EOF
+}
+
 # MAIN {{{1
 ################################################################
 
@@ -217,14 +264,22 @@ study_name=$(basename $STUDY)
 
 tmp_output=$(download "$study_name")
 
-# Uncompress zip file
+# Output a folder
 if [[ -z $COMPRESSED ]] ; then
+
+	# Uncompress zip file
 	if [[ ${tmp_output##*.} == 'zip' ]] ; then
 		tmp_output=$(unzip_study "$tmp_output")
 	fi
 
-# Compress folder
+	# Output HTML
+	if [[ -n $HTML ]] ; then
+		write_html_file "$HTML" "$tmp_output"
+	fi
+
+# Output a compressed file
 else
+	# Compress folder
 	if [[ -d $tmp_output ]] ; then
 		zip $study_name.zip $tmp_output/*
 		tmp_output=$study_name.zip
