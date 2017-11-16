@@ -1,33 +1,25 @@
 all:
 
 test: 
-	$(MAKE) -C test
+	$(MAKE) -C $@
 
-planemotest:
-	planemo test --install_galaxy --galaxy_branch 17.01 --conda_dependency_resolution
+planemo-venv/bin/planemo: planemo-venv
+	. planemo-venv/bin/activate && pip install --upgrade pip setuptools
+	. planemo-venv/bin/activate && pip install planemo
 
-$(VENV):
-	virtualenv $@
+planemo-venv:
+	virtualenv planemo-venv
 
-$(CONDADIR): planemo-install
-	. $(ACTIVATE_VENV) && planemo conda_init --conda_prefix $(CONDADIR)
+planemolint: planemo-venv/bin/planemo
+	. planemo-venv/bin/activate && planemo lint
 
-planemo-install: $(VENV)
-	. $(ACTIVATE_VENV) && pip install --upgrade pip setuptools
-	. $(ACTIVATE_VENV) && pip install planemo==$(PLANEMO_VERSION)
-
-conda: $(CONDADIR)
-	. $(ACTIVATE_VENV) && planemo conda_install --conda_prefix $(CONDADIR) $(XMLCFG)
-
-planemolint:
-	planemo lint
-
-plaintest:
+planemotest: planemo-venv/bin/planemo
+	. planemo-venv/bin/activate && planemo test --conda_dependency_resolution --galaxy_source https://github.com/phnmnl/galaxy.git --galaxy_branch feature/isa-datatype
 
 clean:
 	$(MAKE) -C test $@
 	$(RM) -r $(HOME)/.planemo
-	$(RM) -r $(CONDADIR)
-	$(RM) -r $(VENV)
+	$(RM) -r planemo-venv
+	$(RM) tool_test_output.*
 
-.PHONY: clean all test plaintest planemolint planemotest conda planemo-install
+.PHONY:	all clean test planemolint planemotest

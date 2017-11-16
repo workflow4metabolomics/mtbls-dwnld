@@ -2,9 +2,14 @@
 .*.swp
 tool_test_output.*
 .DS_Store
-MTBLS*
+MTBLS*.zip
+*.tsv
 *.log
+MTBLS?
+MTBLS??
+MTBLS???
 w4mmtbls*
 mzdata
 mzml
 dataset*
+planemo-venv
