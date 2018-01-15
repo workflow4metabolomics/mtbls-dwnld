@@ -65,7 +65,7 @@
 	<!-- Outputs {{{1 -->
 
     <outputs>
-        <data name="isastudy" label="ISA of ${study}" format="isa-tab"/>
+        <data name="isastudy" label="${study}" format="isa-tab"/>
     </outputs>
 
 	<!-- Tests {{{1 -->
