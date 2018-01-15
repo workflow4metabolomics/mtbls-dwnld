@@ -65,7 +65,7 @@
 	<!-- Outputs {{{1 -->
 
     <outputs>
-        <data name="isastudy" label="ISA of ${study}" format="isa"/>
+        <data name="isastudy" label="${study}" format="isa-tab"/>
     </outputs>
 
 	<!-- Tests {{{1 -->
@@ -130,8 +130,8 @@ You need to provide a token when downloading with *aspera* (both for private and
 Output
 ------
 
-The output is an ISA dataset that can be used in subsequent tools like isa2w4m.
-The ISA dataset stores all files contain in the downloaded Metabolights study.
+The output is an ISA-Tab dataset that can be used in subsequent tools like isa2w4m.
+The ISA-Tab dataset stores all files contain in the downloaded Metabolights study.
 
 ---------------------
 Developer information
