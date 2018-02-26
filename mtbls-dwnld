@@ -7,6 +7,7 @@
 PROG_NAME=$(basename $0)
 PROG_PATH=$(dirname $0)
 YES=yes
+ASPERA_PUBLIC_TOKEN=Xz68YfDe
 
 # Global variables {{{1
 ################################################################
