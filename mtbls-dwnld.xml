@@ -1,5 +1,5 @@
 <!-- vi: se fdm=marker : -->
-<tool id="mtbls-dwnld" name="Metabolights downloader" version="3.1.0">
+<tool id="mtbls-dwnld" name="Metabolights downloader" version="3.1.1">
 
 	<description>Import public and private MetaboLights studies</description>
 
@@ -59,7 +59,7 @@
 		<param name="metadata" label="Download only the metadata" type="boolean" help="If set to 'No', found mzData and mzML files will be extracted and output as collections." checked="true" truevalue="yes" falsevalue=""/>
 
 		<!-- Token -->
-		<param name="token" type="text" optional="true" format="txt" label="Token"  help="Token is required for private study or for downloading with Aspera client."/>
+		<param name="token" type="text" optional="true" format="txt" label="Token"  help="A token is required for private studies. A default token is provided for downloading public studies with aspera, but you can set your own if you wish."/>
 	</inputs>
 
 	<!-- Outputs {{{1 -->
