@@ -7,6 +7,7 @@
 PROG_NAME=$(basename $0)
 PROG_PATH=$(dirname $0)
 YES=yes
+ASPERA_PUBLIC_TOKEN=Xz68YfDe
 
 # Global variables {{{1
 ################################################################
@@ -40,7 +41,7 @@ function print_help {
 	echo "   -o, --output         NAME   Set the name of the output (both for directory output or compressed file output). By default the name of the output is determined by the download tool."
 	echo "   -p, --private               Indicate the study to download is not public. This is meant for aspera download, since the URL will be different for a public or a private study."
 	echo "   -q, --quiet                 Does not print any output. Can be specified twice in order to be real quiet."
-	echo "   -t, --token          TOKEN  Set the token or password to use."
+	echo "   -t, --token          TOKEN  Set the token or password to use. For aspera public download, if you don't specify a token, the default token '$ASPERA_PUBLIC_TOKEN' will be used."
 }
 
 # Error {{{1
@@ -104,7 +105,13 @@ function read_args {
 	STUDY="$1"
 
 	# Check token
-	[[ -z $ASPERA || -n $TOKEN ]] || error "Aspera needs a token for retrieving studies (both private and public)."
+	if [[ -n $ASPERA && -z $TOKEN ]] ; then
+		if [[ -z $PRIVATE ]] ; then
+			TOKEN=$ASPERA_PUBLIC_TOKEN
+		else
+			error "You need to specify a token for retrieving private studies with aspera."
+		fi
+	fi
 	[[ -z $PRIVATE || -n $TOKEN ]] || error "You need to set a token for retrieving private studies."
 
 	# Debug
