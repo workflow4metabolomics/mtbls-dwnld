@@ -104,6 +104,10 @@ function read_args {
 	[ $# -eq 1 ] || error "You must specify one, and only one, study to retrieve."
 	STUDY="$1"
 
+	# Check token
+	[[ -z $ASPERA || -n $TOKEN ]] || error "Aspera needs a token for retrieving studies (both private and public)."
+	[[ -z $PRIVATE || -n $TOKEN ]] || error "You need to set a token for retrieving private studies."
+
 	# Debug
 	print_debug_msg 1 "Arguments are : $args"
 	print_debug_msg 1 "Study to retrieve is : $STUDY"
