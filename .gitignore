@@ -13,3 +13,7 @@ mzdata
 mzml
 dataset*
 planemo-venv
+MTBLS*.tar.gz
+MTBLS*.tgz
+MTBLS*.tar.bz2
+MTBLS*.tbz
