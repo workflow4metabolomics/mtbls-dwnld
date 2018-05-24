@@ -130,6 +130,7 @@ function read_args {
 function download {
 
 	local tmp_output=$1
+	local metadata_only=$2
 	local dwnld_flags=
 
 	# Silence downloader output
@@ -169,11 +170,11 @@ function download {
 
 		tmp_output+=.zip
 		file=$(basename $STUDY)
-		if [ -n "$METADATA_ONLY" ]; then
+		if [[ $metadata_only == $YES ]] ; then
 			file=metadata
 		fi
 		dwnld_cmd="wget $dwnld_flags -O $tmp_output http://www.ebi.ac.uk/metabolights/$(basename $STUDY)/files/$file"
-		if [ -n "$TOKEN" ] ; then
+		if [[ -n $TOKEN ]] ; then
 			dwnld_cmd+="?token=$TOKEN"
 		fi
 	fi
@@ -276,7 +277,7 @@ read_args "$@"
 
 study_name=$(basename $STUDY)
 
-tmp_output=$(download "$study_name")
+tmp_output=$(download "$study_name" "$METADATA_ONLY")
 
 # Output a folder
 if [[ -z $COMPRESSED ]] ; then
