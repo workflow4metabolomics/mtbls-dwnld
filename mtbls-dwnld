@@ -21,6 +21,7 @@ OUTPUT=
 PRIVATE=
 QUIET=0
 TOKEN=
+FACTOR_VALUE=
 
 # Print help {{{1
 ################################################################
@@ -34,6 +35,7 @@ function print_help {
 	echo "Options:"
 	echo "   -a, --aspera                Use aspera server for downloading. You need the ascp client to be installed, it is freely available for linux 64. See http://downloads.asperasoft.com."
 	echo "   -c, --compressed            Output in compressed format. If unset, the output will be a directory."
+	echo "   -f, --factor-value          Filter study on a factor value. Example: \"-f myfactor=myvalue\"."
 	echo "   -g, --debug                 Debug mode."
 	echo "   -h, --help                  Print this help message."
 	echo "   -H, --html           FILE   Write HTML file that list files contained in output directory. Not compatible with compressed output."
@@ -81,6 +83,7 @@ function read_args {
 		case $1 in
 			-a|--aspera)            ASPERA=$YES ;;
 			-c|--compressed)        COMPRESSED=$YES ;;
+			-f|--factor-value)      FACTOR_VALUE="$2" ; shift_count=2 ;;
 			-g|--debug)             DEBUG=$((DEBUG + 1)) ;;
 			-h|--help)              print_help ; exit 0 ;;
 			-M|--metadata-only)     METADATA_ONLY=$YES ;;
