@@ -3,6 +3,10 @@
 
 	<description>Import public and private MetaboLights studies</description>
 
+	<requirements>
+		<requirement type="package" version="0.9.5">isatools</requirement>
+	</requirements>
+
 	<!-- Command {{{1 -->
 
 	<command><![CDATA[
