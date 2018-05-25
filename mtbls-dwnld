@@ -257,7 +257,7 @@ check_download() {
 # Unzip study {{{1
 ################################################################
 
-function unzip_study {
+unzip_study() {
 
 	local tmp_output=$1
 	local unzip_flags=
@@ -267,7 +267,7 @@ function unzip_study {
 
 	print_debug_msg 1 "Unzipping file \"$tmp_output\"."
 
-	[ -n "$(which unzip)" ] || error "unzip command not found. Please install zip package."
+	[[ -n $(which unzip) ]] || error "unzip command not found. Please install zip package."
 
 	zip=$tmp_output
 	print_debug_msg 1 "Zipped file is \"$zip\"."
@@ -281,6 +281,32 @@ function unzip_study {
 	cd $curdir
 
 	echo $tmp_output
+}
+
+# Make folder or zip {{{1
+################################################################
+
+make_folder_or_zip() {
+
+	local path="$1"
+	local compressed="$2"
+
+	# Compress folder
+	if [[ $compressed == $YES && -d $path ]] ; then
+
+		zip_file="$path.zip"
+		zip "$zip_file" $path/*
+		rm -r "$path"
+		path="$zip_file"
+
+	# Extract zip archive
+	elif [[ $compressed != $YES && -f $path && ${path##*.} == 'zip' ]] ; then
+		folder=$(unzip_study "$path")
+		rm "$path"
+		path="$folder"
+	fi
+
+	echo "$path"
 }
 
 # Write HTML file {{{1
@@ -341,45 +367,35 @@ if [[ -n $FACTOR_VALUE ]] ; then
 
 	# Download only metadata
 	download "$downloader" "$study_name" "$YES"
+	dwnld_output=$(get_download_output_path "$downloader" "$study_name")
+	dwnld_output=$(as_folder "$dwnld_output")
 
 	# Get data files to download
+	data_files=$(mktemp -t $PROG_NAME.XXXXXX)
+	run_mtblisa.py 'isa-tab-get-data-list' "${source}" "$data_files" --json-query "{ \"$factor_name\": \"$factor_value\" }"
 
 	# Download data files
 
+	# Remove data files list
+	rm "$data_files"
+
 # Download whole study
 else
+	# Download whole study
 	download "$downloader" "$study_name" "$METADATA_ONLY"
-fi
 
-# Get output path
-tmp_output=$(get_download_output_path "$downloader" "$study_name")
+	# Get output path
+	dwnld_output=$(get_download_output_path "$downloader" "$study_name")
+fi
 
 # Check output
-check_download "$tmp_output"
+check_download "$dwnld_output"
 
-# Output a folder
-if [[ -z $COMPRESSED ]] ; then
+# Output in right format (zipped or folder)
+dwnld_output=$(make_folder_or_zip "$dwnld_output" "$COMPRESSED")
 
-	# Uncompress zip file
-	if [[ ${tmp_output##*.} == 'zip' ]] ; then
-		tmp_output=$(unzip_study "$tmp_output")
-	fi
-
-	# Output HTML
-	if [[ -n $HTML ]] ; then
-		write_html_file "$HTML" "$tmp_output"
-	fi
-
-# Output a compressed file
-else
-	# Compress folder
-	if [[ -d $tmp_output ]] ; then
-		zip $study_name.zip $tmp_output/*
-		tmp_output=$study_name.zip
-	fi
-fi
+# Output HTML
+[[ -z $HTML || ! -d $dwnld_output ]] || write_html_file "$HTML" "$dwnld_output"
 
 # Rename output
-if [[ -n $OUTPUT ]] ; then
-	mv $tmp_output $OUTPUT
-fi
+[[ -z $OUTPUT ]] || mv "$dwnld_output" "$OUTPUT"
