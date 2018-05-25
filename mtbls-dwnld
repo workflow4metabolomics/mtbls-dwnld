@@ -35,7 +35,7 @@ function print_help {
 	echo "Options:"
 	echo "   -a, --aspera                Use aspera server for downloading. You need the ascp client to be installed, it is freely available for linux 64. See http://downloads.asperasoft.com."
 	echo "   -c, --compressed            Output in compressed format. If unset, the output will be a directory."
-	echo "   -f, --factor-value          Filter study on a factor value. Example: \"-f myfactor=myvalue\"."
+	echo "   -f, --factor-value          Filter study on a factor value. Example: \"-f myfactor=myvalue\". Only available with wget downloader."
 	echo "   -g, --debug                 Debug mode."
 	echo "   -h, --help                  Print this help message."
 	echo "   -H, --html           FILE   Write HTML file that list files contained in output directory. Not compatible with compressed output."
@@ -117,6 +117,9 @@ function read_args {
 	fi
 	[[ -z $PRIVATE || -n $TOKEN ]] || error "You need to set a token for retrieving private studies."
 
+	# Check arguments
+	[[ -z $FACTOR_VALUE || $ASPERA != $YES ]] || error "You cannot slice study using factor value, with Aspera downloader. Please, use wget downloader instead."
+
 	# Debug
 	print_debug_msg 1 "Arguments are : $args"
 	print_debug_msg 1 "Study to retrieve is : $STUDY"
@@ -139,11 +142,14 @@ function download {
 	# aspera
 	if [ -n "$ASPERA" ] ; then
 
-		dwnld_flags+=" -QT -l 1g"
-		[ -n "$(which ascp)" ] || error "ascp command not found. Please install Aspera client."
+		[ -n "$(which ascp)" ] || error "ascp command not found. Please install Aspera client, version 3.7.4 or greater. See http://downloads.asperasoft.com/en/downloads/62."
 
 		export ASPERA_SCP_PASS="$TOKEN"
 		src=
+
+		# Set base flags
+		[[ -z $dwnld_flags ]] || dwnld_flags=" "
+		dwnld_flags+="--policy=fair -T -l 1g"
 
 		# Public study
 		if [[ -z $PRIVATE ]] ; then
@@ -162,6 +168,12 @@ function download {
 			src="mtblight@ah01.ebi.ac.uk:$STUDY"
 		fi
 
+		# Metadata only
+		if [[ $metadata_only == $YES ]] ; then
+			dwnld_flags+=" -N '?_*.t*' -E '*.*'"
+		fi
+
+		# Download command
 		dwnld_cmd="ascp $dwnld_flags $src ."
 
 	# wget
@@ -170,10 +182,16 @@ function download {
 
 		tmp_output+=.zip
 		file=$(basename $STUDY)
+
+		# Metadata only
 		if [[ $metadata_only == $YES ]] ; then
 			file=metadata
 		fi
+
+		# Download command
 		dwnld_cmd="wget $dwnld_flags -O $tmp_output http://www.ebi.ac.uk/metabolights/$(basename $STUDY)/files/$file"
+
+		# Token
 		if [[ -n $TOKEN ]] ; then
 			dwnld_cmd+="?token=$TOKEN"
 		fi
@@ -183,11 +201,7 @@ function download {
 	print_debug_msg 1 "wget: $(which wget)"
 	print_debug_msg 1 "ascp: $(which ascp)"
 	print_debug_msg 1 "Download command: $dwnld_cmd"
-	if [[ $QUIET -ge 2 ]] ; then
-		$dwnld_cmd 2>/dev/null >/dev/null
-	else
-		$dwnld_cmd
-	fi
+	$dwnld_cmd
 	[[ $? == 0 ]] || error "Downloading of study $STUDY has failed."
 	if [ -f $tmp_output -a ! -s $tmp_output ] ; then
 		echo "Cannot download $tmp_output file. Command \"$dwnld_cmd\" has failed." >&2
@@ -277,7 +291,20 @@ read_args "$@"
 
 study_name=$(basename $STUDY)
 
-tmp_output=$(download "$study_name" "$METADATA_ONLY")
+# Download only part of the study using factor value
+if [[ -n $FACTOR_VALUE ]] ; then
+
+	# Download first metadata
+	tmp_output=$(download "$study_name" "$YES")
+
+	# Get data files to download
+
+	# Download data files
+
+# Download whole study
+else
+	tmp_output=$(download "$study_name" "$METADATA_ONLY")
+fi
 
 # Output a folder
 if [[ -z $COMPRESSED ]] ; then
