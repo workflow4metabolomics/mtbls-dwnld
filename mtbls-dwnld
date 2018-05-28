@@ -275,12 +275,13 @@ unzip_study() {
 	print_debug_msg 1 "Output directory will be \"$tmp_output\"."
 	[[ -d "$tmp_output" ]] && rm -r "$tmp_output"
 	curdir=$(pwd)
+	print_debug_msg 1 "Current directory is \"$curdir\"."
 	mkdir $tmp_output
 	cd $tmp_output
 	unzip $unzip_flags "$curdir/$zip" >&2 || error "Unable to unzip archive $curdir/$zip."
 	cd $curdir
 
-	echo $tmp_output
+	echo "$tmp_output"
 }
 
 # Make folder or zip {{{1
