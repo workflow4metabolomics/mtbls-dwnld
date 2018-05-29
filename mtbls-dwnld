@@ -284,6 +284,40 @@ unzip_study() {
 	echo "$tmp_output"
 }
 
+# As zip {{{1
+################################################################
+
+as_zip() {
+
+	local path="$1"
+
+	if [[ -d $path ]] ; then
+
+		zip_file="$path.zip"
+		zip "$zip_file" $path/*
+		rm -r "$path"
+		path="$zip_file"
+	fi
+
+	echo "$path"
+}
+
+# As folder {{{1
+################################################################
+
+as_folder() {
+
+	local path="$1"
+
+	if [[ -f $path && ${path##*.} == 'zip' ]] ; then
+		folder=$(unzip_study "$path")
+		rm "$path"
+		path="$folder"
+	fi
+
+	echo "$path"
+}
+
 # Make folder or zip {{{1
 ################################################################
 
@@ -293,18 +327,10 @@ make_folder_or_zip() {
 	local compressed="$2"
 
 	# Compress folder
-	if [[ $compressed == $YES && -d $path ]] ; then
-
-		zip_file="$path.zip"
-		zip "$zip_file" $path/*
-		rm -r "$path"
-		path="$zip_file"
-
-	# Extract zip archive
-	elif [[ $compressed != $YES && -f $path && ${path##*.} == 'zip' ]] ; then
-		folder=$(unzip_study "$path")
-		rm "$path"
-		path="$folder"
+	if [[ $compressed == $YES ]] ; then
+		path=$(as_zip "$path")
+	else
+		path=$(as_folder "$path")
 	fi
 
 	echo "$path"
@@ -366,6 +392,8 @@ downloader=$WGET
 # Download only part of the study using factor value
 if [[ -n $FACTOR_VALUE ]] ; then
 
+	# Get factor name and value
+
 	# Download only metadata
 	download "$downloader" "$study_name" "$YES"
 	dwnld_output=$(get_download_output_path "$downloader" "$study_name")
@@ -373,7 +401,8 @@ if [[ -n $FACTOR_VALUE ]] ; then
 
 	# Get data files to download
 	data_files=$(mktemp -t $PROG_NAME.XXXXXX)
-	run_mtblisa.py 'isa-tab-get-data-list' "${source}" "$data_files" --json-query "{ \"$factor_name\": \"$factor_value\" }"
+	"$PROG_PATH/run_mtblisa.py" 'isa-tab-get-data-list' "${source}" "$data_files" --json-query "{ \"$factor_name\": \"$factor_value\" }"
+	cat "$data_files"
 
 	# Download data files
 
