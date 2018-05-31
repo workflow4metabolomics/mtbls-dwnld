@@ -6,6 +6,7 @@
 
 PROG_NAME=$(basename $0)
 PROG_PATH=$(dirname $0)
+ISASLICER="$PROG_PATH/isatools-galaxy/tools/slicer/isaslicer.py"
 YES=yes
 ASPERA_PUBLIC_TOKEN=Xz68YfDe
 ASCP=ascp
@@ -119,9 +120,6 @@ function read_args {
 	fi
 	[[ -z $PRIVATE || -n $TOKEN ]] || error "You need to set a token for retrieving private studies."
 
-	# Check arguments
-	[[ -z $FACTOR_VALUE || $ASPERA != $YES ]] || error "You cannot slice study using factor value, with Aspera downloader. Please, use wget downloader instead."
-
 	# Debug
 	print_debug_msg 1 "Arguments are : $args"
 	print_debug_msg 1 "Study to retrieve is : $STUDY"
@@ -156,12 +154,13 @@ download_with_ascp() {
 	# Check ascp
 	[ -n "$(which ascp)" ] || error "ascp command not found. Please install Aspera client, version 3.7.4 or greater. See http://downloads.asperasoft.com/en/downloads/62."
 	print_debug_msg 1 "$ASCP: $(which $ASCP)"
+	print_debug_msg 1 "QUIET: $QUIET"
 
 	# Silence downloader output
 	[[ $QUIET -eq 0 ]] || dwnld_flags=-q
 
 	# Set download flags
-	[[ -z $dwnld_flags ]] || dwnld_flags=" "
+	[[ -z $dwnld_flags ]] || dwnld_flags+=" "
 	dwnld_flags+="--policy=fair -T -l 1g"
 
 	# Set download link
@@ -393,6 +392,8 @@ downloader=$WGET
 if [[ -n $FACTOR_VALUE ]] ; then
 
 	# Get factor name and value
+	factor_name=${FACTOR_VALUE%%=*}
+	factor_value=${FACTOR_VALUE#*=}
 
 	# Download only metadata
 	download "$downloader" "$study_name" "$YES"
@@ -401,7 +402,10 @@ if [[ -n $FACTOR_VALUE ]] ; then
 
 	# Get data files to download
 	data_files=$(mktemp -t $PROG_NAME.XXXXXX)
-	"$PROG_PATH/run_mtblisa.py" 'isa-tab-get-data-list' "${source}" "$data_files" --json-query "{ \"$factor_name\": \"$factor_value\" }"
+	[[ -x "$ISASLICER" ]] || error "Cannot find or run isaslicer.py script."
+	print_debug_msg 1 "Run ISA slicer: \"$ISASLICER\" 'isa-tab-get-data-list' \"$dwnld_output\" \"$data_files\" --json-query \"{ \\\"$factor_name\\\": \\\"$factor_value\\\" }\""
+	abs_dwnld_output=$(realpath "$dwnld_output")
+	"$ISASLICER" 'isa-tab-get-data-list' "$abs_dwnld_output" "$data_files" --json-query "{ \"$factor_name\": \"$factor_value\" }"
 	cat "$data_files"
 
 	# Download data files
