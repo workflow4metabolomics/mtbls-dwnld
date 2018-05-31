@@ -518,7 +518,7 @@ def slice_data_files(dir, factor_selection=None):
     for table_file in glob.iglob(os.path.join(dir, '[a|s]_*')):
         logger.info('Loading {table_file}'.format(table_file=table_file))
 
-        with open(os.path.join(dir, table_file)) as fp:
+        with open(table_file) as fp:
             df = isatab.load_table(fp)
 
             if factor_selection is None:
@@ -1063,7 +1063,6 @@ def main(args):
 
 if __name__ == '__main__':
     try:
-        print(sys.argv[1:])
         main(sys.argv[1:])
         sys.exit(0)
     except Exception as e:
