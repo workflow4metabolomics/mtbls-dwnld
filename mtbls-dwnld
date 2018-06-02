@@ -379,6 +379,25 @@ EOF
 EOF
 }
 
+# Get data files {{{1
+################################################################
+
+get_data_files() {
+
+	local json_file="$1"
+
+	python3 <<EOF
+# @@@BEGIN_PYTHON@@@
+import json
+import sys
+with open('$json_file') as f:
+    data_list = json.load(f)
+    for elem in data_list:
+	    print("\n".join(elem['data_files']))
+# @@@END_PYTHON@@@
+EOF
+}
+
 # MAIN {{{1
 ################################################################
 
@@ -406,9 +425,13 @@ if [[ -n $FACTOR_VALUE ]] ; then
 	print_debug_msg 1 "Run ISA slicer: \"$ISASLICER\" 'isa-tab-get-data-list' \"$dwnld_output\" \"$data_files\" --json-query \"{ \\\"$factor_name\\\": \\\"$factor_value\\\" }\""
 	abs_dwnld_output=$(realpath "$dwnld_output")
 	"$ISASLICER" 'isa-tab-get-data-list' "$abs_dwnld_output" "$data_files" --json-query "{ \"$factor_name\": \"$factor_value\" }"
-	cat "$data_files"
 
 	# Download data files
+	get_data_files "$data_files" | sort | uniq | while read file ; do
+		dwnld_flags=
+		[[ $QUIET -eq 0 ]] || dwnld_flags+=" -q"
+		$WGET -O "$dwnld_output/$file" "https://www.ebi.ac.uk/metabolights/$study_name/files/$file"
+	done
 
 	# Remove data files list
 	rm "$data_files"

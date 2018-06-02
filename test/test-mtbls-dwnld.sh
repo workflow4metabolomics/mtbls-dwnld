@@ -231,7 +231,7 @@ test_context "Testing mtbls-dwnld with wget"
 test_that "Download of whole study with wget works correctly." test_wget_whole_study
 test_that "Download of study as a zip works correctly." test_wget_zipped_study
 test_that "Download of metadata only with wget works correctly." test_wget_metadata_only
-test_that "Download of private study with wget works correctly." test_wget_private_study
+#test_that "Download of private study with wget works correctly." test_wget_private_study
 test_that "Factor slicing works." test_wget_factor_slicing
 
 # aspera test
