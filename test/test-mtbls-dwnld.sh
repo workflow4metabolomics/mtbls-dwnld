@@ -226,6 +226,16 @@ test_wget_factor_slicing() {
 # Main {{{1
 ################################################################
 
+# Small studies to test:        Data files
+# MTBLS1      148.82MB          .zip files and .nmrML files
+# MTBLS164    2.30MB            one .xlsx and one .json
+# MTBLS116    5.72MB            .zip files and one .json
+# MTBLS77     6.70MB            .zip files, one .docx and one .xlsx
+# MTBLS342    8.09MB            .fid files, one .json
+# MTBLS361    23.32MB           .zip files, one .xlsx and one .json
+# MTBLS174    3.51MB            .zip files and one .json
+# MTBLS566    34.10MB           2 .mzML files.
+
 # wget tests
 test_context "Testing mtbls-dwnld with wget"
 test_that "Download of whole study with wget works correctly." test_wget_whole_study
