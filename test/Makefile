@@ -1,7 +1,7 @@
 all: mtbls-dwnld
 
 mtbls-dwnld:
-	./test-mtbls-dwnld
+	../bash-testthat/testthat.sh test-mtbls-dwnld.sh
 
 clean:
 	$(RM) -r MTBLS* *.zip outputs
