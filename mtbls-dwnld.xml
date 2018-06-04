@@ -34,6 +34,11 @@
 		-H "$isastudy"
 		-o "$isastudy.files_path"
 
+		## Factor slicing
+		#if $factor_slicing.factor_name:
+			-f "$factor_slicing.factor_name=$factor_slicing.factor_value"
+		#end if
+
 		## Study to output
 		"$study"
 
@@ -64,6 +69,12 @@
 
 		<!-- Token -->
 		<param name="token" type="text" optional="true" format="txt" label="Token"  help="A token is required for private studies. A default token is provided for downloading public studies with aspera, but you can set your own if you wish."/>
+
+		<!-- Factor slicing -->
+		<section name="factor_slicing" title="Slicing by factor value" expanded="true">
+			<param name="factor_name" type="text" size="128" label="Factor title"/>
+			<param name="factor_value" type="text" size="128" label="Factor value"/>
+		</section>
 	</inputs>
 
 	<!-- Outputs {{{1 -->
