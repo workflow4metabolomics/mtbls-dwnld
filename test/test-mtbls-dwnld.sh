@@ -21,7 +21,7 @@ test_wget_whole_study() {
 	rm -rf $study
 
 	# Download
-	$MTBLSDWNLD -g $study
+	expect_success $MTBLSDWNLD -g $study
 
 	# Test
 	expect_folder "$study" || return 1
@@ -41,7 +41,7 @@ test_wget_zipped_study() {
 	rm $study.zip
 
 	# Download
-	$MTBLSDWNLD -gMc $study
+	expect_success $MTBLSDWNLD -gMc $study
 
 	# Test
 	expect_non_empty_file "$study.zip" || return 1
@@ -58,7 +58,7 @@ test_wget_metadata_only() {
 	rm -rf $study
 
 	# Download
-	$MTBLSDWNLD -gM $study
+	expect_success $MTBLSDWNLD -gM $study
 
 	# Test
 	expect_folder "$study" || return 1
@@ -108,12 +108,18 @@ test_wget_private_study() {
 	# Remove previously downloaded directory
 	rm -rf $study
 
-	# Download
-	$MTBLSDWNLD -gpM -t $(get_private_study_token wget $study) $(get_private_study_path wget $study)
+	# Get study info
+	token=$(get_private_study_token wget $study)
+	path=$(get_private_study_path wget $study)
 
-	# Test
-	expect_folder "$study" || return 1
-	expect_file "$study/i_Investigation.txt" || return 1
+	if [[ -n $token && -n $path ]] ; then
+		# Download
+		expect_success $MTBLSDWNLD -gpM -t $token $path
+
+		# Test
+		expect_folder "$study" || return 1
+		expect_file "$study/i_Investigation.txt" || return 1
+	fi
 }
 
 # Test ascp whole study {{{1
@@ -127,7 +133,7 @@ test_ascp_whole_study() {
 	rm -rf $study
 
 	# Download
-	$MTBLSDWNLD -agq -t "$ASPERA_PUBLIC_TOKEN" $study
+	expect_success $MTBLSDWNLD -agq -t "$ASPERA_PUBLIC_TOKEN" $study
 
 	# Test
 	expect_folder "$study" || return 1
@@ -147,7 +153,7 @@ test_ascp_default_key() {
 	rm -rf $study
 
 	# Download
-	$MTBLSDWNLD -agq $study
+	expect_success $MTBLSDWNLD -agq $study
 
 	# Test
 	expect_folder "$study" || return 1
@@ -167,7 +173,7 @@ test_ascp_metadata_only() {
 	rm -rf $study
 
 	# Download
-	$MTBLSDWNLD -agMq $study
+	expect_success $MTBLSDWNLD -agMq $study
 
 	# Test
 	expect_folder "$study" || return 1
@@ -185,12 +191,18 @@ test_ascp_private_study() {
 	# Remove previously downloaded directory
 	rm -rf $study
 
-	# Download
-	$MTBLSDWNLD -agpMq -t $(get_private_study_token ascp $study) $(get_private_study_path ascp $study)
+	# Get study info
+	token=$(get_private_study_token ascp $study)
+	path=$(get_private_study_path ascp $study)
 
-	# Test
-	expect_folder "$study" || return 1
-	expect_file "$study/i_Investigation.txt" || return 1
+	if [[ -n $token && -n $path ]] ; then
+		# Download
+		expect_success $MTBLSDWNLD -agpMq -t $token $path
+
+		# Test
+		expect_folder "$study" || return 1
+		expect_file "$study/i_Investigation.txt" || return 1
+	fi
 }
 
 # Test wget factor slicing {{{1
