@@ -6,8 +6,11 @@
 
 PROG_NAME=$(basename $0)
 PROG_PATH=$(dirname $0)
+ISASLICER="$PROG_PATH/isatools-galaxy/tools/slicer/isaslicer.py"
 YES=yes
 ASPERA_PUBLIC_TOKEN=Xz68YfDe
+ASCP=ascp
+WGET=wget
 
 # Global variables {{{1
 ################################################################
@@ -21,6 +24,7 @@ OUTPUT=
 PRIVATE=
 QUIET=0
 TOKEN=
+FACTOR_VALUE=
 
 # Print help {{{1
 ################################################################
@@ -34,6 +38,7 @@ function print_help {
 	echo "Options:"
 	echo "   -a, --aspera                Use aspera server for downloading. You need the ascp client to be installed, it is freely available for linux 64. See http://downloads.asperasoft.com."
 	echo "   -c, --compressed            Output in compressed format. If unset, the output will be a directory."
+	echo "   -f, --factor-value          Filter study on a factor value. Example: \"-f myfactor=myvalue\". Only available with wget downloader."
 	echo "   -g, --debug                 Debug mode."
 	echo "   -h, --help                  Print this help message."
 	echo "   -H, --html           FILE   Write HTML file that list files contained in output directory. Not compatible with compressed output."
@@ -81,6 +86,7 @@ function read_args {
 		case $1 in
 			-a|--aspera)            ASPERA=$YES ;;
 			-c|--compressed)        COMPRESSED=$YES ;;
+			-f|--factor-value)      FACTOR_VALUE="$2" ; shift_count=2 ;;
 			-g|--debug)             DEBUG=$((DEBUG + 1)) ;;
 			-h|--help)              print_help ; exit 0 ;;
 			-M|--metadata-only)     METADATA_ONLY=$YES ;;
@@ -121,82 +127,136 @@ function read_args {
 	[[ -n $TOKEN ]] && print_debug_msg 1 "Token/Password is \"$TOKEN\"."
 }
 
-# Download {{{1
+# Get download output path {{{1
 ################################################################
 
-function download {
+get_download_output_path() {
 
-	local tmp_output=$1
+	local downloader="$1"
+	local study_name="$2"
+	local output_path="$study_name"
+
+	[[ $downloader == $WGET ]] && output_path+=".zip"
+
+	echo "$output_path"
+}
+
+# Get ascp download command {{{1
+################################################################
+
+download_with_ascp() {
+
+	local study_name="$1"
+	local metadata_only="$2"
 	local dwnld_flags=
+	local dwnld_link=
+
+	# Check ascp
+	[ -n "$(which ascp)" ] || error "ascp command not found. Please install Aspera client, version 3.7.4 or greater. See http://downloads.asperasoft.com/en/downloads/62."
+	print_debug_msg 1 "$ASCP: $(which $ASCP)"
+	print_debug_msg 1 "QUIET: $QUIET"
 
 	# Silence downloader output
 	[[ $QUIET -eq 0 ]] || dwnld_flags=-q
 
-	# aspera
-	if [ -n "$ASPERA" ] ; then
+	# Set download flags
+	[[ -z $dwnld_flags ]] || dwnld_flags+=" "
+	dwnld_flags+="--policy=fair -T -l 1g"
 
-		dwnld_flags+=" -QT -l 1g"
-		[ -n "$(which ascp)" ] || error "ascp command not found. Please install Aspera client."
+	# Set download link
+	if [[ -z $PRIVATE ]] ; then
 
-		export ASPERA_SCP_PASS="$TOKEN"
-		src=
+		dwnld_flags+=" -P33001"
 
-		# Public study
-		if [[ -z $PRIVATE ]] ; then
-
-			dwnld_flags+=" -P33001"
-
-			# Make full path for public study
-			study_path=$STUDY
-			if [[ -z ${study_path##MTBLS*} ]] ; then
-				study_path="/studies/public/$study_path"
-			fi
-			src="fasp-ml@fasp.ebi.ac.uk:$study_path"
-
-		# Private study
-		else
-			src="mtblight@ah01.ebi.ac.uk:$STUDY"
+		# Make full path for public study
+		study_path=$STUDY
+		if [[ -z ${study_path##MTBLS*} ]] ; then
+			study_path="/studies/public/$study_path"
 		fi
+		dwnld_link="fasp-ml@fasp.ebi.ac.uk:$study_path"
 
-		dwnld_cmd="ascp $dwnld_flags $src ."
-
-	# wget
+	# Private study
 	else
-		[ -n "$(which wget)" ] || error "wget command not found."
-
-		tmp_output+=.zip
-		file=$(basename $STUDY)
-		if [ -n "$METADATA_ONLY" ]; then
-			file=metadata
-		fi
-		dwnld_cmd="wget $dwnld_flags -O $tmp_output http://www.ebi.ac.uk/metabolights/$(basename $STUDY)/files/$file"
-		if [ -n "$TOKEN" ] ; then
-			dwnld_cmd+="?token=$TOKEN"
-		fi
+		dwnld_link="mtblight@ah01.ebi.ac.uk:$STUDY"
 	fi
+
+	# Export token
+	export ASPERA_SCP_PASS="$TOKEN"
 
 	# Run download command
-	print_debug_msg 1 "wget: $(which wget)"
-	print_debug_msg 1 "ascp: $(which ascp)"
-	print_debug_msg 1 "Download command: $dwnld_cmd"
-	if [[ $QUIET -ge 2 ]] ; then
-		$dwnld_cmd 2>/dev/null >/dev/null
+	if [[ $metadata_only == $YES ]] ; then
+		print_debug_msg 1 "Download command: $ASCP $dwnld_flags -N '?_*.t*' -E '*.*' $dwnld_link ."
+		$ASCP $dwnld_flags -N '?_*.t*' -E '*.*' $dwnld_link .
+		[[ $? == 0 ]] || error "Downloading of study $STUDY has failed."
 	else
-		$dwnld_cmd
+		print_debug_msg 1 "Download command: $ASCP $dwnld_flags $dwnld_link ."
+		$ASCP $dwnld_flags $dwnld_link .
+		[[ $? == 0 ]] || error "Downloading of study $STUDY has failed."
 	fi
-	[[ $? == 0 ]] || error "Downloading of study $STUDY has failed."
-	if [ -f $tmp_output -a ! -s $tmp_output ] ; then
-		echo "Cannot download $tmp_output file. Command \"$dwnld_cmd\" has failed." >&2
-		exit 1
-	fi
+}
 
-	echo "$tmp_output"
+# Get wget download command {{{1
+################################################################
+
+download_with_wget() {
+
+	local study_name="$1"
+	local metadata_only="$2"
+	local dwnld_flags=
+
+	# Check wget
+	[ -n "$(which wget)" ] || error "wget command not found."
+	print_debug_msg 1 "$WGET: $(which $WGET)"
+
+	# Set download link
+	file="$study_name"
+	[[ $metadata_only == $YES ]] && file=metadata
+	dwnld_link="http://www.ebi.ac.uk/metabolights/$study_name/files/$file"
+	[[ -n $TOKEN ]] && dwnld_link+="?token=$TOKEN"
+
+	# Set download output
+	dwnld_flags="-O $study_name.zip"
+
+	# Silence downloader output
+	[[ $QUIET -eq 0 ]] || dwnld_flags+=" -q"
+
+	# Run download command
+	print_debug_msg 1 "Download command: $WGET $dwnld_flags $dwnld_link"
+	$WGET $dwnld_flags $dwnld_link
+	[[ $? == 0 ]] || error "Downloading of study $STUDY has failed."
+}
+
+# Download {{{1
+################################################################
+
+download() {
+
+	local downloader="$1"
+	local study_name="$2"
+	local metadata_only="$3"
+
+	if [[ $downloader == $WGET ]] ; then
+		download_with_wget "$2" "$3"
+	else
+		download_with_ascp "$2" "$3"
+	fi
+}
+
+# Check download {{{1
+################################################################
+
+check_download() {
+
+	local download_path="$1"
+
+	[[ -d $download_path || -f $download_path ]] || error "The downloading of $tmp_output failed. The output file doesn't exist."
+	[[ ! -f $download_path || -s $download_path ]] || error "The downloading of $tmp_output failed. The output file is empty."
 }
 
 # Unzip study {{{1
 ################################################################
 
-function unzip_study {
+unzip_study() {
 
 	local tmp_output=$1
 	local unzip_flags=
@@ -206,7 +266,7 @@ function unzip_study {
 
 	print_debug_msg 1 "Unzipping file \"$tmp_output\"."
 
-	[ -n "$(which unzip)" ] || error "unzip command not found. Please install zip package."
+	[[ -n $(which unzip) ]] || error "unzip command not found. Please install zip package."
 
 	zip=$tmp_output
 	print_debug_msg 1 "Zipped file is \"$zip\"."
@@ -214,12 +274,65 @@ function unzip_study {
 	print_debug_msg 1 "Output directory will be \"$tmp_output\"."
 	[[ -d "$tmp_output" ]] && rm -r "$tmp_output"
 	curdir=$(pwd)
+	print_debug_msg 1 "Current directory is \"$curdir\"."
 	mkdir $tmp_output
 	cd $tmp_output
 	unzip $unzip_flags "$curdir/$zip" >&2 || error "Unable to unzip archive $curdir/$zip."
 	cd $curdir
 
-	echo $tmp_output
+	echo "$tmp_output"
+}
+
+# As zip {{{1
+################################################################
+
+as_zip() {
+
+	local path="$1"
+
+	if [[ -d $path ]] ; then
+
+		zip_file="$path.zip"
+		zip "$zip_file" $path/*
+		rm -r "$path"
+		path="$zip_file"
+	fi
+
+	echo "$path"
+}
+
+# As folder {{{1
+################################################################
+
+as_folder() {
+
+	local path="$1"
+
+	if [[ -f $path && ${path##*.} == 'zip' ]] ; then
+		folder=$(unzip_study "$path")
+		rm "$path"
+		path="$folder"
+	fi
+
+	echo "$path"
+}
+
+# Make folder or zip {{{1
+################################################################
+
+make_folder_or_zip() {
+
+	local path="$1"
+	local compressed="$2"
+
+	# Compress folder
+	if [[ $compressed == $YES ]] ; then
+		path=$(as_zip "$path")
+	else
+		path=$(as_folder "$path")
+	fi
+
+	echo "$path"
 }
 
 # Write HTML file {{{1
@@ -266,38 +379,80 @@ EOF
 EOF
 }
 
+# Get data files {{{1
+################################################################
+
+get_data_files() {
+
+	local json_file="$1"
+
+	python3 <<EOF
+# @@@BEGIN_PYTHON@@@
+import json
+import sys
+with open('$json_file') as f:
+    data_list = json.load(f)
+    for elem in data_list:
+	    print("\n".join(elem['data_files']))
+# @@@END_PYTHON@@@
+EOF
+}
+
 # MAIN {{{1
 ################################################################
 
 read_args "$@"
 
 study_name=$(basename $STUDY)
+downloader=$WGET
+[[ $ASPERA == $YES ]] && downloader=$ASCP
 
-tmp_output=$(download "$study_name")
+# Download only part of the study using factor value
+if [[ -n $FACTOR_VALUE ]] ; then
 
-# Output a folder
-if [[ -z $COMPRESSED ]] ; then
+	# Get factor name and value
+	factor_name=${FACTOR_VALUE%%=*}
+	factor_value=${FACTOR_VALUE#*=}
 
-	# Uncompress zip file
-	if [[ ${tmp_output##*.} == 'zip' ]] ; then
-		tmp_output=$(unzip_study "$tmp_output")
-	fi
+	# Download only metadata
+	download "$downloader" "$study_name" "$YES"
+	dwnld_output=$(get_download_output_path "$downloader" "$study_name")
+	dwnld_output=$(as_folder "$dwnld_output")
 
-	# Output HTML
-	if [[ -n $HTML ]] ; then
-		write_html_file "$HTML" "$tmp_output"
-	fi
+	# Get data files to download
+	data_files=$(mktemp -t $PROG_NAME.XXXXXX)
+	[[ -x "$ISASLICER" ]] || error "Cannot find or run isaslicer.py script."
+	print_debug_msg 1 "Run ISA slicer: \"$ISASLICER\" 'isa-tab-get-data-list' \"$dwnld_output\" \"$data_files\" --json-query \"{ \\\"$factor_name\\\": \\\"$factor_value\\\" }\""
+	abs_dwnld_output=$(realpath "$dwnld_output")
+	"$ISASLICER" 'isa-tab-get-data-list' "$abs_dwnld_output" "$data_files" --json-query "{ \"$factor_name\": \"$factor_value\" }" 2>&1 || error "Call to isaslicer failed."
 
-# Output a compressed file
+	# Download data files
+	get_data_files "$data_files" | sort | uniq | while read file ; do
+		dwnld_flags=
+		[[ $QUIET -eq 0 ]] || dwnld_flags+="-q"
+		$WGET $dwnld_flags -O "$dwnld_output/$file" "https://www.ebi.ac.uk/metabolights/$study_name/files/$file"
+	done
+
+	# Remove data files list
+	rm "$data_files"
+
+# Download whole study
 else
-	# Compress folder
-	if [[ -d $tmp_output ]] ; then
-		zip $study_name.zip $tmp_output/*
-		tmp_output=$study_name.zip
-	fi
+	# Download whole study
+	download "$downloader" "$study_name" "$METADATA_ONLY"
+
+	# Get output path
+	dwnld_output=$(get_download_output_path "$downloader" "$study_name")
 fi
+
+# Check output
+check_download "$dwnld_output"
+
+# Output in right format (zipped or folder)
+dwnld_output=$(make_folder_or_zip "$dwnld_output" "$COMPRESSED")
+
+# Output HTML
+[[ -z $HTML || ! -d $dwnld_output ]] || write_html_file "$HTML" "$dwnld_output"
 
 # Rename output
-if [[ -n $OUTPUT ]] ; then
-	mv $tmp_output $OUTPUT
-fi
+[[ -z $OUTPUT ]] || mv "$dwnld_output" "$OUTPUT"

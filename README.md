@@ -15,7 +15,7 @@ For more information, see the galaxy tool page, help section, available inside `
    - Bioconductor package `Risa`.
  * `unzip` program.
  * `wget` program.
- * `ascp` (Aspera secure copy) program, which you can download [here](http://downloads.asperasoft.com/en/downloads/50).
+ * `ascp` (Aspera secure copy) program, version 3.7.4 or greater, which you can download [here](http://downloads.asperasoft.com/en/downloads/62).
  
 ## Updates
 
