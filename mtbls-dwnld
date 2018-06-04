@@ -215,7 +215,7 @@ download_with_wget() {
 	[[ -n $TOKEN ]] && dwnld_link+="?token=$TOKEN"
 
 	# Set download output
-	dwnld_flags="-O $study_name.zip"
+	dwnld_flags="-O $study_name.zip --progress=dot"
 
 	# Silence downloader output
 	[[ $QUIET -eq 0 ]] || dwnld_flags+=" -q"
@@ -428,8 +428,8 @@ if [[ -n $FACTOR_VALUE ]] ; then
 
 	# Download data files
 	get_data_files "$data_files" | sort | uniq | while read file ; do
-		dwnld_flags=
-		[[ $QUIET -eq 0 ]] || dwnld_flags+="-q"
+		dwnld_flags="--progress=dot"
+		[[ $QUIET -eq 0 ]] || dwnld_flags+=" -q"
 		$WGET $dwnld_flags -O "$dwnld_output/$file" "https://www.ebi.ac.uk/metabolights/$study_name/files/$file"
 	done
 
