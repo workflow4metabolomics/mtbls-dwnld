@@ -204,8 +204,8 @@ test_wget_factor_slicing() {
 	rm -rf ${study}.full ${study}.sliced
 
 	# Download
-	$MTBLSDWNLD -g -o ${study}.full $study
-	$MTBLSDWNLD -g -f Gender=Female -o ${study}.sliced $study
+	output_progress $MTBLSDWNLD -g -o ${study}.full $study
+	output_progress $MTBLSDWNLD -g -f Gender=Female -o ${study}.sliced $study
 
 	# Check full study
 	expect_folder "${study}.full" || return 1
