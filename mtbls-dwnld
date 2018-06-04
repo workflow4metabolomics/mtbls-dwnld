@@ -211,7 +211,7 @@ download_with_wget() {
 	# Set download link
 	file="$study_name"
 	[[ $metadata_only == $YES ]] && file=metadata
-	dwnld_link="http://www.ebi.ac.uk/metabolights/$study_name/files/$file"
+	dwnld_link="https://www.ebi.ac.uk/metabolights/$study_name/files/$file"
 	[[ -n $TOKEN ]] && dwnld_link+="?token=$TOKEN"
 
 	# Set download output
