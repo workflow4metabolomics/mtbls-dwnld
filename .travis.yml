@@ -14,11 +14,6 @@ branches:
     - /^release[/].*$/
 
 script:
-    - echo $PATH
-    - echo $HOME
-    - export PATH=$PATH:$HOME/.aspera/cli/bin
-    - echo $PATH
-    - which ascp
     - make test
     - make planemolint
 # Planemo test works locally, but not on Travis-CI
