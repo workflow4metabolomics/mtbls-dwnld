@@ -198,19 +198,19 @@ test_ascp_private_study() {
 
 test_wget_factor_slicing() {
 
-	local study=MTBLS1
+	local study=MTBLS174
 
 	# Remove previously downloaded directory
 	rm -rf ${study}
 
 	# Check sliced study
-	expect_success $MTBLSDWNLD -g -f Gender=Female $study
+	expect_success $MTBLSDWNLD -g -f Age=33 $study
 	expect_folder "$study" || return 1
 	expect_file "$study/i_Investigation.txt" || return 1
 	expect_files_in_folder "$study" '^._.*\.t.*$' || return 1
 	expect_other_files_in_tree "$study" '^._.*\.t.*$' || return 1
 	nb_files=$(find $study -type f | wc -l)
-	nb_files_expected=113
+	nb_files_expected=5
 	expect_num_eq $nb_files $nb_files_expected "The sliced study should contain $nb_files_expected files. Found $nb_files_sliced_study."
 }
 
