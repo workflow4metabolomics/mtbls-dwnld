@@ -201,26 +201,17 @@ test_wget_factor_slicing() {
 	local study=MTBLS1
 
 	# Remove previously downloaded directory
-	rm -rf ${study}.full ${study}.sliced
-
-	# Download
-	output_progress $MTBLSDWNLD -g -o ${study}.full $study
-	output_progress $MTBLSDWNLD -g -f Gender=Female -o ${study}.sliced $study
-
-	# Check full study
-	expect_folder "${study}.full" || return 1
-	expect_file "${study}.full/i_Investigation.txt" || return 1
-	expect_files_in_folder "${study}.full" '^._.*\.t.*$' || return 1
-	expect_other_files_in_tree "${study}.full" '^._.*\.t.*$' || return 1
+	rm -rf ${study}
 
 	# Check sliced study
-	expect_folder "${study}.sliced" || return 1
-	expect_file "${study}.sliced/i_Investigation.txt" || return 1
-	expect_files_in_folder "${study}.sliced" '^._.*\.t.*$' || return 1
-	expect_other_files_in_tree "${study}.sliced" '^._.*\.t.*$' || return 1
-	nb_files_full_study=$(find ${study}.full -type f | wc -l)
-	nb_files_sliced_study=$(find ${study}.sliced -type f | wc -l)
-	expect_num_gt $nb_files_full_study $nb_files_sliced_study "The sliced study does not have less files than the full study."
+	expect_success $MTBLSDWNLD -g -f Gender=Female $study
+	expect_folder "$study" || return 1
+	expect_file "$study/i_Investigation.txt" || return 1
+	expect_files_in_folder "$study" '^._.*\.t.*$' || return 1
+	expect_other_files_in_tree "$study" '^._.*\.t.*$' || return 1
+	nb_files=$(find $study -type f | wc -l)
+	nb_files_expected=113
+	expect_num_eq $nb_files $nb_files_expected "The sliced study should contain $nb_files_expected files. Found $nb_files_sliced_study."
 }
 
 # Main {{{1
