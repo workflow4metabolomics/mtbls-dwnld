@@ -4,8 +4,8 @@ notifications:
    - pk.roger@icloud.com
 
 install:
-    - wget http://download.asperasoft.com/download/sw/ascp-client/3.5.4/ascp-install-3.5.4.102989-linux-64.sh
-    - sudo bash ascp-install-3.5.4.102989-linux-64.sh
+    - wget https://download.asperasoft.com/download/sw/cli/3.7.7/aspera-cli-3.7.7.608.927cce8-linux-64-release.sh
+    - bash aspera-cli-3.7.7.608.927cce8-linux-64-release.sh
     - sudo apt-get install -y python-virtualenv
 
 branches:
@@ -15,7 +15,8 @@ branches:
     - /^release[/].*$/
 
 script:
-    - make test
+    - PATH=$PATH:$TRAVIS_BUILD_DIR/.aspera/cli/bin which ascp
+    - PATH=$PATH:$TRAVIS_BUILD_DIR/.aspera/cli/bin make test
     - make planemolint
 # Planemo test works locally, but not on Travis-CI
 #    - make planemotest
