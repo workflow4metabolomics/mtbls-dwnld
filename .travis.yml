@@ -11,10 +11,13 @@ install:
 branches:
   only:
     - master
-    - develop
     - /^release[/].*$/
 
 script:
+    - echo $PATH
+    - echo $TRAVIS_BUILD_DIR
+    - export PATH=$PATH:$TRAVIS_BUILD_DIR/.aspera/cli/bin
+    - echo $PATH
     - PATH=$PATH:$TRAVIS_BUILD_DIR/.aspera/cli/bin which ascp
     - PATH=$PATH:$TRAVIS_BUILD_DIR/.aspera/cli/bin make test
     - make planemolint
