@@ -15,11 +15,11 @@ branches:
 
 script:
     - echo $PATH
-    - echo $TRAVIS_BUILD_DIR
-    - export PATH=$PATH:$TRAVIS_BUILD_DIR/.aspera/cli/bin
+    - echo $HOME
+    - export PATH=$PATH:$HOME/.aspera/cli/bin
     - echo $PATH
-    - PATH=$PATH:$TRAVIS_BUILD_DIR/.aspera/cli/bin which ascp
-    - PATH=$PATH:$TRAVIS_BUILD_DIR/.aspera/cli/bin make test
+    - which ascp
+    - make test
     - make planemolint
 # Planemo test works locally, but not on Travis-CI
 #    - make planemotest
