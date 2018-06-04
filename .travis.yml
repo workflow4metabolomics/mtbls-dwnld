@@ -12,8 +12,10 @@ branches:
   only:
     - master
     - /^release[/].*$/
+    - /^travis[/].*$/
 
 script:
+    - export PATH=$PATH:$HOME/.aspera/cli/bin
     - make test
     - make planemolint
 # Planemo test works locally, but not on Travis-CI
