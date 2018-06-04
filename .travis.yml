@@ -12,7 +12,7 @@ branches:
   only:
     - master
     - develop
-    - release/*
+    - /^release[/].*$/
 
 script:
     - make test
