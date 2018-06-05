@@ -11,6 +11,11 @@ YES=yes
 ASPERA_PUBLIC_TOKEN=Xz68YfDe
 ASCP=ascp
 WGET=wget
+PLATFORM=
+DISTRIBUTION=
+[[ -z $(which uname) ]] || PLATFORM=$(uname)
+[[ $PLATFORM == Linux && -e /proc/version ]] && DISTRIBUTION=$(sed -s 's/^.*([^ ]*).*$/\1/' /proc/version)
+[[ $DISTRIBUTION == Alpine ]] || WGET_FLAGS="--progress=dot"
 
 # Global variables {{{1
 ################################################################
@@ -215,14 +220,14 @@ download_with_wget() {
 	[[ -n $TOKEN ]] && dwnld_link+="?token=$TOKEN"
 
 	# Set download output
-	dwnld_flags="-O $study_name.zip --progress=dot"
+	dwnld_flags="-O $study_name.zip"
 
 	# Silence downloader output
 	[[ $QUIET -eq 0 ]] || dwnld_flags+=" -q"
 
 	# Run download command
-	print_debug_msg 1 "Download command: $WGET $dwnld_flags $dwnld_link"
-	$WGET $dwnld_flags $dwnld_link
+	print_debug_msg 1 "Download command: $WGET $WGET_FLAGS $dwnld_flags $dwnld_link"
+	$WGET $WGET_FLAGS $dwnld_flags $dwnld_link
 	[[ $? == 0 ]] || error "Downloading of study $STUDY has failed."
 }
 
@@ -422,15 +427,17 @@ if [[ -n $FACTOR_VALUE ]] ; then
 	# Get data files to download
 	data_files=$(mktemp -t $PROG_NAME.XXXXXX)
 	[[ -x "$ISASLICER" ]] || error "Cannot find or run isaslicer.py script."
-	print_debug_msg 1 "Run ISA slicer: \"$ISASLICER\" 'isa-tab-get-data-list' \"$dwnld_output\" \"$data_files\" --json-query \"{ \\\"$factor_name\\\": \\\"$factor_value\\\" }\""
+	print_debug_msg 1 "Run ISA slicer: \"$ISASLICER\" 'isa-tab-get-data-list' \"$abs_dwnld_output\" \"$data_files\" --json-query \"{ \\\"$factor_name\\\": \\\"$factor_value\\\" }\""
 	abs_dwnld_output=$(realpath "$dwnld_output")
 	"$ISASLICER" --log-level WARN 'isa-tab-get-data-list' "$abs_dwnld_output" "$data_files" --json-query "{ \"$factor_name\": \"$factor_value\" }" 2>&1 || error "Call to isaslicer failed."
 
 	# Download data files
 	get_data_files "$data_files" | sort | uniq | while read file ; do
-		dwnld_flags="--progress=dot"
+		dwnld_flags=
 		[[ $QUIET -eq 0 ]] || dwnld_flags+=" -q"
-		$WGET $dwnld_flags -O "$dwnld_output/$file" "https://www.ebi.ac.uk/metabolights/$study_name/files/$file"
+		dwnld_link="https://www.ebi.ac.uk/metabolights/$study_name/files/$file"
+		print_debug_msg 1 "Download command: $WGET $WGET_FLAGS $dwnld_flags $dwnld_link"
+		$WGET $WGET_FLAGS $dwnld_flags -O "$dwnld_output/$file" "$dwnld_link"
 	done
 
 	# Remove data files list
