@@ -14,7 +14,7 @@ WGET=wget
 PLATFORM=
 DISTRIBUTION=
 [[ -z $(which uname) ]] || PLATFORM=$(uname)
-[[ $PLATFORM == Linux && -e /proc/version ]] && DISTRIBUTION=$(sed -s 's/^.*([^ ]*).*$/\1/' /proc/version)
+[[ $PLATFORM == Linux && -e /proc/version ]] && DISTRIBUTION=$(sed 's/^.*(\([^ ]*\).*$/\1/' /proc/version)
 [[ $DISTRIBUTION == Alpine ]] || WGET_FLAGS="--progress=dot"
 
 # Global variables {{{1
