@@ -21,7 +21,7 @@ test_wget_whole_study() {
 	rm -rf $study
 
 	# Download
-	expect_success $MTBLSDWNLD -g $study
+	expect_success $MTBLSDWNLD -g $study || return 1
 
 	# Test
 	expect_folder "$study" || return 1
@@ -41,7 +41,7 @@ test_wget_zipped_study() {
 	rm $study.zip
 
 	# Download
-	expect_success $MTBLSDWNLD -gMc $study
+	expect_success $MTBLSDWNLD -gMc $study || return 1
 
 	# Test
 	expect_non_empty_file "$study.zip" || return 1
@@ -58,7 +58,7 @@ test_wget_metadata_only() {
 	rm -rf $study
 
 	# Download
-	expect_success $MTBLSDWNLD -gM $study
+	expect_success $MTBLSDWNLD -gM $study || return 1
 
 	# Test
 	expect_folder "$study" || return 1
@@ -77,7 +77,7 @@ get_private_study_path() {
 	# Get path
 	path=TEST_MTBLS_DWNLD_${method}_${study}_PRIVATE_PATH
 	path=$(echo $path | tr '[:lower:]' '[:upper:]')
-	expect_str_not_null "${!path}" "No path to test private download of $study with method $method. Please set environment variable $path." >/dev/null
+	expect_str_not_null "${!path}" "No path to test private download of $study with method $method. Please set environment variable $path." >/dev/null || return 1
 
 	echo "${!path}"
 }
@@ -93,7 +93,7 @@ get_private_study_token() {
 	# Get token
 	token=TEST_MTBLS_DWNLD_${method}_${study}_PRIVATE_TOKEN
 	token=$(echo $token | tr '[:lower:]' '[:upper:]')
-	expect_str_not_null "${!token}" "No token to test private download of $study with method $method. Please set environment variable $token." >/dev/null
+	expect_str_not_null "${!token}" "No token to test private download of $study with method $method. Please set environment variable $token." >/dev/null || return 1
 
 	echo "${!token}"
 }
@@ -114,7 +114,7 @@ test_wget_private_study() {
 
 	if [[ -n $token && -n $path ]] ; then
 		# Download
-		expect_success $MTBLSDWNLD -gpM -t $token $path
+		expect_success $MTBLSDWNLD -gpM -t $token $path || return 1
 
 		# Test
 		expect_folder "$study" || return 1
@@ -133,7 +133,7 @@ test_ascp_whole_study() {
 	rm -rf $study
 
 	# Download
-	expect_success $MTBLSDWNLD -agq -t "$ASPERA_PUBLIC_TOKEN" $study
+	expect_success $MTBLSDWNLD -agq -t "$ASPERA_PUBLIC_TOKEN" $study || return 1
 
 	# Test
 	expect_folder "$study" || return 1
@@ -153,7 +153,7 @@ test_ascp_default_key() {
 	rm -rf $study
 
 	# Download
-	expect_success $MTBLSDWNLD -agq $study
+	expect_success $MTBLSDWNLD -agq $study || return 1
 
 	# Test
 	expect_folder "$study" || return 1
@@ -173,7 +173,7 @@ test_ascp_metadata_only() {
 	rm -rf $study
 
 	# Download
-	expect_success $MTBLSDWNLD -agMq $study
+	expect_success $MTBLSDWNLD -agMq $study || return 1
 
 	# Test
 	expect_folder "$study" || return 1
@@ -197,7 +197,7 @@ test_ascp_private_study() {
 
 	if [[ -n $token && -n $path ]] ; then
 		# Download
-		expect_success $MTBLSDWNLD -agpMq -t $token $path
+		expect_success $MTBLSDWNLD -agpMq -t $token $path || return 1
 
 		# Test
 		expect_folder "$study" || return 1
@@ -216,14 +216,38 @@ test_wget_factor_slicing() {
 	rm -rf ${study}
 
 	# Check sliced study
-	expect_success $MTBLSDWNLD -g -f Age=33 $study
+	expect_success $MTBLSDWNLD -g -f Age=33 $study || return 1
 	expect_folder "$study" || return 1
 	expect_file "$study/i_Investigation.txt" || return 1
 	expect_files_in_folder "$study" '^._.*\.t.*$' || return 1
 	expect_other_files_in_tree "$study" '^._.*\.t.*$' || return 1
 	nb_files=$(find $study -type f | wc -l)
 	nb_files_expected=5
-	expect_num_eq $nb_files $nb_files_expected "The sliced study should contain $nb_files_expected files. Found $nb_files_sliced_study."
+	expect_num_eq $nb_files $nb_files_expected "The sliced study should contain $nb_files_expected files. Found $nb_files_sliced_study." || return 1
+}
+
+# Test wget temp in output {{{1
+################################################################
+
+test_wget_temp_in_output() {
+
+	local study=MTBLS164
+	local output_dir=MTBLS164_output
+
+	# Remove previous folders
+	rm -rf "$study" "$output_dir"
+
+	expect_success $MTBLSDWNLD -g -T -o "$output_dir" "$study" || return 1
+	expect_failure test -e "$study" || return 1
+	expect_folder "$output_dir" || return 1
+	expect_failure test -e "$output_dir/$study" || return 1
+}
+
+# Test ascp temp in output {{{1
+################################################################
+
+test_ascp_temp_in_output() {
+	true
 }
 
 # Main {{{1
@@ -251,6 +275,7 @@ test_that "Download of study as a zip works correctly." test_wget_zipped_study
 test_that "Download of metadata only with wget works correctly." test_wget_metadata_only
 test_that "Download of private study with wget works correctly." test_wget_private_study
 test_that "Factor slicing works." test_wget_factor_slicing
+test_that "Download with all temporary files written into output directory works correctly." test_wget_temp_in_output
 
 # aspera test
 if [[ -n $ASCP ]] ; then
@@ -258,6 +283,7 @@ if [[ -n $ASCP ]] ; then
 	test_that "Download of whole study with ascp works correctly." test_ascp_whole_study
 	test_that "Download of study using default key with ascp works correctly." test_ascp_default_key
 	test_that "Download of metadata only with ascp works correctly." test_ascp_metadata_only
+	test_that "Download with all temporary files written into output directory works correctly." test_ascp_temp_in_output
 
 	# XXX ASCP PRIVATE DOWNLOAD FAILING
 	#    pierrick@schroeder:mtbls-dwnld$ ascp --policy=fair -T -l 1g mtblight@ah01.ebi.ac.uk:/prod/mtbls1-4ZWHUHHlKR .
