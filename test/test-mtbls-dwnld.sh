@@ -240,6 +240,7 @@ test_wget_temp_in_output() {
 	expect_success $MTBLSDWNLD -g -T -o "$output_dir" "$study" || return 1
 	expect_failure test -e "$study" || return 1
 	expect_folder "$output_dir" || return 1
+	expect_file "$output_dir/i_Investigation.txt" || return 1
 	expect_failure test -e "$output_dir/$study" || return 1
 }
 
@@ -247,7 +248,18 @@ test_wget_temp_in_output() {
 ################################################################
 
 test_ascp_temp_in_output() {
-	true
+
+	local study=MTBLS164
+	local output_dir=MTBLS164_output
+
+	# Remove previous folders
+	rm -rf "$study" "$output_dir"
+
+	expect_success $MTBLSDWNLD -a -g -T -o "$output_dir" "$study" || return 1
+	expect_failure test -e "$study" || return 1
+	expect_folder "$output_dir" || return 1
+	expect_file "$output_dir/i_Investigation.txt" || return 1
+	expect_failure test -e "$output_dir/$study" || return 1
 }
 
 # Main {{{1

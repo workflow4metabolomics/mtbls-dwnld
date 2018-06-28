@@ -160,13 +160,13 @@ get_download_output_path() {
 	local output_dir="$3"
 	local output_path="$study_name"
 
-	[[ $downloader == $WGET && -n $output_dir ]] && output_path="$output_dir/$output_path"
+	[[ -z $output_dir ]] || output_path="$output_dir/$output_path"
 	[[ $downloader == $WGET ]] && output_path+=".zip"
 
 	echo "$output_path"
 }
 
-# Get ascp download command {{{1
+# Download with ascp {{{1
 ################################################################
 
 download_with_ascp() {
@@ -210,6 +210,11 @@ download_with_ascp() {
 	export ASPERA_SCP_PASS="$TOKEN"
 
 	# Run download command
+	if [[ -n $output_dir ]] ; then
+		mkdir -p "$output_dir"
+		curdir=$(pwd)
+		cd "$output_dir"
+	fi
 	if [[ $metadata_only == $YES ]] ; then
 		print_debug_msg 1 "Download command: $ASCP $dwnld_flags -N '?_*.t*' -E '*.*' $dwnld_link ."
 		$ASCP $dwnld_flags -N '?_*.t*' -E '*.*' $dwnld_link .
@@ -219,9 +224,10 @@ download_with_ascp() {
 		$ASCP $dwnld_flags $dwnld_link .
 		[[ $? == 0 ]] || error "Downloading of study $STUDY has failed."
 	fi
+	[[ -z $output_dir ]] || cd "$curdir"
 }
 
-# Get wget download command {{{1
+# Download with wget {{{1
 ################################################################
 
 download_with_wget() {
@@ -312,10 +318,10 @@ unzip_study() {
 	print_debug_msg 1 "Output directory will be \"$output\"."
 	curdir=$(pwd)
 	print_debug_msg 1 "Current directory is \"$curdir\"."
-	mkdir -p $output
-	cd $output
+	mkdir -p "$output"
+	cd "$output"
 	unzip $unzip_flags "$curdir/$zip" >&2 || error "Unable to unzip archive $curdir/$zip."
-	cd $curdir
+	cd "$curdir"
 
 	echo "$output"
 }
@@ -346,10 +352,16 @@ as_folder() {
 	local path="$1"
 	local output="$2"
 
+	print_debug_msg 1 "as_folder($path, $output)"
 	if [[ -f $path && ${path##*.} == 'zip' ]] ; then
 		folder=$(unzip_study "$path" "$output")
 		rm "$path"
 		path="$folder"
+	elif [[ -d $path && -n $output && $path != $output ]] ; then
+		mkdir -p "$output"
+		mv "$path"/* "$output"/.
+		rm -r "$path"
+		path="$output"
 	fi
 
 	echo "$path"
