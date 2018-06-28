@@ -242,8 +242,12 @@ download_with_wget() {
 	[[ -n $TOKEN ]] && dwnld_link+="?token=$TOKEN"
 
 	# Set download output
-	[[ -z $output_dir ]] || mkdir -p "$output_dir"
-	dwnld_flags="-O $output_dir/$study_name.zip"
+	output_path="$study_name.zip"
+	if [[ -n $output_dir ]] ; then
+		mkdir -p "$output_dir"
+		output_path="$output_dir/$output_path"
+	fi
+	dwnld_flags="-O $output_path"
 
 	# Silence downloader output
 	[[ $QUIET -eq 0 ]] || dwnld_flags+=" -q"
@@ -268,6 +272,7 @@ download() {
 		download_with_wget "$2" "$3" "$output_dir"
 	else
 		download_with_ascp "$2" "$3" "$output_dir"
+	fi
 }
 
 # Check download {{{1
@@ -294,22 +299,25 @@ unzip_study() {
 	[[ $QUIET -eq 0 ]] || unzip_flags=-qq
 
 	print_debug_msg 1 "Unzipping file \"$tmp_output\"."
+	[[ -z $output ]] || print_debug_msg 1 "Unzipping into \"$output\"."
 
 	[[ -n $(which unzip) ]] || error "unzip command not found. Please install zip package."
 
 	zip=$tmp_output
 	print_debug_msg 1 "Zipped file is \"$zip\"."
-	tmp_output=${zip%.*}
-	print_debug_msg 1 "Output directory will be \"$tmp_output\"."
-	[[ -d "$tmp_output" ]] && rm -r "$tmp_output"
+	if [[ -z $output ]] ; then
+		output=${zip%.*}
+		[[ -d "$output" ]] && rm -r "$output"
+	fi
+	print_debug_msg 1 "Output directory will be \"$output\"."
 	curdir=$(pwd)
 	print_debug_msg 1 "Current directory is \"$curdir\"."
-	mkdir $tmp_output
-	cd $tmp_output
+	mkdir -p $output
+	cd $output
 	unzip $unzip_flags "$curdir/$zip" >&2 || error "Unable to unzip archive $curdir/$zip."
 	cd $curdir
 
-	echo "$tmp_output"
+	echo "$output"
 }
 
 # As zip {{{1
