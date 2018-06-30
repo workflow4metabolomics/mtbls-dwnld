@@ -255,12 +255,14 @@ download_with_wget() {
 	dwnld_flags="-O $output_path"
 
 	# Silence downloader output
-	[[ $QUIET -eq 0 ]] || dwnld_flags+=" -q"
+	wget_log_file=$(mktemp -t $PROG_NAME.XXXXXX)
+	[[ $QUIET -eq 0 ]] || dwnld_flags+=" -q -o $wget_log_file"
 
 	# Run download command
 	debug "Download command: $WGET $WGET_FLAGS $dwnld_flags $dwnld_link"
 	$WGET $WGET_FLAGS $dwnld_flags $dwnld_link
-	[[ $? == 0 ]] || error "Downloading of study $STUDY has failed."
+	[[ $? == 0 ]] || error "Downloading of study $STUDY has failed. wget log file: $(cat $wget_log_file)"
+	rm -f $wget_log_file
 }
 
 # Download {{{1
@@ -483,13 +485,18 @@ if [[ -n $FACTOR_VALUE ]] ; then
 	"$ISASLICER" --log-level WARN 'isa-tab-get-data-list' "$abs_dwnld_output" "$data_files" --json-query "{ \"$factor_name\": \"$factor_value\" }" 2>&1 || error "Call to isaslicer failed."
 
 	# Download data files
+	wget_log_file=$(mktemp -t $PROG_NAME.XXXXXX)
 	get_data_files "$data_files" | sort | uniq | while read file ; do
-		dwnld_flags=
-		[[ $QUIET -eq 0 ]] || dwnld_flags+=" -q"
-		dwnld_link="https://www.ebi.ac.uk/metabolights/$study_name/files/$file"
-		debug "Download command: $WGET $WGET_FLAGS $dwnld_flags $dwnld_link"
-		$WGET $WGET_FLAGS $dwnld_flags -O "$dwnld_output/$file" "$dwnld_link" # XXX Download output must be written into $OUTPUT if TMP_IN_OUTPUT is set
+		if [[ -n $file ]] ; then
+			dwnld_flags=
+			[[ $QUIET -eq 0 ]] || dwnld_flags+=" -q -o $wget_log_file"
+			dwnld_link="https://www.ebi.ac.uk/metabolights/$study_name/files/$file"
+			debug "Download command: $WGET $WGET_FLAGS $dwnld_flags $dwnld_link"
+			$WGET $WGET_FLAGS $dwnld_flags -O "$dwnld_output/$file" "$dwnld_link" # XXX Download output must be written into $OUTPUT if TMP_IN_OUTPUT is set
+			[[ $? == 0 ]] || error "Downlad of study file \"$file\" has failed. wget log file: $(cat $wget_log_file)"
+		fi
 	done
+	rm -f $wget_log_file
 
 	# Remove data files list
 	rm "$data_files"
