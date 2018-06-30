@@ -74,9 +74,9 @@ function error {
 
 function debug {
 
-	local dbgmsg=$1
+	local dbgmsg="$1"
 
-	[[ $DEBUG -ge $dbglvl ]] && echo "[DEBUG] $dbgmsg" >&2
+	[[ $DEBUG -ge 1 ]] && echo "[DEBUG] $dbgmsg" >&2
 }
 
 
