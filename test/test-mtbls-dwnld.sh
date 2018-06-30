@@ -5,6 +5,7 @@
 ################################################################
 
 SCRIPT_PATH=$(dirname $BASH_SOURCE)
+SCRIPT_NAME=$(basename $BASH_SOURCE)
 MTBLSDWNLD=$SCRIPT_PATH/../mtbls-dwnld
 ASPERA_PUBLIC_TOKEN=Xz68YfDe
 [[ -z $(which ascp) ]] || ASCP=ascp
@@ -226,10 +227,10 @@ test_wget_factor_slicing() {
 	expect_num_eq $nb_files $nb_files_expected "The sliced study should contain $nb_files_expected files. Found $nb_files_sliced_study." || return 1
 }
 
-# Test wget temp in output {{{1
+# Test wget temp in relative output {{{1
 ################################################################
 
-test_wget_temp_in_output() {
+test_wget_temp_in_rel_output() {
 
 	local study=MTBLS164
 	local output_dir=MTBLS164_output
@@ -244,13 +245,49 @@ test_wget_temp_in_output() {
 	expect_failure test -e "$output_dir/$study" || return 1
 }
 
-# Test ascp temp in output {{{1
+# Test wget temp in absolute output {{{1
 ################################################################
 
-test_ascp_temp_in_output() {
+test_wget_temp_in_abs_output() {
+
+	local study=MTBLS164
+	local output_dir=$(mktemp -t ${SCRIPT_NAME}_MTBLS164_output.XXXXXX)
+
+	# Remove previous folders
+	rm -rf "$study" "$output_dir"
+
+	expect_success $MTBLSDWNLD -g -T -o "$output_dir" "$study" || return 1
+	expect_failure test -e "$study" || return 1
+	expect_folder "$output_dir" || return 1
+	expect_file "$output_dir/i_Investigation.txt" || return 1
+	expect_failure test -e "$output_dir/$study" || return 1
+}
+
+# Test ascp temp in relative output {{{1
+################################################################
+
+test_ascp_temp_in_rel_output() {
 
 	local study=MTBLS164
 	local output_dir=MTBLS164_output
+
+	# Remove previous folders
+	rm -rf "$study" "$output_dir"
+
+	expect_success $MTBLSDWNLD -a -g -T -o "$output_dir" "$study" || return 1
+	expect_failure test -e "$study" || return 1
+	expect_folder "$output_dir" || return 1
+	expect_file "$output_dir/i_Investigation.txt" || return 1
+	expect_failure test -e "$output_dir/$study" || return 1
+}
+
+# Test ascp temp in absolute output {{{1
+################################################################
+
+test_ascp_temp_in_abs_output() {
+
+	local study=MTBLS164
+	local output_dir=$(mktemp -t ${SCRIPT_NAME}_MTBLS164_output.XXXXXX)
 
 	# Remove previous folders
 	rm -rf "$study" "$output_dir"
@@ -287,7 +324,8 @@ test_that "Download of study as a zip works correctly." test_wget_zipped_study
 test_that "Download of metadata only with wget works correctly." test_wget_metadata_only
 test_that "Download of private study with wget works correctly." test_wget_private_study
 test_that "Factor slicing works." test_wget_factor_slicing
-test_that "Download with all temporary files written into output directory works correctly." test_wget_temp_in_output
+test_that "Download with all temporary files written into relative output directory works correctly." test_wget_temp_in_rel_output
+test_that "Download with all temporary files written into absolute output directory works correctly." test_wget_temp_in_abs_output
 
 # aspera test
 if [[ -n $ASCP ]] ; then
@@ -295,7 +333,8 @@ if [[ -n $ASCP ]] ; then
 	test_that "Download of whole study with ascp works correctly." test_ascp_whole_study
 	test_that "Download of study using default key with ascp works correctly." test_ascp_default_key
 	test_that "Download of metadata only with ascp works correctly." test_ascp_metadata_only
-	test_that "Download with all temporary files written into output directory works correctly." test_ascp_temp_in_output
+	test_that "Download with all temporary files written into relative output directory works correctly." test_ascp_temp_in_rel_output
+	test_that "Download with all temporary files written into absolute output directory works correctly." test_ascp_temp_in_abs_output
 
 	# XXX ASCP PRIVATE DOWNLOAD FAILING
 	#    pierrick@schroeder:mtbls-dwnld$ ascp --policy=fair -T -l 1g mtblight@ah01.ebi.ac.uk:/prod/mtbls1-4ZWHUHHlKR .

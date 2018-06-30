@@ -69,15 +69,14 @@ function error {
 	exit 1
 }
 
-# Print debug msg {{{1
+# Debug {{{1
 ################################################################
 
-function print_debug_msg {
+function debug {
 
-	local dbglvl=$1
-	local dbgmsg=$2
+	local dbgmsg=$1
 
-	[ $DEBUG -ge $dbglvl ] && echo "[DEBUG] $dbgmsg" >&2
+	[[ $DEBUG -ge $dbglvl ]] && echo "[DEBUG] $dbgmsg" >&2
 }
 
 
@@ -133,21 +132,21 @@ function read_args {
 	[[ $TMP_IN_OUTPUT == $YES && ( $COMPRESSED == $YES || -z $OUTPUT ) ]] && TMP_IN_OUTPUT=$NO
 
 	# Debug
-	print_debug_msg 1 "Arguments are : $args"
-	print_debug_msg 1 "Study to retrieve is : $STUDY"
-	print_debug_msg 1 "ASPERA=$ASPERA"
-	print_debug_msg 1 "COMPRESSED=$COMPRESSED"
-	print_debug_msg 1 "DEBUG=$DEBUG"
-	print_debug_msg 1 "FACTOR_VALUE=$FACTOR_VALUE"
-	print_debug_msg 1 "HTML=$HTML"
-	print_debug_msg 1 "METADATA_ONLY=$METADATA_ONLY"
-	print_debug_msg 1 "OUTPUT=$OUTPUT"
-	print_debug_msg 1 "PRIVATE=$PRIVATE"
-	print_debug_msg 1 "QUIET=$QUIET"
-	print_debug_msg 1 "TMP_IN_OUTPUT=$TMP_IN_OUTPUT"
-	print_debug_msg 1 "TOKEN=$TOKEN"
-	[[ -n $ASPERA ]] && print_debug_msg 1 "Aspera will be used."
-	[[ -n $TOKEN ]] && print_debug_msg 1 "Token/Password is \"$TOKEN\"."
+	debug "Arguments are : $args"
+	debug "Study to retrieve is : $STUDY"
+	debug "ASPERA=$ASPERA"
+	debug "COMPRESSED=$COMPRESSED"
+	debug "DEBUG=$DEBUG"
+	debug "FACTOR_VALUE=$FACTOR_VALUE"
+	debug "HTML=$HTML"
+	debug "METADATA_ONLY=$METADATA_ONLY"
+	debug "OUTPUT=$OUTPUT"
+	debug "PRIVATE=$PRIVATE"
+	debug "QUIET=$QUIET"
+	debug "TMP_IN_OUTPUT=$TMP_IN_OUTPUT"
+	debug "TOKEN=$TOKEN"
+	[[ -n $ASPERA ]] && debug "Aspera will be used."
+	[[ -n $TOKEN ]] && debug "Token/Password is \"$TOKEN\"."
 }
 
 # Get download output path {{{1
@@ -179,8 +178,8 @@ download_with_ascp() {
 
 	# Check ascp
 	[ -n "$(which ascp)" ] || error "ascp command not found. Please install Aspera client, version 3.7.4 or greater. See http://downloads.asperasoft.com/en/downloads/62."
-	print_debug_msg 1 "$ASCP: $(which $ASCP)"
-	print_debug_msg 1 "QUIET: $QUIET"
+	debug "$ASCP: $(which $ASCP)"
+	debug "QUIET: $QUIET"
 
 	# Silence downloader output
 	[[ $QUIET -eq 0 ]] || dwnld_flags=-q
@@ -216,11 +215,11 @@ download_with_ascp() {
 		cd "$output_dir"
 	fi
 	if [[ $metadata_only == $YES ]] ; then
-		print_debug_msg 1 "Download command: $ASCP $dwnld_flags -N '?_*.t*' -E '*.*' $dwnld_link ."
+		debug "Download command: $ASCP $dwnld_flags -N '?_*.t*' -E '*.*' $dwnld_link ."
 		$ASCP $dwnld_flags -N '?_*.t*' -E '*.*' $dwnld_link .
 		[[ $? == 0 ]] || error "Downloading of study $STUDY has failed."
 	else
-		print_debug_msg 1 "Download command: $ASCP $dwnld_flags $dwnld_link ."
+		debug "Download command: $ASCP $dwnld_flags $dwnld_link ."
 		$ASCP $dwnld_flags $dwnld_link .
 		[[ $? == 0 ]] || error "Downloading of study $STUDY has failed."
 	fi
@@ -239,7 +238,7 @@ download_with_wget() {
 
 	# Check wget
 	[ -n "$(which wget)" ] || error "wget command not found."
-	print_debug_msg 1 "$WGET: $(which $WGET)"
+	debug "$WGET: $(which $WGET)"
 
 	# Set download link
 	file="$study_name"
@@ -259,7 +258,7 @@ download_with_wget() {
 	[[ $QUIET -eq 0 ]] || dwnld_flags+=" -q"
 
 	# Run download command
-	print_debug_msg 1 "Download command: $WGET $WGET_FLAGS $dwnld_flags $dwnld_link"
+	debug "Download command: $WGET $WGET_FLAGS $dwnld_flags $dwnld_link"
 	$WGET $WGET_FLAGS $dwnld_flags $dwnld_link
 	[[ $? == 0 ]] || error "Downloading of study $STUDY has failed."
 }
@@ -304,23 +303,24 @@ unzip_study() {
 	# Silence unzip program
 	[[ $QUIET -eq 0 ]] || unzip_flags=-qq
 
-	print_debug_msg 1 "Unzipping file \"$tmp_output\"."
-	[[ -z $output ]] || print_debug_msg 1 "Unzipping into \"$output\"."
+	debug "Unzipping file \"$tmp_output\"."
+	[[ -z $output ]] || debug "Unzipping into \"$output\"."
 
 	[[ -n $(which unzip) ]] || error "unzip command not found. Please install zip package."
 
 	zip=$tmp_output
-	print_debug_msg 1 "Zipped file is \"$zip\"."
+	debug "Zipped file is \"$zip\"."
 	if [[ -z $output ]] ; then
 		output=${zip%.*}
 		[[ -d "$output" ]] && rm -r "$output"
 	fi
-	print_debug_msg 1 "Output directory will be \"$output\"."
+	debug "Output directory will be \"$output\"."
+	zip_abs_path=$(realpath "$zip")
 	curdir=$(pwd)
-	print_debug_msg 1 "Current directory is \"$curdir\"."
+	debug "Current directory is \"$curdir\"."
 	mkdir -p "$output"
 	cd "$output"
-	unzip $unzip_flags "$curdir/$zip" >&2 || error "Unable to unzip archive $curdir/$zip."
+	unzip $unzip_flags "$zip_abs_path" >&2 || error "Unable to unzip archive $zip_abs_path."
 	cd "$curdir"
 
 	echo "$output"
@@ -352,7 +352,7 @@ as_folder() {
 	local path="$1"
 	local output="$2"
 
-	print_debug_msg 1 "as_folder($path, $output)"
+	debug "as_folder($path, $output)"
 	if [[ -f $path && ${path##*.} == 'zip' ]] ; then
 		folder=$(unzip_study "$path" "$output")
 		rm "$path"
@@ -375,6 +375,9 @@ make_folder_or_zip() {
 	local path="$1"
 	local compressed="$2"
 	local output="$3"
+
+	debug "make_folder_or_zip($path, $compressed, $output)"
+	[[ -e $path ]] || error "No file or folder at path \"$path\"."
 
 	# Compress folder
 	if [[ $compressed == $YES ]] ; then
@@ -475,7 +478,7 @@ if [[ -n $FACTOR_VALUE ]] ; then
 	# Get data files to download
 	data_files=$(mktemp -t $PROG_NAME.XXXXXX) # XXX must be created into $OUTPUT if TMP_IN_OUTPUT is set
 	[[ -x "$ISASLICER" ]] || error "Cannot find or run isaslicer.py script."
-	print_debug_msg 1 "Run ISA slicer: \"$ISASLICER\" 'isa-tab-get-data-list' \"$abs_dwnld_output\" \"$data_files\" --json-query \"{ \\\"$factor_name\\\": \\\"$factor_value\\\" }\""
+	debug "Run ISA slicer: \"$ISASLICER\" 'isa-tab-get-data-list' \"$abs_dwnld_output\" \"$data_files\" --json-query \"{ \\\"$factor_name\\\": \\\"$factor_value\\\" }\""
 	abs_dwnld_output=$(realpath "$dwnld_output")
 	"$ISASLICER" --log-level WARN 'isa-tab-get-data-list' "$abs_dwnld_output" "$data_files" --json-query "{ \"$factor_name\": \"$factor_value\" }" 2>&1 || error "Call to isaslicer failed."
 
@@ -484,7 +487,7 @@ if [[ -n $FACTOR_VALUE ]] ; then
 		dwnld_flags=
 		[[ $QUIET -eq 0 ]] || dwnld_flags+=" -q"
 		dwnld_link="https://www.ebi.ac.uk/metabolights/$study_name/files/$file"
-		print_debug_msg 1 "Download command: $WGET $WGET_FLAGS $dwnld_flags $dwnld_link"
+		debug "Download command: $WGET $WGET_FLAGS $dwnld_flags $dwnld_link"
 		$WGET $WGET_FLAGS $dwnld_flags -O "$dwnld_output/$file" "$dwnld_link" # XXX Download output must be written into $OUTPUT if TMP_IN_OUTPUT is set
 	done
 
