@@ -17,3 +17,5 @@ MTBLS*.tar.gz
 MTBLS*.tgz
 MTBLS*.tar.bz2
 MTBLS*.tbz
+MTBLS*.html
+MTBLS*.files_path
