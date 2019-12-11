@@ -89,12 +89,12 @@
 	<!-- Tests {{{1 -->
 	<tests>
 		<test>
-			<param name="study" value="MTBLS30"/>
+			<param name="study" value="MTBLS29"/>
 			<param name="type" value="public"/>
 			<param name="downloader" value="wget"/>
 			<param name="metadata" value="yes"/>
 			<param name="token" value=""/>
-			<output name="isastudy" file="MTBLS30.html"/>
+			<output name="isastudy" file="MTBLS29.html"/>
 		</test>
 	</tests>
 

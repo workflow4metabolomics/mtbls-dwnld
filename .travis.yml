@@ -11,5 +11,5 @@ install:
 script:
     - export PATH=$PATH:$HOME/.aspera/cli/bin
     - make test
-    - make planemolint mtbls-dwnld.xml
-    - make planemotest mtbls-dwnld.xml
+    - make planemolint
+    - make planemotest

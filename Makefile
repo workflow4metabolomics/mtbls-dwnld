@@ -1,6 +1,6 @@
 all:
 
-test: 
+test:
 	$(MAKE) -C $@
 
 planemo-venv/bin/planemo: planemo-venv
@@ -8,13 +8,13 @@ planemo-venv/bin/planemo: planemo-venv
 	. planemo-venv/bin/activate && pip install planemo
 
 planemo-venv:
-	virtualenv planemo-venv
+	virtualenv -p python2.7 planemo-venv
 
 planemolint: planemo-venv/bin/planemo
-	. planemo-venv/bin/activate && planemo lint
+	. planemo-venv/bin/activate && planemo lint mtbls-dwnld.xml
 
 planemotest: planemo-venv/bin/planemo
-	. planemo-venv/bin/activate && planemo test --conda_dependency_resolution --galaxy_branch release_19.01
+	. planemo-venv/bin/activate && planemo test --conda_dependency_resolution --galaxy_branch release_19.01 mtbls-dwnld.xml
 
 clean:
 	$(MAKE) -C test $@

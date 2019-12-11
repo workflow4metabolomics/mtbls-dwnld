@@ -19,3 +19,4 @@ MTBLS*.tar.bz2
 MTBLS*.tbz
 MTBLS*.html
 MTBLS*.files_path
+!test-data/*
