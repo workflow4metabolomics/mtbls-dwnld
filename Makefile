@@ -14,7 +14,7 @@ planemolint: planemo-venv/bin/planemo
 	. planemo-venv/bin/activate && planemo lint
 
 planemotest: planemo-venv/bin/planemo
-	. planemo-venv/bin/activate && planemo test --conda_dependency_resolution --galaxy_source https://github.com/phnmnl/galaxy.git --galaxy_branch feature/isa-datatype
+	. planemo-venv/bin/activate && planemo test --conda_dependency_resolution --galaxy_branch release_19.01
 
 clean:
 	$(MAKE) -C test $@
