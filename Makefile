@@ -1,3 +1,6 @@
+TOOL_NAME=mtbls-dwnld
+TOOL_XML=mtbls-dwnld.xml
+
 all:
 
 test:
@@ -10,11 +13,18 @@ planemo-venv/bin/planemo: planemo-venv
 planemo-venv:
 	virtualenv -p python2.7 planemo-venv
 
-planemolint: planemo-venv/bin/planemo
-	. planemo-venv/bin/activate && planemo lint mtbls-dwnld.xml
+plint: planemo-venv/bin/planemo
+	. planemo-venv/bin/activate && planemo lint $(TOOL_XML)
 
-planemotest: planemo-venv/bin/planemo
-	. planemo-venv/bin/activate && planemo test --conda_dependency_resolution --galaxy_branch release_19.01 mtbls-dwnld.xml
+ptest: planemo-venv/bin/planemo
+	. planemo-venv/bin/activate && planemo test --conda_dependency_resolution --galaxy_branch release_19.01 $(TOOL_XML)
+
+ptesttoolshed_diff: dist/$(TOOL_NAME)/ planemo-venv/bin/planemo
+	. planemo-venv/bin/activate && cd $< && planemo shed_diff --shed_target testtoolshed
+
+dist/$(TOOL_NAME)/:
+	mkdir -p $@
+	cp -r README.md $(TOOL_NAME) $(TOOL_NAME).xml test-data isatools-galaxy $@
 
 clean:
 	$(MAKE) -C test $@

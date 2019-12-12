@@ -9,15 +9,18 @@ For more information, see the galaxy tool page, help section, available inside `
 
 ## Requirements
 
- * R version 3.2, and the following R packages:
-   - CRAN package `R.utils`.
-   - CRAN package `getopt`.
-   - Bioconductor package `Risa`.
+ * Python 3.8
+ * isatools 0.10.3
  * `unzip` program.
  * `wget` program.
  * `ascp` (Aspera secure copy) program, version 3.7.4 or greater, which you can download [here](http://downloads.asperasoft.com/en/downloads/62).
  
 ## Updates
+
+### 4.1.4
+
+ * Use MTBLS29 instead of MTBLS30, which has been removed from public repository, for testing.
+ * Make planemo tests pass on Travis-CI.
 
 ### 2.0.4
 
