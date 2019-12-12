@@ -6,7 +6,7 @@
 
 PROG_NAME=$(basename $0)
 PROG_PATH=$(dirname $0)
-ISASLICER="$PROG_PATH/isatools-galaxy/tools/slicer/isaslicer.py"
+ISASLICER="$PROG_PATH/isatools-galaxy/tools/isatools/isaslicer.py"
 YES=yes
 NO=no
 ASPERA_PUBLIC_TOKEN=Xz68YfDe
@@ -482,7 +482,7 @@ if [[ -n $FACTOR_VALUE ]] ; then
 	[[ -x "$ISASLICER" ]] || error "Cannot find or run isaslicer.py script."
 	debug "Run ISA slicer: \"$ISASLICER\" 'isa-tab-get-data-list' \"$abs_dwnld_output\" \"$data_files\" --json-query \"{ \\\"$factor_name\\\": \\\"$factor_value\\\" }\""
 	abs_dwnld_output=$(realpath "$dwnld_output")
-	"$ISASLICER" --log-level WARN 'isa-tab-get-data-list' "$abs_dwnld_output" "$data_files" --json-query "{ \"$factor_name\": \"$factor_value\" }" 2>&1 || error "Call to isaslicer failed."
+	"$ISASLICER" --log-level DEBUG 'isa-tab-get-data-list' "$abs_dwnld_output" "$data_files" --json-query "{ \"$factor_name\": \"$factor_value\" }" 2>&1 || error "Call to isaslicer failed."
 
 	# Download data files
 	wget_log_file=$(mktemp -t $PROG_NAME.XXXXXX)
