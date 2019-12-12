@@ -12,5 +12,4 @@ script:
     - export PATH=$PATH:$HOME/.aspera/cli/bin
     - make test
     - make planemolint
-# Planemo test works locally, but not on Travis-CI
-#    - make planemotest
+    - make planemotest
