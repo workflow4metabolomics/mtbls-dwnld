@@ -6,7 +6,7 @@
 
 PROG_NAME=$(basename $0)
 PROG_PATH=$(dirname $0)
-ISASLICER="$PROG_PATH/isatools-galaxy/tools/isatools/isaslicer.py"
+ISASLICER="$PROG_PATH/isaslicer.py"
 YES=yes
 NO=no
 ASPERA_PUBLIC_TOKEN=Xz68YfDe

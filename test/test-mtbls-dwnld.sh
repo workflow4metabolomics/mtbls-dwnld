@@ -340,7 +340,7 @@ if [[ -n $ASCP ]] ; then
 	#    pierrick@schroeder:mtbls-dwnld$ ascp --policy=fair -T -l 1g mtblight@ah01.ebi.ac.uk:/prod/mtbls1-4ZWHUHHlKR .
 	#    ascp: Failed to open TCP connection for SSH, exiting.
 	#    Session Stop  (Error: Failed to open TCP connection for SSH)
-#	test_that "Download of private study with ascp works correctly." test_ascp_private_study
+	test_that "Download of private study with ascp works correctly." test_ascp_private_study
 fi
 
 # Report
