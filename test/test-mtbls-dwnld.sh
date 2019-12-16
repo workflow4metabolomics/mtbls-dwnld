@@ -104,7 +104,7 @@ get_private_study_token() {
 
 test_wget_private_study() {
 
-	local study=MTBLS353
+	local study=MTBLS1
 
 	# Remove previously downloaded directory
 	rm -rf $study
@@ -198,7 +198,7 @@ test_ascp_private_study() {
 
 	if [[ -n $token && -n $path ]] ; then
 		# Download
-		expect_success $MTBLSDWNLD -agpMq -t $token $path || return 1
+		expect_success $MTBLSDWNLD -agpMq -t $token -o $study $path || return 1
 
 		# Test
 		expect_folder "$study" || return 1

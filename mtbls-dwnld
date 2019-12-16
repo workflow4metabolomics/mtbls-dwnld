@@ -188,10 +188,10 @@ download_with_ascp() {
 	[[ -z $dwnld_flags ]] || dwnld_flags+=" "
 	dwnld_flags+="--policy=fair -T -l 1g"
 
+	dwnld_flags+=" -P33001"
+
 	# Set download link
 	if [[ -z $PRIVATE ]] ; then
-
-		dwnld_flags+=" -P33001"
 
 		# Make full path for public study
 		study_path=$STUDY
@@ -202,7 +202,7 @@ download_with_ascp() {
 
 	# Private study
 	else
-		dwnld_link="mtblight@ah01.ebi.ac.uk:$STUDY"
+		dwnld_link="mtblight@hx-fasp-1.ebi.ac.uk:$STUDY"
 	fi
 
 	# Export token
