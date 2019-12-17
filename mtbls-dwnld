@@ -217,11 +217,11 @@ download_with_ascp() {
 	if [[ $metadata_only == $YES ]] ; then
 		debug "Download command: $ASCP $dwnld_flags -N '?_*.t*' -E '*.*' -E 'p*' $dwnld_link ."
 		$ASCP $dwnld_flags -N '?_*.t*' -E '*.*' -E 'p*' $dwnld_link .
-		[[ $? == 0 ]] || error "Downloading of study $STUDY has failed."
+		[[ $? == 0 ]] || error "Downloading of study $STUDY has failed. Error code returned is $?."
 	else
 		debug "Download command: $ASCP $dwnld_flags $dwnld_link ."
 		$ASCP $dwnld_flags $dwnld_link .
-		[[ $? == 0 ]] || error "Downloading of study $STUDY has failed."
+		[[ $? == 0 ]] || error "Downloading of study $STUDY has failed. Error code returned is $?."
 	fi
 	[[ -z $output_dir ]] || cd "$curdir"
 }
