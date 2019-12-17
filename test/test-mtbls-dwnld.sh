@@ -39,7 +39,7 @@ test_wget_zipped_study() {
 	local study=MTBLS164
 
 	# Remove previously downloaded zip
-	rm $study.zip
+	rm -f $study.zip
 
 	# Download
 	expect_success $MTBLSDWNLD -gMc $study || return 1
@@ -342,6 +342,3 @@ if [[ -n $ASCP ]] ; then
 	#    Session Stop  (Error: Failed to open TCP connection for SSH)
 	test_that "Download of private study with ascp works correctly." test_ascp_private_study
 fi
-
-# Report
-test_report
