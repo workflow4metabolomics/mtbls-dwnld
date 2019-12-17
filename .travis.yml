@@ -8,16 +8,18 @@ notifications:
 install:
     - wget https://download.asperasoft.com/download/sw/cli/3.7.7/aspera-cli-3.7.7.608.927cce8-linux-64-release.sh
     - bash aspera-cli-3.7.7.608.927cce8-linux-64-release.sh
-    - sudo apt-get update
-    - python --version
-    - python3 --version
-    - sudo apt-get install -y python-virtualenv python3 python3-pip python3-setuptools
-    - python3 --version
+      #    - sudo apt-get update
+      #    - python --version
+      #    - python3 --version
+    - sudo apt-get install -y python-virtualenv
+      #    - sudo apt-get install -y python-virtualenv python3 python3-pip python3-setuptools
+      #    - python3 --version
 
 script:
     - export PATH=$PATH:$HOME/.aspera/cli/bin
     - ./mtbls-dwnld -a -g -t Xz68YfDe MTBLS164
     - ./mtbls-dwnld -agMq MTBLS164
-    - make test
+    - virtualenv -p python3.8 testvenv
+    - . testvenv/bin/activate && make test
     - make planemolint
     - make planemotest
