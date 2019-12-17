@@ -14,14 +14,14 @@ isaslicer.deps: test-venv
 	. test-venv/bin/activate && python3 -c 'import pandas;import isatools'
 
 test-venv:
-	virtualenv -p python3 planemo-venv
+	virtualenv -p python3 $@
 
 planemo-venv/bin/planemo: planemo-venv
 	. planemo-venv/bin/activate && pip install --upgrade pip setuptools
 	. planemo-venv/bin/activate && pip install planemo
 
 planemo-venv:
-	virtualenv -p python2.7 planemo-venv
+	virtualenv -p python2.7 $@
 
 plint: planemo-venv/bin/planemo isaslicer.py
 	. planemo-venv/bin/activate && planemo lint $(TOOL_XML)
