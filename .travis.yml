@@ -8,6 +8,8 @@ notifications:
 install:
     - wget https://download.asperasoft.com/download/sw/cli/3.7.7/aspera-cli-3.7.7.608.927cce8-linux-64-release.sh
     - bash aspera-cli-3.7.7.608.927cce8-linux-64-release.sh
+    - export ASPERA_SCP_PASS=Xz68YfDe
+    - ascp -q --policy=fair -T -l 1g -P33001 fasp-ml@fasp.ebi.ac.uk:/studies/public/MTBLS164 .
     - sudo apt-get install -y python-virtualenv python3.7 python3-pip python3-setuptools
 
 script:
