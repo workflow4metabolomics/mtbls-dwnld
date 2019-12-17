@@ -10,7 +10,8 @@ test: isaslicer.py
 	$(MAKE) -C $@
 
 isaslicer.deps:
-	pip3 install --user pandas isatools
+#	pip3 install --user pandas isatools
+	pip3 install pandas isatools
 	python3 -c 'import pandas;import isatools'
 
 planemo-venv/bin/planemo: planemo-venv
