@@ -154,7 +154,7 @@ test_ascp_default_key() {
 	rm -rf $study
 
 	# Download
-	expect_success $MTBLSDWNLD -agq $study || return 1
+	expect_success $MTBLSDWNLD -aMgq $study || return 1
 
 	# Test
 	expect_folder "$study" || return 1
@@ -168,7 +168,7 @@ test_ascp_default_key() {
 
 test_ascp_metadata_only() {
 
-	local study=MTBLS164
+	local study=MTBLS1
 
 	# Remove previously downloaded directory
 	rm -rf $study
@@ -268,8 +268,8 @@ test_wget_temp_in_abs_output() {
 
 test_ascp_temp_in_rel_output() {
 
-	local study=MTBLS164
-	local output_dir=MTBLS164_output
+	local study=MTBLS1
+	local output_dir=MTBLS1_output
 
 	# Remove previous folders
 	rm -rf "$study" "$output_dir"
