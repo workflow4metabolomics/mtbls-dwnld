@@ -215,8 +215,8 @@ download_with_ascp() {
 		cd "$output_dir"
 	fi
 	if [[ $metadata_only == $YES ]] ; then
-		debug "Download command: $ASCP $dwnld_flags -N '?_*.t*' -E '*.*' $dwnld_link ."
-		$ASCP $dwnld_flags -N '?_*.t*' -E '*.*' $dwnld_link .
+		debug "Download command: $ASCP $dwnld_flags -N '?_*.t*' -E '*.*' -E 'p*' $dwnld_link ."
+		$ASCP $dwnld_flags -N '?_*.t*' -E '*.*' -E 'p*' $dwnld_link .
 		[[ $? == 0 ]] || error "Downloading of study $STUDY has failed."
 	else
 		debug "Download command: $ASCP $dwnld_flags $dwnld_link ."

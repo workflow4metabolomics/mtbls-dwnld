@@ -21,3 +21,4 @@ MTBLS*.html
 MTBLS*.files_path
 !test-data/*
 isaslicer.py
+test-venv
