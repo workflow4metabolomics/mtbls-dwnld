@@ -12,6 +12,7 @@ install:
 
 script:
     - export PATH=$PATH:$HOME/.aspera/cli/bin
+    - ./mtbls-dwnld -a -g -t Xz68YfDe MTBLS164
     - make test
     - make planemolint
     - make planemotest
