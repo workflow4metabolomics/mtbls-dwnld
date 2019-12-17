@@ -6,13 +6,15 @@ all: isaslicer.py
 isaslicer.py: isatools-galaxy/tools/isatools/isaslicer.py isaslicer.deps
 	ln -sf $<
 
-test: isaslicer.py
-	$(MAKE) -C $@
+test: test-venv isaslicer.py
+	. test-venv/bin/activate && $(MAKE) -C $@
 
-isaslicer.deps:
-#	pip3 install --user pandas isatools
-	pip3 install pandas isatools
-	python3 -c 'import pandas;import isatools'
+isaslicer.deps: test-venv
+	. test-venv/bin/activate && pip3 install pandas isatools
+	. test-venv/bin/activate && python3 -c 'import pandas;import isatools'
+
+test-venv:
+	virtualenv -p python3 planemo-venv
 
 planemo-venv/bin/planemo: planemo-venv
 	. planemo-venv/bin/activate && pip install --upgrade pip setuptools
@@ -38,6 +40,7 @@ clean:
 	$(MAKE) -C test $@
 	$(RM) -r $(HOME)/.planemo
 	$(RM) -r planemo-venv
+	$(RM) -r test-venv
 	$(RM) tool_test_output.*
 
 .PHONY:	all clean test planemolint planemotest
