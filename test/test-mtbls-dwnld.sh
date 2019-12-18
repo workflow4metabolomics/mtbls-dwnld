@@ -10,25 +10,26 @@ MTBLSDWNLD=$SCRIPT_PATH/../mtbls-dwnld
 ASPERA_PUBLIC_TOKEN=Xz68YfDe
 [[ -z $(which ascp) ]] || ASCP=ascp
 WGET=wget
+ASPERA_N_TRIES=10
 
 # Test wget whole study {{{1
 ################################################################
 
 test_wget_whole_study() {
 
-	local study=MTBLS164
+local study=MTBLS164
 
-	# Remove previously downloaded directory
-	rm -rf $study
+# Remove previously downloaded directory
+rm -rf $study
 
-	# Download
-	expect_success $MTBLSDWNLD -g $study || return 1
+# Download
+expect_success $MTBLSDWNLD -g $study || return 1
 
-	# Test
-	expect_folder "$study" || return 1
-	expect_file "$study/i_Investigation.txt" || return 1
-	expect_files_in_folder "$study" '^._.*\.t.*$' || return 1
-	expect_other_files_in_folder "$study" '^._.*\.t.*$' || return 1
+# Test
+expect_folder "$study" || return 1
+expect_file "$study/i_Investigation.txt" || return 1
+expect_files_in_folder "$study" '^._.*\.t.*$' || return 1
+expect_other_files_in_folder "$study" '^._.*\.t.*$' || return 1
 }
 
 # Test wget zipped study {{{1
@@ -134,7 +135,7 @@ test_ascp_whole_study() {
 	rm -rf $study
 
 	# Download
-	expect_success_after_n_tries 10 $MTBLSDWNLD -ag -t "$ASPERA_PUBLIC_TOKEN" $study || return 1
+	expect_success_after_n_tries $ASPERA_N_TRIES $MTBLSDWNLD -ag -t "$ASPERA_PUBLIC_TOKEN" $study || return 1
 
 	# Test
 	expect_folder "$study" || return 1
@@ -154,7 +155,7 @@ test_ascp_default_key() {
 	rm -rf $study
 
 	# Download
-	expect_success_after_n_tries 10 $MTBLSDWNLD -aMg $study || return 1
+	expect_success_after_n_tries $ASPERA_N_TRIES $MTBLSDWNLD -aMg $study || return 1
 
 	# Test
 	expect_folder "$study" || return 1
@@ -174,7 +175,7 @@ test_ascp_metadata_only() {
 	rm -rf $study
 
 	# Download
-	expect_success_after_n_tries 10 $MTBLSDWNLD -agM $study || return 1
+	expect_success_after_n_tries $ASPERA_N_TRIES $MTBLSDWNLD -agM $study || return 1
 
 	# Test
 	expect_folder "$study" || return 1
@@ -199,7 +200,7 @@ test_ascp_private_study() {
 	if [[ -n $token && -n $path ]] ; then
 
 		# Download
-		expect_success_after_n_tries 10 $MTBLSDWNLD -agpM -t $token -o $study $path || return 1
+		expect_success_after_n_tries $ASPERA_N_TRIES $MTBLSDWNLD -agpM -t $token -o $study $path || return 1
 
 		# Test
 		expect_folder "$study" || return 1
@@ -275,7 +276,7 @@ test_ascp_temp_in_rel_output() {
 	# Remove previous folders
 	rm -rf "$study" "$output_dir"
 
-	expect_success_after_n_tries 10 $MTBLSDWNLD -a -M -g -T -o "$output_dir" "$study" || return 1
+	expect_success_after_n_tries $ASPERA_N_TRIES $MTBLSDWNLD -a -M -g -T -o "$output_dir" "$study" || return 1
 	expect_failure test -e "$study" || return 1
 	expect_folder "$output_dir" || return 1
 	expect_file "$output_dir/i_Investigation.txt" || return 1
@@ -293,7 +294,7 @@ test_ascp_temp_in_abs_output() {
 	# Remove previous folders
 	rm -rf "$study" "$output_dir"
 
-	expect_success_after_n_tries 10 $MTBLSDWNLD -a -M -g -T -o "$output_dir" "$study" || return 1
+	expect_success_after_n_tries $ASPERA_N_TRIES $MTBLSDWNLD -a -M -g -T -o "$output_dir" "$study" || return 1
 	expect_failure test -e "$study" || return 1
 	expect_folder "$output_dir" || return 1
 	expect_file "$output_dir/i_Investigation.txt" || return 1
@@ -336,10 +337,5 @@ if [[ -n $ASCP ]] ; then
 	test_that "Download of metadata only with ascp works correctly." test_ascp_metadata_only
 	test_that "Download with all temporary files written into relative output directory works correctly." test_ascp_temp_in_rel_output
 	test_that "Download with all temporary files written into absolute output directory works correctly." test_ascp_temp_in_abs_output
-
-	# XXX ASCP PRIVATE DOWNLOAD FAILING
-	#    pierrick@schroeder:mtbls-dwnld$ ascp --policy=fair -T -l 1g mtblight@ah01.ebi.ac.uk:/prod/mtbls1-4ZWHUHHlKR .
-	#    ascp: Failed to open TCP connection for SSH, exiting.
-	#    Session Stop  (Error: Failed to open TCP connection for SSH)
 	test_that "Download of private study with ascp works correctly." test_ascp_private_study
 fi

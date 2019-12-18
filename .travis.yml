@@ -12,6 +12,6 @@ install:
 
 script:
     - export PATH=$PATH:$HOME/.aspera/cli/bin
-    - make test
+    - TEST_THAT_NO_FCT=test_ascp_private_study make test
     - make planemolint
     - make planemotest

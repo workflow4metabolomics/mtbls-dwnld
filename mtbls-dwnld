@@ -206,6 +206,7 @@ download_with_ascp() {
 	fi
 
 	# Export token
+	debug "export ASPERA_SCP_PASS=\"$TOKEN\""
 	export ASPERA_SCP_PASS="$TOKEN"
 
 	# Run download command
