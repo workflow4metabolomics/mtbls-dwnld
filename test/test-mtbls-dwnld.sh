@@ -134,7 +134,7 @@ test_ascp_whole_study() {
 	rm -rf $study
 
 	# Download
-	expect_success $MTBLSDWNLD -agq -t "$ASPERA_PUBLIC_TOKEN" $study || return 1
+	expect_success_after_n_tries 10 $MTBLSDWNLD -agq -t "$ASPERA_PUBLIC_TOKEN" $study || return 1
 
 	# Test
 	expect_folder "$study" || return 1
@@ -330,7 +330,7 @@ test_that "Download with all temporary files written into absolute output direct
 # aspera test
 if [[ -n $ASCP ]] ; then
 	test_context "Testing mtbls-dwnld with Aspera ascp"
-#	test_that "Download of whole study with ascp works correctly." test_ascp_whole_study
+	test_that "Download of whole study with ascp works correctly." test_ascp_whole_study
 #	test_that "Download of study using default key with ascp works correctly." test_ascp_default_key
 #	test_that "Download of metadata only with ascp works correctly." test_ascp_metadata_only
 	test_that "Download with all temporary files written into relative output directory works correctly." test_ascp_temp_in_rel_output
