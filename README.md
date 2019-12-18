@@ -21,6 +21,7 @@ For more information, see the galaxy tool page, help section, available inside `
 
  * Use MTBLS29 instead of MTBLS30, which has been removed from public repository, for testing.
  * Make planemo tests pass on Travis-CI.
+ * Run several times ascp downloads for tests on Travis-CI, due to connection issues.
 
 ### 2.0.4
 
