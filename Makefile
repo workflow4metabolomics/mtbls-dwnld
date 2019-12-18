@@ -1,4 +1,5 @@
 TOOL_NAME=mtbls-dwnld
+REPOS_NAME=mtblsdwnld
 TOOL_XML=mtbls-dwnld.xml
 
 all: isaslicer.py
@@ -29,12 +30,15 @@ plint: planemo-venv/bin/planemo isaslicer.py
 ptest: planemo-venv/bin/planemo isaslicer.py
 	. planemo-venv/bin/activate && planemo test --conda_dependency_resolution --galaxy_branch release_19.01 $(TOOL_XML)
 
-ptesttoolshed_diff: dist/$(TOOL_NAME)/ planemo-venv/bin/planemo
+ptesttoolshed_diff: dist/$(REPOS_NAME)/ planemo-venv/bin/planemo
 	. planemo-venv/bin/activate && cd $< && planemo shed_diff --shed_target testtoolshed
 
-dist/$(TOOL_NAME)/: isaslicer.py
+dist/$(REPOS_NAME)/: isaslicer.py
 	mkdir -p $@
-	cp -r README.md $(TOOL_NAME) $(TOOL_NAME).xml test-data isaslicer.py $@
+	cp -Lr README.md $(TOOL_NAME) $(TOOL_NAME).xml test-data isaslicer.py $@
+
+ptesttoolshed_update: dist/$(REPOS_NAME)/ planemo-venv/bin/planemo
+	. planemo-venv/bin/activate && cd $< && planemo shed_update --check_diff --shed_target testtoolshed
 
 clean:
 	$(MAKE) -C test $@
@@ -42,5 +46,6 @@ clean:
 	$(RM) -r planemo-venv
 	$(RM) -r test-venv
 	$(RM) tool_test_output.*
+	$(RM) -r dist
 
 .PHONY:	all clean test planemolint planemotest
