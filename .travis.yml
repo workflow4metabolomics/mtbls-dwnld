@@ -1,3 +1,5 @@
+dist: bionic
+
 notifications:
  email:
   recipients:
@@ -6,10 +8,10 @@ notifications:
 install:
     - wget https://download.asperasoft.com/download/sw/cli/3.7.7/aspera-cli-3.7.7.608.927cce8-linux-64-release.sh
     - bash aspera-cli-3.7.7.608.927cce8-linux-64-release.sh
-    - sudo apt-get install -y python-virtualenv
+    - sudo apt-get install -y python-virtualenv python3.7 python3-pip python3-setuptools
 
 script:
     - export PATH=$PATH:$HOME/.aspera/cli/bin
-    - make test
-    - make planemolint
-    - make planemotest
+    - TEST_THAT_NO_FCT=test_ascp_private_study make test
+    - make plint
+    - make ptest

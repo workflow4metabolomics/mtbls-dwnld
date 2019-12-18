@@ -188,10 +188,10 @@ download_with_ascp() {
 	[[ -z $dwnld_flags ]] || dwnld_flags+=" "
 	dwnld_flags+="--policy=fair -T -l 1g"
 
+	dwnld_flags+=" -P33001"
+
 	# Set download link
 	if [[ -z $PRIVATE ]] ; then
-
-		dwnld_flags+=" -P33001"
 
 		# Make full path for public study
 		study_path=$STUDY
@@ -202,10 +202,11 @@ download_with_ascp() {
 
 	# Private study
 	else
-		dwnld_link="mtblight@ah01.ebi.ac.uk:$STUDY"
+		dwnld_link="mtblight@hx-fasp-1.ebi.ac.uk:$STUDY"
 	fi
 
 	# Export token
+	debug "export ASPERA_SCP_PASS=\"$TOKEN\""
 	export ASPERA_SCP_PASS="$TOKEN"
 
 	# Run download command
@@ -215,13 +216,13 @@ download_with_ascp() {
 		cd "$output_dir"
 	fi
 	if [[ $metadata_only == $YES ]] ; then
-		debug "Download command: $ASCP $dwnld_flags -N '?_*.t*' -E '*.*' $dwnld_link ."
-		$ASCP $dwnld_flags -N '?_*.t*' -E '*.*' $dwnld_link .
-		[[ $? == 0 ]] || error "Downloading of study $STUDY has failed."
+		debug "Download command: $ASCP $dwnld_flags -N '?_*.t*' -E '*.*' -E 'p*' $dwnld_link ."
+		$ASCP $dwnld_flags -N '?_*.t*' -E '*.*' -E 'p*' $dwnld_link .
+		[[ $? == 0 ]] || error "Downloading of study $STUDY has failed. Error code returned is $?."
 	else
 		debug "Download command: $ASCP $dwnld_flags $dwnld_link ."
 		$ASCP $dwnld_flags $dwnld_link .
-		[[ $? == 0 ]] || error "Downloading of study $STUDY has failed."
+		[[ $? == 0 ]] || error "Downloading of study $STUDY has failed. Error code returned is $?."
 	fi
 	[[ -z $output_dir ]] || cd "$curdir"
 }
