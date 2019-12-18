@@ -134,7 +134,7 @@ test_ascp_whole_study() {
 	rm -rf $study
 
 	# Download
-	expect_success_after_n_tries 10 $MTBLSDWNLD -agq -t "$ASPERA_PUBLIC_TOKEN" $study || return 1
+	expect_success_after_n_tries 10 $MTBLSDWNLD -ag -t "$ASPERA_PUBLIC_TOKEN" $study || return 1
 
 	# Test
 	expect_folder "$study" || return 1
@@ -154,7 +154,7 @@ test_ascp_default_key() {
 	rm -rf $study
 
 	# Download
-	expect_success_after_n_tries 10 $MTBLSDWNLD -aMgq $study || return 1
+	expect_success_after_n_tries 10 $MTBLSDWNLD -aMg $study || return 1
 
 	# Test
 	expect_folder "$study" || return 1
@@ -174,7 +174,7 @@ test_ascp_metadata_only() {
 	rm -rf $study
 
 	# Download
-	expect_success_after_n_tries 10 $MTBLSDWNLD -agMq $study || return 1
+	expect_success_after_n_tries 10 $MTBLSDWNLD -agM $study || return 1
 
 	# Test
 	expect_folder "$study" || return 1
@@ -199,7 +199,7 @@ test_ascp_private_study() {
 	if [[ -n $token && -n $path ]] ; then
 
 		# Download
-		expect_success_after_n_tries 10 $MTBLSDWNLD -agpMq -t $token -o $study $path || return 1
+		expect_success_after_n_tries 10 $MTBLSDWNLD -agpM -t $token -o $study $path || return 1
 
 		# Test
 		expect_folder "$study" || return 1
