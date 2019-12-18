@@ -154,7 +154,7 @@ test_ascp_default_key() {
 	rm -rf $study
 
 	# Download
-	expect_success $MTBLSDWNLD -aMgq $study || return 1
+	expect_success_after_n_tries 10 $MTBLSDWNLD -aMgq $study || return 1
 
 	# Test
 	expect_folder "$study" || return 1
@@ -174,7 +174,7 @@ test_ascp_metadata_only() {
 	rm -rf $study
 
 	# Download
-	expect_success $MTBLSDWNLD -agMq $study || return 1
+	expect_success_after_n_tries 10 $MTBLSDWNLD -agMq $study || return 1
 
 	# Test
 	expect_folder "$study" || return 1
@@ -197,8 +197,9 @@ test_ascp_private_study() {
 	path=$(get_private_study_path ascp $study)
 
 	if [[ -n $token && -n $path ]] ; then
+
 		# Download
-		expect_success $MTBLSDWNLD -agpMq -t $token -o $study $path || return 1
+		expect_success_after_n_tries 10 $MTBLSDWNLD -agpMq -t $token -o $study $path || return 1
 
 		# Test
 		expect_folder "$study" || return 1
@@ -274,7 +275,7 @@ test_ascp_temp_in_rel_output() {
 	# Remove previous folders
 	rm -rf "$study" "$output_dir"
 
-	expect_success $MTBLSDWNLD -a -M -g -T -o "$output_dir" "$study" || return 1
+	expect_success_after_n_tries 10 $MTBLSDWNLD -a -M -g -T -o "$output_dir" "$study" || return 1
 	expect_failure test -e "$study" || return 1
 	expect_folder "$output_dir" || return 1
 	expect_file "$output_dir/i_Investigation.txt" || return 1
@@ -292,7 +293,7 @@ test_ascp_temp_in_abs_output() {
 	# Remove previous folders
 	rm -rf "$study" "$output_dir"
 
-	expect_success $MTBLSDWNLD -a -M -g -T -o "$output_dir" "$study" || return 1
+	expect_success_after_n_tries 10 $MTBLSDWNLD -a -M -g -T -o "$output_dir" "$study" || return 1
 	expect_failure test -e "$study" || return 1
 	expect_folder "$output_dir" || return 1
 	expect_file "$output_dir/i_Investigation.txt" || return 1
@@ -331,8 +332,8 @@ test_that "Download with all temporary files written into absolute output direct
 if [[ -n $ASCP ]] ; then
 	test_context "Testing mtbls-dwnld with Aspera ascp"
 	test_that "Download of whole study with ascp works correctly." test_ascp_whole_study
-#	test_that "Download of study using default key with ascp works correctly." test_ascp_default_key
-#	test_that "Download of metadata only with ascp works correctly." test_ascp_metadata_only
+	test_that "Download of study using default key with ascp works correctly." test_ascp_default_key
+	test_that "Download of metadata only with ascp works correctly." test_ascp_metadata_only
 	test_that "Download with all temporary files written into relative output directory works correctly." test_ascp_temp_in_rel_output
 	test_that "Download with all temporary files written into absolute output directory works correctly." test_ascp_temp_in_abs_output
 
