@@ -30,15 +30,21 @@ plint: planemo-venv/bin/planemo isaslicer.py
 ptest: planemo-venv/bin/planemo isaslicer.py
 	. planemo-venv/bin/activate && planemo test --conda_dependency_resolution --galaxy_branch release_19.01 $(TOOL_XML)
 
-ptesttoolshed_diff: dist/$(REPOS_NAME)/ planemo-venv/bin/planemo
-	. planemo-venv/bin/activate && cd $< && planemo shed_diff --shed_target testtoolshed
-
 dist/$(REPOS_NAME)/: isaslicer.py
 	mkdir -p $@
 	cp -Lr README.md $(TOOL_NAME) $(TOOL_NAME).xml test-data isaslicer.py $@
 
+ptesttoolshed_diff: dist/$(REPOS_NAME)/ planemo-venv/bin/planemo
+	. planemo-venv/bin/activate && cd $< && planemo shed_diff --shed_target testtoolshed
+
 ptesttoolshed_update: dist/$(REPOS_NAME)/ planemo-venv/bin/planemo
 	. planemo-venv/bin/activate && cd $< && planemo shed_update --check_diff --shed_target testtoolshed
+
+ptoolshed_diff: dist/$(REPOS_NAME)/ planemo-venv/bin/planemo
+	. planemo-venv/bin/activate && cd $< && planemo shed_diff --shed_target toolshed
+
+ptoolshed_update: dist/$(REPOS_NAME)/ planemo-venv/bin/planemo
+	. planemo-venv/bin/activate && cd $< && planemo shed_update --check_diff --shed_target toolshed
 
 clean:
 	$(MAKE) -C test $@
