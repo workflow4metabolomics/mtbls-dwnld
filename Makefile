@@ -39,13 +39,13 @@ ptesttoolshed_diff: dist/$(REPOS_NAME)/ test-venv/bin/planemo
 	. test-venv/bin/activate && cd $< && planemo shed_diff --shed_target testtoolshed ; deactivate
 
 ptesttoolshed_update: dist/$(REPOS_NAME)/ test-venv/bin/planemo
-	. test-venv/bin/activate && cd $< && planemo shed_update --check_diff --shed_target testtoolshed ; deactivate
+	. test-venv/bin/activate && cd $< && planemo shed_update --check_diff --skip_metadata --shed_target testtoolshed ; deactivate
 
 ptoolshed_diff: dist/$(REPOS_NAME)/ test-venv/bin/planemo
 	. test-venv/bin/activate && cd $< && planemo shed_diff --shed_target toolshed ; deactivate
 
 ptoolshed_update: dist/$(REPOS_NAME)/ test-venv/bin/planemo
-	. test-venv/bin/activate && cd $< && planemo shed_update --check_diff --shed_target toolshed ; deactivate
+	. test-venv/bin/activate && cd $< && planemo shed_update --check_diff --skip_metadata --shed_target toolshed ; deactivate
 
 clean:
 	$(MAKE) -C test $@
