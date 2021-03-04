@@ -6,9 +6,13 @@ notifications:
    - pierrick.roger@cea.fr
 
 install:
-    - wget https://download.asperasoft.com/download/sw/cli/3.7.7/aspera-cli-3.7.7.608.927cce8-linux-64-release.sh
-    - bash aspera-cli-3.7.7.608.927cce8-linux-64-release.sh
-    - sudo apt-get install pyenv
+  
+  # Aspera
+  - wget https://download.asperasoft.com/download/sw/cli/3.7.7/aspera-cli-3.7.7.608.927cce8-linux-64-release.sh
+  - bash aspera-cli-3.7.7.608.927cce8-linux-64-release.sh
+    
+  # pyenv
+  - curl -L https://raw.githubusercontent.com/yyuu/pyenv-installer/master/bin/pyenv-installer | bash
 
 script:
     - export PATH=$PATH:$HOME/.aspera/cli/bin
