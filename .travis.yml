@@ -3,12 +3,11 @@ dist: bionic
 notifications:
  email:
   recipients:
-   - pk.roger@icloud.com
+   - pierrick.roger@cea.fr
 
 install:
-    - wget https://download.asperasoft.com/download/sw/cli/3.7.7/aspera-cli-3.7.7.608.927cce8-linux-64-release.sh
-    - bash aspera-cli-3.7.7.608.927cce8-linux-64-release.sh
-    - sudo apt-get install -y python-virtualenv python3.7 python3-pip python3-setuptools
+  - wget https://download.asperasoft.com/download/sw/cli/3.7.7/aspera-cli-3.7.7.608.927cce8-linux-64-release.sh
+  - bash aspera-cli-3.7.7.608.927cce8-linux-64-release.sh
 
 script:
     - export PATH=$PATH:$HOME/.aspera/cli/bin

@@ -1,10 +1,10 @@
 <!-- vi: se fdm=marker : -->
-<tool id="mtbls-dwnld" name="Metabolights downloader" version="4.1.4">
+<tool id="mtbls-dwnld" name="Metabolights downloader" version="4.1.5">
 
 	<description>Import public and private MetaboLights studies</description>
 
 	<requirements>
-		<requirement type="package" version="0.10.3">isatools</requirement>
+		<requirement type="package" version="0.12.0">isatools</requirement>
 	</requirements>
 
 	<!-- Command {{{1 -->
