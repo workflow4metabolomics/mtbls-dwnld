@@ -12,10 +12,11 @@ install:
   - bash aspera-cli-3.7.7.608.927cce8-linux-64-release.sh
     
   # pyenv
+    - wich pyenv
   # See https://github.com/pyenv/pyenv-installer
   # and https://github.com/pyenv/pyenv/wiki/Common-build-problems
-  - sudo apt-get install -y build-essential libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev wget curl llvm libncurses5-dev libncursesw5-dev xz-utils tk-dev libffi-dev liblzma-dev python-openssl git
-  - curl https://pyenv.run | sudo bash
+  #  - sudo apt-get install -y build-essential libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev wget curl llvm libncurses5-dev libncursesw5-dev xz-utils tk-dev libffi-dev liblzma-dev python-openssl git
+  #  - curl https://pyenv.run | sudo bash
 
 script:
     - export PATH=$PATH:$HOME/.aspera/cli/bin
