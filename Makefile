@@ -51,9 +51,8 @@ clean:
 	$(MAKE) -C test $@
 	$(RM) -r $(HOME)/.planemo
 	$(RM) -r test-venv
-	$(RM) -r test-venv
 	$(RM) tool_test_output.*
 	$(RM) -r dist
 	$(RM) isaslicer.py
 
-.PHONY:	all clean test planemolint planemotest install_python
+.PHONY:	all clean test plint ptest ptesttoolshed_diff ptesttoolshed_update ptoolshed_diff ptoolshed_update install_python
